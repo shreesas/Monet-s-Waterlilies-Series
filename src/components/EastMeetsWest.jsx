@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { AnimatePresence } from "framer-motion";
+// eslint-disable-next-line no-unused-vars -- `motion` is used as <motion.div>; project eslint lacks jsx-uses-vars
+import { AnimatePresence, motion } from "framer-motion";
 
 import FixedTitle from "./FixedTitle";
-import PanSlider from "./PanSlider";
 import IntroModal from "./IntroModal";
 import CentralPainting from "./CentralPainting";
 import ScatteredPrint from "./ScatteredPrint";
@@ -10,7 +10,7 @@ import LilyTrigger from "./LilyTrigger";
 import InfoBlock from "./InfoBlock";
 import FullscreenLightbox from "./FullscreenLightbox";
 
-import { SCATTER, INFO_OFFSETS } from "../data/scatterLayout";
+import { PRINT_BLOCKS } from "../data/scatterLayout";
 import { INFO_BLOCKS } from "../data/infoBlocks";
 import {
   monetToLightbox,
@@ -61,15 +61,6 @@ export default function EastMeetsWest() {
   const [isMobile, setIsMobile] = useState(
     () => typeof window !== "undefined" && window.innerWidth < 768
   );
-  const [viewportW, setViewportW] = useState(() =>
-    typeof window !== "undefined" ? window.innerWidth : 1440
-  );
-  // Slider starts at 0 (far-left pan) so the user immediately sees the
-  // painting on the left of the screen + the first 3 prints in the
-  // right-side strip. As they drag right, the print strip scrolls into
-  // view from the right.
-  const [sliderValue, setSliderValue] = useState(0);
-
   // Derived: on mobile every block is auto-revealed; on desktop only the ones
   // the user has clicked. We avoid an extra useEffect+setState cascade.
   const revealedTexts = useMemo(() => {
@@ -94,28 +85,55 @@ export default function EastMeetsWest() {
   useEffect(() => {
     const onResize = () => {
       setIsMobile(window.innerWidth < 768);
-      setViewportW(window.innerWidth);
     };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  const centralPool = useMemo(
-    () =>
-      monetCatalog.filter((p) => {
-        const n = catalogNumberToInt(p.catalog_number);
-        return n >= 1509 && n <= 1633 && p.image_url;
-      }),
-    [monetCatalog]
-  );
+  // The painting cycles through this exact list, in this exact order.
+  // Catalog numbers come from the JSON in the form "W.1509".
+  const centralPool = useMemo(() => {
+    const order = [
+      "W.1509",
+      "W.1511",
+      "W.1513",
+      "W.1517",
+      "W.1518",
+      "W.1630",
+      "W.1631",
+    ];
+    const byCatalog = new Map(
+      monetCatalog
+        .filter((p) => p.image_url)
+        .map((p) => [p.catalog_number, p])
+    );
+    return order
+      .map((cat) => byCatalog.get(cat))
+      .filter(Boolean);
+  }, [monetCatalog]);
 
   const backgroundEntry = useMemo(
     () =>
       monetCatalog.find(
-        (p) => catalogNumberToInt(p.catalog_number) === 1731
+        (p) => catalogNumberToInt(p.catalog_number) === 1661
       ),
     [monetCatalog]
   );
+
+  // Natural aspect (height / width) of the ambient background painting.
+  // We need this to compute the tile height in CSS so the tiled
+  // background lines up cleanly without seams.
+  const [bgAspect, setBgAspect] = useState(null);
+  useEffect(() => {
+    if (!backgroundEntry?.image_url) return;
+    const probe = new Image();
+    probe.onload = () => {
+      if (probe.naturalWidth && probe.naturalHeight) {
+        setBgAspect(probe.naturalHeight / probe.naturalWidth);
+      }
+    };
+    probe.src = backgroundEntry.image_url;
+  }, [backgroundEntry?.image_url]);
 
   const printsByFile = useMemo(() => {
     const map = {};
@@ -137,7 +155,6 @@ export default function EastMeetsWest() {
       next.add(lily.id);
       return next;
     });
-    // Only six lilies carry a textIndex (the rest are bonus collectibles).
     if (lily.textIndex !== undefined) {
       setUserRevealed((prev) => {
         const next = new Set(prev);
@@ -162,131 +179,365 @@ export default function EastMeetsWest() {
     if (entry && imgSrc) setLightbox(printToLightbox(entry, imgSrc));
   };
 
-  // Canvas is much wider than the viewport so the slider can pan across the
-  // whole composition (5 prints flank the painting on the left, 4 on the
-  // right), so there is breathing room between the outermost prints and
-  // the central painting, AND so each text block has horizontal margin to
-  // the neighbouring prints (no more text bleeding under prints).
-  // Canvas is 2.5x the viewport so the slider can pan the print strip
-  // (which now lives entirely to the RIGHT of the painting) across the
-  // viewport. ~3 prints visible at any slider position.
-  const canvasWidthMultiplier = 2.5;
-  // Uniform max bbox (both width and height) so the LONG dimension of every
-  // print equals this value. Also capped at 18vw so landscape prints can't
-  // grow wider than the painting's right edge on tall viewports — this
-  // keeps the first print's half-width predictable (≤9vw) so the title and
-  // slider can align with its left edge via matching CSS math.
-  const printMaxSize = isMobile ? "min(18vh, 18vw)" : "min(26vh, 18vw)";
-  // Pink lily — doubled in size from the previous design.
-  const lilySize = isMobile ? "5vh" : "6vh";
-  // Central painting is anchored FLUSH to the top-left corner of the
-  // viewport with no frame, filling a fixed 40vw × 100vh slab. The img
-  // uses object-cover, so paintings get cropped to fit the slab instead
-  // of letterboxing — guaranteeing the painting always covers exactly
-  // 40% of the page width, top to bottom.
-  const centralWidth = "40vw";
-  const centralHeight = "100vh";
-  const canvasPx = canvasWidthMultiplier * viewportW;
-  const maxOffset = Math.max(0, canvasPx - viewportW);
-  const offsetX = -(sliderValue / 1000) * maxOffset;
+  // Print sizing — cap on both axes so landscape and portrait prints
+  // share the same long-edge length. Bumped 1.5× from the previous
+  // pass so the prints feel like proper gallery pieces in the
+  // vertical scroll column.
+  const printMaxSize = isMobile ? "min(27vh, 45vw)" : "min(39vh, 27vw)";
+  // Water-lily trigger icons.
+  const lilySize = isMobile ? "10vh" : "12vh";
+  // Central painting layout (unchanged from the horizontal version).
+  const titleAreaHeight = "16vh";
+  const centralMaxWidth = "50vw";
+  const sideMargin = isMobile ? "1rem" : "2rem";
+  const bottomMargin = isMobile ? "1.25rem" : "1.75rem";
+  // Reserve space below the painting for the title / year / collection
+  // caption (matches LilyMorph's style on the home page).
+  const captionReserve = "5.5vh";
+  const centralHeight = `calc(100vh - ${titleAreaHeight} - ${bottomMargin} - ${captionReserve})`;
 
   const centralPainting = centralPool[centralIndex];
 
+  // Right column geometry. The column starts just past the painting's
+  // glass strip on the right (sideMargin + max painting slab + 20px
+  // glass) and runs to the viewport's right edge. It scrolls
+  // vertically; horizontal overflow is hidden so off-axis prints can't
+  // create a horizontal scrollbar.
+  const rightColumnLeft = `calc(${sideMargin} + ${centralMaxWidth} + 20px)`;
+
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-stone">
-      {/* Ambient background painting: viewport-fixed, doesn't pan. */}
-      {backgroundEntry && (
-        <div
-          className="fixed inset-0 bg-cover bg-center pointer-events-none"
-          style={{
-            backgroundImage: `url(${backgroundEntry.image_url})`,
-            opacity: 0.7,
-          }}
-        />
-      )}
-
-      <FixedTitle />
-
-      {/* Pannable canvas: a single wide div translated horizontally by the
-          slider. No drag-to-pan, no zoom. The central painting is rendered
-          OUTSIDE this div (see below) so it stays viewport-fixed while the
-          prints/lilies/texts slide horizontally behind it. */}
+      {/* Solid white panel covering the LEFT side of the viewport — the
+          area that holds the title and the central Monet painting. This
+          sits above the ambient background but below the painting and
+          title so those read cleanly against pure white instead of the
+          blurry pond. The right column (with the prints) keeps the
+          ambient background showing through. */}
       <div
-        className="absolute top-0 left-0 h-full will-change-transform"
+        className="fixed top-0 left-0 bottom-0 pointer-events-none bg-white"
+        style={{ width: rightColumnLeft }}
+      />
+
+      <FixedTitle containerWidth={rightColumnLeft} />
+
+      {/* Right column: vertically scrolling list of print blocks.
+          Native overflow handles touch swipe, mouse wheel, and
+          trackpad without any custom gesture code. The ambient
+          background painting starts at the very top of this scroll
+          area (no padding), and the prints column applies its own
+          top padding so it clears the title region. */}
+      <div
+        className="absolute overflow-y-auto overflow-x-hidden"
         style={{
-          width: `${canvasWidthMultiplier * 100}vw`,
-          transform: `translate3d(${offsetX}px, 0, 0)`,
-          transition: "transform 60ms linear",
+          top: 0,
+          left: rightColumnLeft,
+          right: 0,
+          height: "100vh",
         }}
       >
-        {/* Scattered prints + lilies */}
-        {SCATTER.map((item) => {
-          if (item.type === "print") {
-            const fileName = `${item.id}.jpg`;
+        <div className="relative w-full">
+          {/* Tiled background painting — sits behind the prints,
+              starts at the very top of the scroll content, and
+              tiles vertically. Every other tile is mirrored
+              (scaleY -1) so adjacent edges meet as reflections and
+              the seam disappears. The bottom of every tile is
+              cropped (~8%) to hide the painter's signature, with
+              tile height/positioning adjusted so the crop holds
+              even when the tile is mirrored. */}
+          {backgroundEntry && bgAspect && (() => {
+            const CROP = 0.08; // hide bottom 8% (signature region)
+            // Tile height as a percentage of the wrapper width:
+            // image natural aspect × (1 − crop).
+            const tileHeightPct = bgAspect * (1 - CROP) * 100;
+            // For mirrored tiles, shift the image up by crop fraction
+            // of the wrapper height (in image-vs-wrapper terms,
+            // crop / (1 − crop)) so the signature ends up above
+            // the wrapper's top edge after the flip.
+            const flipShiftPct = (CROP / (1 - CROP)) * 100;
+            // Render enough tiles to cover any plausible scroll
+            // height. Extras are clipped by the wrapper's
+            // overflow-hidden, so over-rendering is cheap.
+            const TILE_COUNT = 30;
+            return (
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 pointer-events-none overflow-hidden"
+                style={{ zIndex: 0 }}
+              >
+                {Array.from({ length: TILE_COUNT }).map((_, i) => {
+                  const flipped = i % 2 === 1;
+                  return (
+                    <div
+                      key={i}
+                      className="relative w-full overflow-hidden"
+                      style={{ paddingBottom: `${tileHeightPct}%` }}
+                    >
+                      <img
+                        src={backgroundEntry.image_url}
+                        alt=""
+                        draggable={false}
+                        className="absolute left-0 w-full h-auto select-none block"
+                        style={{
+                          top: flipped ? `-${flipShiftPct}%` : 0,
+                          transform: flipped ? "scaleY(-1)" : "none",
+                          opacity: 0.7,
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+                {/* Soft white tint over the whole tile stack so the
+                    prints stay readable against the painting. */}
+                <div
+                  className="absolute inset-0"
+                  style={{ background: "rgba(255,255,255,0.18)" }}
+                />
+              </div>
+            );
+          })()}
+
+          {/* Prints column — rendered above the tiled background.
+              The top padding keeps the first print clear of the
+              title area; the bottom padding mirrors the painting's
+              bottom margin. */}
+        <div
+          className="relative flex flex-col items-stretch w-full"
+          style={{
+            zIndex: 1,
+            paddingTop: titleAreaHeight,
+            paddingBottom: bottomMargin,
+          }}
+        >
+          {PRINT_BLOCKS.map((block, i) => {
+            const fileName = `${block.id}.jpg`;
             const src = PRINT_IMAGES[fileName];
             const entry = printsByFile[fileName];
             if (!src) return null;
-            return (
-              <ScatteredPrint
-                key={`print-${item.id}`}
-                src={src}
-                alt={entry?.title || item.id}
-                style={{ top: item.top, left: item.left }}
-                maxSize={printMaxSize}
-                onSelect={() => openPrintLightbox(item.id)}
-              />
+
+            const hasText = block.textIndex !== undefined;
+            const lilyImg = hasText
+              ? LILY_IMAGES[block.textIndex] || lily1
+              : null;
+
+            const rowMargin = {
+              marginTop: i === 0 ? "1vh" : "4vh",
+              marginBottom: i === PRINT_BLOCKS.length - 1 ? "1vh" : "0",
+            };
+
+            // Decorative print (no lily/text): keep the simple
+            // single-column placement so it sits on its assigned
+            // side of the column with a touch of inset padding.
+            if (!hasText) {
+              return (
+                <div
+                  key={block.id}
+                  className={`flex flex-col items-center ${
+                    block.align === "left" ? "self-start" : "self-end"
+                  }`}
+                  style={{
+                    maxWidth: "70%",
+                    paddingLeft: block.align === "left" ? "2vw" : "0",
+                    paddingRight: block.align === "right" ? "2vw" : "0",
+                    ...rowMargin,
+                  }}
+                >
+                  <ScatteredPrint
+                    flow
+                    src={src}
+                    alt={entry?.title || block.id}
+                    maxSize={printMaxSize}
+                    onSelect={() => openPrintLightbox(block.id)}
+                  />
+                </div>
+              );
+            }
+
+            // Mobile fallback: keep the centred print → lily → text
+            // stack we had before. The right column on small screens
+            // is too narrow to host a side-by-side scatter without
+            // crushing one or both halves.
+            if (isMobile) {
+              return (
+                <div
+                  key={block.id}
+                  className={`flex flex-col items-center gap-3 ${
+                    block.align === "left" ? "self-start" : "self-end"
+                  }`}
+                  style={{
+                    maxWidth: "70%",
+                    paddingLeft: block.align === "left" ? "2vw" : "0",
+                    paddingRight: block.align === "right" ? "2vw" : "0",
+                    ...rowMargin,
+                  }}
+                >
+                  <ScatteredPrint
+                    flow
+                    src={src}
+                    alt={entry?.title || block.id}
+                    maxSize={printMaxSize}
+                    onSelect={() => openPrintLightbox(block.id)}
+                  />
+                  <LilyTrigger
+                    flow
+                    src={lilyImg}
+                    size={lilySize}
+                    used={usedLilies.has(block.textIndex)}
+                    onSelect={() =>
+                      handleLilyClick({
+                        id: block.textIndex,
+                        textIndex: block.textIndex,
+                      })
+                    }
+                  />
+                  <InfoBlock
+                    flow
+                    text={INFO_BLOCKS[block.textIndex]}
+                    visible={revealedTexts.has(block.textIndex)}
+                  />
+                </div>
+              );
+            }
+
+            // Desktop: place the lily + revealed text on the side
+            // OPPOSITE the print so they share a horizontal row
+            // without overlapping any print. Per-lily scatter
+            // values (vertical drop + horizontal nudge) give each
+            // pair its own position so the lilies feel sprinkled
+            // around the right frame instead of marching in a line.
+            const LILY_SCATTER = [
+              { offsetTop: "1vh",  sideShift: "1.5vw" },
+              { offsetTop: "8vh",  sideShift: "0.5vw" },
+              { offsetTop: "4vh",  sideShift: "2vw" },
+              { offsetTop: "12vh", sideShift: "1vw" },
+              { offsetTop: "2vh",  sideShift: "2.5vw" },
+              { offsetTop: "10vh", sideShift: "0.75vw" },
+            ];
+            const scatter =
+              LILY_SCATTER[block.textIndex] ||
+              { offsetTop: "0", sideShift: "0" };
+
+            const printColumn = (
+              <div
+                className="flex flex-col items-center"
+                style={{
+                  maxWidth: "55%",
+                  paddingLeft: block.align === "left" ? "2vw" : "0",
+                  paddingRight: block.align === "right" ? "2vw" : "0",
+                }}
+              >
+                <ScatteredPrint
+                  flow
+                  src={src}
+                  alt={entry?.title || block.id}
+                  maxSize={printMaxSize}
+                  onSelect={() => openPrintLightbox(block.id)}
+                />
+              </div>
             );
-          }
-          return (
-            <LilyTrigger
-              key={`lily-${item.id}`}
-              src={LILY_IMAGES[item.id] || lily1}
-              style={{ top: item.top, left: item.left }}
-              size={lilySize}
-              used={usedLilies.has(item.id)}
-              onSelect={() => handleLilyClick(item)}
-            />
-          );
-        })}
 
-        {/* Info blocks anchored to the PRINT that owns each textIndex (lilies
-            now live in the pond strips above/below the painting, too far from
-            the prints to host the texts). */}
-        {SCATTER.filter(
-          (s) => s.type === "print" && s.textIndex !== undefined
-        ).map((print) => {
-          const offset = INFO_OFFSETS[print.textIndex] || { dx: 0, dy: 18 };
-          const top = `calc(${print.top} + ${offset.dy}%)`;
-          const left = `calc(${print.left} + ${offset.dx}%)`;
-          return (
-            <InfoBlock
-              key={`info-${print.textIndex}`}
-              text={INFO_BLOCKS[print.textIndex]}
-              visible={revealedTexts.has(print.textIndex)}
-              style={{ top, left }}
-            />
-          );
-        })}
+            const lilyColumn = (
+              <div
+                className="flex flex-col items-center gap-3"
+                style={{
+                  maxWidth: "42%",
+                  marginTop: scatter.offsetTop,
+                  paddingLeft:
+                    block.align === "right" ? scatter.sideShift : "0",
+                  paddingRight:
+                    block.align === "left" ? scatter.sideShift : "0",
+                }}
+              >
+                <LilyTrigger
+                  flow
+                  src={lilyImg}
+                  size={lilySize}
+                  used={usedLilies.has(block.textIndex)}
+                  onSelect={() =>
+                    handleLilyClick({
+                      id: block.textIndex,
+                      textIndex: block.textIndex,
+                    })
+                  }
+                />
+                <InfoBlock
+                  flow
+                  text={INFO_BLOCKS[block.textIndex]}
+                  visible={revealedTexts.has(block.textIndex)}
+                />
+              </div>
+            );
 
+            return (
+              <div
+                key={block.id}
+                className="flex w-full justify-between items-start"
+                style={rowMargin}
+              >
+                {block.align === "left" ? (
+                  <>
+                    {printColumn}
+                    {lilyColumn}
+                  </>
+                ) : (
+                  <>
+                    {lilyColumn}
+                    {printColumn}
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        </div>
       </div>
 
-      {/* Central Monet painting — viewport-fixed and above the pannable
-          canvas, so the prints/lilies/texts slide horizontally BEHIND it
-          when the user drags the slider. The outer wrapper is
-          pointer-events-none so clicks elsewhere on screen still reach the
-          prints/lilies behind; CentralPainting re-enables pointer events on
-          its own bounding box so the painting itself remains clickable. */}
-      <div className="fixed inset-0 pointer-events-none z-20">
+      {/* Central Monet painting — horizontally centred inside the
+          white left-side panel, vertically pinned just below the
+          title area. The wrapper itself is pointer-events-none so
+          clicks elsewhere on screen still reach the prints/lilies
+          behind; CentralPainting re-enables pointer events on its
+          own bounding box so the painting remains clickable. */}
+      <div
+        className="fixed pointer-events-none z-20 flex flex-col items-center"
+        style={{
+          top: titleAreaHeight,
+          left: 0,
+          width: rightColumnLeft,
+          bottom: bottomMargin,
+        }}
+      >
         <CentralPainting
           painting={centralPainting}
-          style={{ top: 0, left: 0 }}
-          width={centralWidth}
+          maxWidth={centralMaxWidth}
           height={centralHeight}
           onSelect={openCentralLightbox}
         />
+        {/* Painting caption — title, year, collection. Same typography
+            as the home page's per-anchor metadata block. */}
+        {centralPainting && (
+          <div className="mt-2 font-sans text-center px-4">
+            <p
+              className="text-charcoal font-medium leading-tight"
+              style={{ fontSize: "clamp(15px, 1.15vw, 19px)" }}
+            >
+              {centralPainting.title}
+              {centralPainting.year && (
+                <span className="text-charcoal/55 font-normal">
+                  , {centralPainting.year}
+                </span>
+              )}
+            </p>
+            {centralPainting.collection && (
+              <p
+                className="mt-1 text-charcoal/55"
+                style={{ fontSize: "clamp(12px, 0.9vw, 14px)" }}
+              >
+                {centralPainting.collection}
+              </p>
+            )}
+          </div>
+        )}
       </div>
-
-      <PanSlider value={sliderValue} onChange={setSliderValue} />
 
       <AnimatePresence>
         {showIntro && <IntroModal onDismiss={handleDismissIntro} />}
@@ -300,6 +551,24 @@ export default function EastMeetsWest() {
           />
         )}
       </AnimatePresence>
+
+      {/* "x/6 collected" indicator — permanently pinned to the top-right
+          of the viewport, solid white pill so it's always legible
+          against either the white left panel or the ambient pond
+          background on the right. pointer-events-none so it never
+          blocks the canvas. Kept below the lightbox (z-50) so the dim
+          overlay covers it when a painting is open. */}
+      <div className="fixed top-4 right-4 md:top-6 md:right-8 z-40 pointer-events-none">
+        <div
+          className="font-serif text-charcoal bg-white rounded-full shadow-[0_8px_24px_rgba(0,0,0,0.18)] whitespace-nowrap"
+          style={{
+            fontSize: "clamp(12px, 0.9vw, 14px)",
+            padding: "10px 22px",
+          }}
+        >
+          {usedLilies.size}/6 collected
+        </div>
+      </div>
     </div>
   );
 }
