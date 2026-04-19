@@ -22,41 +22,27 @@ export default function IntroModal({ onDismiss }) {
         className="relative z-10 w-full max-w-lg rounded-2xl bg-cream/95 backdrop-blur p-8 md:p-10 shadow-[0_30px_80px_rgba(0,0,0,0.35)]"
       >
         <h2
-          className="font-serif text-charcoal leading-tight"
-          style={{ fontSize: "clamp(1.5rem, 3vw, 2.25rem)" }}
+          className="font-serif text-charcoal leading-[1.05]"
+          style={{ fontSize: "clamp(1.75rem, 3.2vw, 2.5rem)" }}
         >
-          Welcome to <span className="italic">East Meets West</span>
+          231 prints. One painter.
         </h2>
+
         <p
-          className="mt-3 font-sans text-charcoal/80"
-          style={{ fontSize: "clamp(0.95rem, 1.4vw, 1.1rem)" }}
+          className="mt-5 font-serif text-charcoal/85 leading-relaxed"
+          style={{ fontSize: "clamp(0.98rem, 1.25vw, 1.1rem)", textWrap: "pretty" }}
         >
-          This gallery explores how Japanese Ukiyo-e prints shaped Claude
-          Monet&rsquo;s Water Lilies.
+          When Japan opened to the West in the 1850s, a flood of woodblock
+          prints reached Paris. Monet collected 231 of them. Their influence
+          shaped the way he painted it for the rest of his life.
         </p>
 
-        <div className="mt-6">
-          <p className="font-sans font-medium text-charcoal text-sm md:text-base mb-3">
-            How to explore:
-          </p>
-          <ul className="space-y-3 font-serif text-charcoal/85 text-sm md:text-base leading-relaxed">
-            <li>
-              Collect all <span className="font-semibold">6 pink water lilies</span>{" "}
-              floating beside the prints &mdash; each one reveals a story about
-              the connection between East and West and rotates the central
-              painting.
-            </li>
-            <li>
-              Click <span className="font-semibold">any painting or print</span>{" "}
-              to view it fullscreen with its title, artist, year, and
-              collection.
-            </li>
-            <li>
-              Drag the <span className="font-semibold">slider</span> at the
-              bottom of the screen to explore the gallery from side to side.
-            </li>
-          </ul>
-        </div>
+        <p
+          className="mt-4 font-serif italic text-charcoal/80 leading-relaxed"
+          style={{ fontSize: "clamp(0.98rem, 1.25vw, 1.1rem)", textWrap: "pretty" }}
+        >
+          Pick a lily to see how.
+        </p>
 
         <div className="mt-8 flex justify-end">
           <button
