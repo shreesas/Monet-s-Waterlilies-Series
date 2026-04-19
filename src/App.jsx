@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
+// eslint-disable-next-line no-unused-vars -- `AnimatePresence` is used in JSX; project eslint lacks jsx-uses-vars
+import { AnimatePresence } from "framer-motion";
 import EastMeetsWest from "./components/EastMeetsWest";
 import LilyMorph from "./components/LilyMorph";
+import HomeIntroModal from "./components/HomeIntroModal";
+
+const HOME_INTRO_DISMISSED_KEY = "home:introDismissed";
 
 // Tiny hash router: '#/east-meets-west' renders Screen 2; everything else
 // falls back to the original Screen 1. TODO: wire up navigation to screens
@@ -17,35 +22,21 @@ function useHashRoute() {
   return hash;
 }
 
-function HeroSection() {
-  return (
-    <section className="relative pt-5 md:pt-6 pb-4 px-4 text-center">
-      <h1
-        className="font-serif text-charcoal leading-[1.05]"
-        style={{ fontSize: "clamp(1.25rem, 2.6vw, 2.75rem)" }}
-      >
-        A garden. A pond. 30 years.
-      </h1>
-      <p
-        className="mt-2"
-        style={{ fontSize: "clamp(1.225rem, 2.1vw, 1.75rem)" }}
-      >
-        <span className="font-sans text-charcoal/85">
-          Exploring the shape of{" "}
-        </span>
-        <span className="font-serif italic text-charcoal/85">
-          Monet&rsquo;s obsession with water lilies
-        </span>
-      </p>
-    </section>
-  );
-}
-
 function ScreenOne() {
+  const [showIntro, setShowIntro] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      sessionStorage.getItem(HOME_INTRO_DISMISSED_KEY) !== "1"
+  );
+
+  const handleDismissIntro = () => {
+    sessionStorage.setItem(HOME_INTRO_DISMISSED_KEY, "1");
+    setShowIntro(false);
+  };
+
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-white">
-      <main className="relative z-10">
-        <HeroSection />
+    <div className="relative h-screen overflow-hidden bg-white flex flex-col">
+      <main className="relative z-10 flex-1 min-h-0">
         <LilyMorph />
       </main>
 
@@ -55,6 +46,10 @@ function ScreenOne() {
       >
         East Meets West &rarr;
       </a>
+
+      <AnimatePresence>
+        {showIntro && <HomeIntroModal onDismiss={handleDismissIntro} />}
+      </AnimatePresence>
     </div>
   );
 }
