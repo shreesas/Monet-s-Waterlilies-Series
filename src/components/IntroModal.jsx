@@ -25,7 +25,7 @@ export default function IntroModal({ onDismiss }) {
           className="font-serif text-charcoal leading-[1.05]"
           style={{ fontSize: "clamp(1.75rem, 3.2vw, 2.5rem)" }}
         >
-          231 prints. One painter.
+          East meets west
         </h2>
 
         <p
