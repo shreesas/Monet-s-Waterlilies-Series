@@ -1,0 +1,24 @@
+/* Leaflet circle marker overrides */
+.leaflet-interactive {
+  cursor: crosshair !important;
+}
+
+.leaflet-control-zoom {
+  border: none !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15) !important;
+}
+
+.leaflet-control-zoom a {
+  border-radius: 6px !important;
+  width: 30px !important;
+  height: 30px !important;
+  line-height: 30px !important;
+  font-size: 16px !important;
+}
+
+/* Hide leaflet attribution on mobile for cleaner look */
+.leaflet-control-attribution {
+  font-size: 8px !important;
+  background: rgba(255, 255, 255, 0.6) !important;
+  padding: 1px 4px !important;
+}

@@ -1,0 +1,50 @@
+---
+description: Always commit changes to git after meaningful edits
+alwaysApply: true
+---
+
+# Git Commit Workflow
+
+This repo uses git for version control so we can roll back / iterate easily.
+After making meaningful changes, the agent MUST create a git commit without
+waiting for the user to ask.
+
+## When to commit
+
+- After completing a logical unit of work (a feature, fix, refactor, etc.)
+- After the user confirms a change works (or after a clearly self-contained edit)
+- Before starting a substantially different task on top of existing changes
+
+Skip committing only for purely exploratory/no-op runs (no files changed) or
+when the user explicitly says not to commit.
+
+## How to commit
+
+1. Run `git status` and `git diff` to confirm what's staged/unstaged.
+2. Stage the relevant files (`git add <paths>`; avoid `git add .` if there
+   are unrelated artifacts laying around).
+3. Write a concise, conventional message focused on the *why*:
+   - `feat: add lily morph hover trigger`
+   - `fix: correct scatter layout overlap on small screens`
+   - `refactor: extract lightbox adapter logic`
+   - `chore: bump vite config caching`
+4. Use a HEREDOC for the message to preserve formatting:
+
+```bash
+git commit -m "$(cat <<'EOF'
+feat: short summary
+
+Optional body explaining the why, not the what.
+EOF
+)"
+```
+
+5. Never `git push` unless the user explicitly asks.
+6. Never `--amend` a commit that's already been pushed, and never force-push
+   to `main` without explicit confirmation.
+7. Never modify `.git/config` or skip hooks (`--no-verify`).
+
+## Secrets
+
+Do not commit `.env`, credentials, API keys, or anything that looks sensitive.
+Warn the user before staging such files.
