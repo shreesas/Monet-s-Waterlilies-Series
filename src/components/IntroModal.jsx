@@ -38,7 +38,7 @@ export default function IntroModal({ onDismiss }) {
         </p>
 
         <p
-          className="mt-4 font-sans italic text-charcoal/80 leading-relaxed"
+          className="mt-4 font-serif italic text-charcoal/80 leading-relaxed"
           style={{ fontSize: "clamp(0.98rem, 1.25vw, 1.1rem)", textWrap: "pretty" }}
         >
           Pick a lily to see how.
