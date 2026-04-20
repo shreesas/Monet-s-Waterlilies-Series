@@ -29,7 +29,7 @@ export default function IntroModal({ onDismiss }) {
         </h2>
 
         <p
-          className="mt-5 font-serif text-charcoal/85 leading-relaxed"
+          className="mt-5 font-sans text-charcoal/85 leading-relaxed"
           style={{ fontSize: "clamp(0.98rem, 1.25vw, 1.1rem)", textWrap: "pretty" }}
         >
           When Japan opened to the West in the 1850s, a flood of woodblock
@@ -38,7 +38,7 @@ export default function IntroModal({ onDismiss }) {
         </p>
 
         <p
-          className="mt-4 font-serif italic text-charcoal/80 leading-relaxed"
+          className="mt-4 font-sans italic text-charcoal/80 leading-relaxed"
           style={{ fontSize: "clamp(0.98rem, 1.25vw, 1.1rem)", textWrap: "pretty" }}
         >
           Pick a lily to see how.
