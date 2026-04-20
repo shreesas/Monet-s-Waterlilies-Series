@@ -4,6 +4,37 @@ const MANIFEST_URL = "/lily_morphs/manifest.json";
 const BASE = "/lily_morphs/";
 const DURATION_MS = 4000;
 
+const ANCHOR_META = [
+  { title: "Water Lilies", year: "1897\u20131898", collection: "Los Angeles County Museum of Art" },
+  { title: "The Lily Pond", year: "1899", collection: "National Gallery, London" },
+  { title: "Water-Lilies", year: "1903", collection: "Dayton Art Institute" },
+  { title: "Water Lilies", year: "1906", collection: "Art Institute of Chicago" },
+  { title: "Water-Lilies", year: "1907", collection: "Kawamura Memorial DIC Museum of Art, Sakura" },
+  { title: "Water-Lilies", year: "1915", collection: "Neue Pinakothek, Munich" },
+  { title: "Water Lilies", year: "1916", collection: "National Museum of Western Art, Tokyo" },
+  { title: "Water-Lilies", year: "1916\u20131919", collection: "Mus\u00e9e Marmottan Monet, Paris" },
+  { title: "Jardin d'eau \u00e0 Giverny", year: "1920", collection: "Mus\u00e9e de Grenoble" },
+  { title: "Water-Lily Pond, Evening", year: "1920\u20131926", collection: "Kunsthaus Z\u00fcrich" },
+];
+
+// Short, unique year labels shown beside each timeline dot. Drawn from the
+// start (or end) of each anchor's date range so every label is distinct and
+// monotonically increases — makes the progression legible at a glance.
+const TIMELINE_YEARS = [
+  "1897",
+  "1899",
+  "1903",
+  "1906",
+  "1907",
+  "1915",
+  "1916",
+  "1919",
+  "1920",
+  "1926",
+];
+
+const TIMELINE_ACTIVE_COLOR = "#86B89A";
+
 const ANCHOR_DESCRIPTIONS = [
   "Monet didn't just paint a garden, he built one. He diverted a river, dug a pond, and built a Japanese bridge, inspired by the 231 ukiyo-e woodblock prints hanging on his walls at Giverny. These early paintings are the first record of what that pond looked like.",
   "At 59, Monet painted 18 views of this Japanese bridge in a single summer. Eight gardeners and a full-time pond keeper maintained his living canvas. The lilies became the subject.",
@@ -14,7 +45,7 @@ const ANCHOR_DESCRIPTIONS = [
   "War came to Giverny in 1914. Neighbors fled; his stepson fought at the front. Monet stayed and kept painting. The colors in these wartime canvases grow heavier and more turbulent, the pond absorbing what was happening just beyond its banks.",
   "During the war years, Monet painted weeping willows over the pond as elegies for the fallen. In French tradition the weeping willow has long been a symbol of grief, planted in cemeteries, worn at funerals. Monet grew them at the pond's edge and let them fall into the painting.",
   "By 1920, Monet was destroying as many canvases as he kept. He had built this garden with his own hands, knew every inch of it, yet still felt he was failing to capture it. Some days he painted in despair. Some days he slashed the canvas. The pond remained but the painter was losing his grip on it.",
-  "Cataracts had turned Monet's world red and yellow, this burning canvas is what he saw. Surgery in 1923 restored his sight, but he then repainted these canvases in a panic, correcting colours he could finally see again. He died at 86 in 1926, still retouching. The Orangerie opened five months later.",
+  "Cataracts had turned Monet's world red and yellow, this burning canvas is what he saw. Surgery in 1923 restored his sight, but he then repainted these canvases in a panic, correcting colours he could finally see again. He died at 86 in 1926, still retouching.",
 ];
 
 // Glue the final two words of each description with a non-breaking space so
@@ -47,7 +78,7 @@ export default function LilyMorph() {
 
   // Load manifest and preload all 225 frames in parallel. Each frame's
   // HTMLImageElement is kept on the transitions structure so playback
-  // is just `imgRef.current.src = frame.img.src` per rAF tick — no
+  // is just `imgRef.current.src = frame.img.src` per rAF tick - no
   // network or decode latency once preloading completes.
   useEffect(() => {
     let cancelled = false;
@@ -92,9 +123,6 @@ export default function LilyMorph() {
     };
   }, []);
 
-  // Anchors: first frame of transition 0, then last frame of every
-  // transition. transitions[i].frames[24] is byte-identical to
-  // transitions[i+1].frames[0] per the README, so either is fine.
   const anchors = useMemo(() => {
     if (!transitions || !transitions.length) return [];
     const out = [{ value: transitions[0].info.start_index, frame: transitions[0].frames[0] }];
@@ -105,8 +133,6 @@ export default function LilyMorph() {
     return out;
   }, [transitions]);
 
-  // Idle state: whenever anchorIdx changes (and on first load), pin the
-  // visible <img> to that anchor's source.
   useEffect(() => {
     if (!anchors.length || !imgRef.current) return;
     if (animatingRef.current) return;
@@ -144,14 +170,44 @@ export default function LilyMorph() {
     const trIdx = dir > 0 ? current : current - 1;
     const tr = transitions[trIdx];
     const frames = dir > 0 ? tr.frames : [...tr.frames].reverse();
-    playFrames(frames, () => setAnchorIdx(target));
+    // Commit the new anchor index up front so the right-column metadata and
+    // description swap as soon as the morph starts. The image-update effect
+    // bails out while animatingRef is true, so the playing frames aren't
+    // disturbed by this state change.
+    anchorIdxRef.current = target;
+    setAnchorIdx(target);
+    playFrames(frames, () => {});
+  }
+
+  // Pagination dots: morph if neighbour, snap if farther (replaying every
+  // transition would take 4s * N which would feel broken).
+  function jumpTo(target) {
+    if (animatingRef.current || !transitions) return;
+    const current = anchorIdxRef.current;
+    if (target === current) return;
+    if (target < 0 || target >= anchors.length) return;
+    if (Math.abs(target - current) === 1) {
+      step(target > current ? +1 : -1);
+      return;
+    }
+    setAnchorIdx(target);
   }
 
   useEffect(() => {
     function onKey(e) {
       if (animatingRef.current) return;
-      if (e.key === "ArrowRight" || e.key === "ArrowDown") step(+1);
-      else if (e.key === "ArrowLeft" || e.key === "ArrowUp") step(-1);
+      if (
+        e.key === "ArrowRight" ||
+        e.key === "ArrowDown" ||
+        e.key === "PageDown"
+      )
+        step(+1);
+      else if (
+        e.key === "ArrowLeft" ||
+        e.key === "ArrowUp" ||
+        e.key === "PageUp"
+      )
+        step(-1);
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -161,8 +217,7 @@ export default function LilyMorph() {
   // instead of moving the page. Trackpad inertia can fire wheel events for
   // several hundred ms after a swipe ends, so we (a) ignore everything while
   // a morph is playing and (b) keep a 700ms cooldown after each transition
-  // commits to swallow the trailing inertia tail. Touchpad/mouse-wheel only;
-  // touchscreen swipes go through the buttons.
+  // commits to swallow the trailing inertia tail.
   useEffect(() => {
     let lastFire = 0;
     const COOLDOWN_MS = 700;
@@ -183,118 +238,203 @@ export default function LilyMorph() {
   const preloadDone = totalCount > 0 && loadedCount >= totalCount;
 
   return (
-    <section className="pt-4 pb-10">
-      <div
-        className="relative w-full overflow-hidden mx-auto flex items-center justify-center"
-        style={{
-          aspectRatio: "1024 / 576",
-          maxHeight: "calc(100vh - 280px)",
-        }}
+    <section className="h-full w-full flex flex-col lg:grid lg:grid-cols-[96px_1fr_22%] xl:grid-cols-[112px_1fr_20%] lg:grid-rows-[auto_minmax(0,1fr)]">
+      {/* TOP: title + subtitle — sits above the painting column only on desktop */}
+      <header className="order-1 lg:order-none lg:col-start-2 lg:col-end-3 lg:row-start-1 px-4 pt-6 md:pt-8 pb-3 text-center shrink-0">
+        <h1
+          className="font-serif text-charcoal leading-[1.05]"
+          style={{ fontSize: "clamp(1.75rem, 2.6vw, 2.75rem)" }}
+        >
+          A garden. A pond. 30 years.
+        </h1>
+        <p
+          className="mt-2"
+          style={{ fontSize: "clamp(1.05rem, 1.4vw, 1.4rem)" }}
+        >
+          <span className="font-sans text-charcoal/85">
+            Exploring the shape of{" "}
+          </span>
+          <span className="font-serif italic text-charcoal/85">
+            Monet&rsquo;s obsession with water lilies
+          </span>
+        </p>
+      </header>
+
+      {/* DESKTOP: vertical year timeline on the far left.
+          Spans both grid rows so it runs from the top of the screen down to
+          the bottom. Each item = [year label, dot, connecting line-segment].
+          The last item omits the trailing line. Items share vertical space
+          evenly via flex-1, producing uniformly spaced dots regardless of
+          anchor count. */}
+      <aside
+        className="hidden lg:flex lg:col-start-1 lg:row-start-1 lg:row-end-3 flex-col items-stretch py-10 px-2 xl:px-3"
+        aria-label="Timeline"
       >
+        {TIMELINE_YEARS.map((year, i) => {
+          const isLast = i === TIMELINE_YEARS.length - 1;
+          const isActive = i === anchorIdx;
+          return (
+            <div
+              key={i}
+              className={`${isLast ? "" : "flex-1"} flex flex-col items-center`}
+            >
+              <button
+                type="button"
+                aria-label={`Go to painting ${i + 1}, ${year}`}
+                aria-current={isActive ? "true" : undefined}
+                onClick={() => jumpTo(i)}
+                disabled={!ready || animating}
+                className="flex flex-col items-center gap-1.5 px-2 py-1 rounded group disabled:cursor-not-allowed"
+              >
+                <span
+                  className={`font-sans font-medium text-xs tabular-nums transition-colors ${
+                    isActive
+                      ? "text-charcoal"
+                      : "text-charcoal/40 group-hover:text-charcoal/70"
+                  }`}
+                >
+                  {year}
+                </span>
+                <span
+                  className="block rounded-full transition-all"
+                  style={{
+                    width: isActive ? 10 : 7,
+                    height: isActive ? 10 : 7,
+                    backgroundColor: isActive
+                      ? TIMELINE_ACTIVE_COLOR
+                      : `${TIMELINE_ACTIVE_COLOR}55`,
+                  }}
+                />
+              </button>
+              {!isLast && (
+                <div className="w-px flex-1 bg-charcoal/15 my-1" aria-hidden="true" />
+              )}
+            </div>
+          );
+        })}
+      </aside>
+
+      {/* MOBILE: compact horizontal pagination (chevron / dots / chevron).
+          Hidden at lg+ because the vertical timeline takes over. */}
+      <div className="order-3 lg:hidden flex flex-row items-center justify-center gap-1 shrink-0 px-4 py-3">
+        <button
+          type="button"
+          aria-label="Previous painting"
+          onClick={() => step(-1)}
+          disabled={!ready || anchorIdx === 0 || animating}
+          className="w-9 h-9 flex items-center justify-center rounded-full text-charcoal/70 hover:text-charcoal hover:bg-charcoal/5 transition-colors disabled:opacity-25 disabled:pointer-events-none"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
+        <div className="flex flex-row items-center gap-0.5 py-1">
+          {Array.from({ length: anchors.length || 10 }).map((_, k) => {
+            const isActive = k === anchorIdx;
+            return (
+              <button
+                key={k}
+                type="button"
+                aria-label={`Go to painting ${k + 1}`}
+                aria-current={isActive ? "true" : undefined}
+                onClick={() => jumpTo(k)}
+                disabled={!ready || animating}
+                className="p-1.5 group disabled:cursor-not-allowed"
+              >
+                <span
+                  className="block rounded-full transition-all"
+                  style={{
+                    width: isActive ? 9 : 6,
+                    height: isActive ? 9 : 6,
+                    backgroundColor: isActive
+                      ? TIMELINE_ACTIVE_COLOR
+                      : `${TIMELINE_ACTIVE_COLOR}55`,
+                  }}
+                />
+              </button>
+            );
+          })}
+        </div>
+        <button
+          type="button"
+          aria-label="Next painting"
+          onClick={() => step(+1)}
+          disabled={!ready || anchorIdx >= anchors.length - 1 || animating}
+          className="w-9 h-9 flex items-center justify-center rounded-full text-charcoal/70 hover:text-charcoal hover:bg-charcoal/5 transition-colors disabled:opacity-25 disabled:pointer-events-none"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
+      </div>
+
+      {/* MIDDLE: morph painting */}
+      <div className="order-2 lg:order-none lg:col-start-2 lg:row-start-2 lg:min-w-0 relative min-h-[40vh] lg:min-h-0">
         <img
           ref={imgRef}
           alt=""
-          className="block w-full h-full object-contain"
+          className="absolute inset-0 w-full h-full object-contain"
         />
+
         {!ready && !error && (
-          <div className="absolute inset-0 flex items-center justify-center text-charcoal/50 font-sans text-sm bg-white">
+          <div className="absolute inset-0 flex items-center justify-center text-charcoal/50 font-sans text-sm">
             loading…
           </div>
         )}
         {error && (
-          <div className="absolute inset-0 flex items-center justify-center text-red-700 font-sans text-sm bg-white px-6 text-center">
+          <div className="absolute inset-0 flex items-center justify-center text-red-700 font-sans text-sm px-6 text-center">
             Couldn’t load morph frames: {error}
           </div>
         )}
       </div>
 
-      <div className="px-4 md:px-16 lg:px-24">
-        <div className="mt-5 mx-auto max-w-3xl text-center">
+      {/* RIGHT: per-anchor metadata + description */}
+      <div className="order-4 lg:order-none lg:col-start-3 lg:row-start-2 flex flex-col justify-center px-6 md:px-10 lg:px-6 xl:px-8 py-8 lg:py-0">
+        <div className="max-w-prose">
+          <div className="mb-5 font-sans">
+            <p className="text-charcoal font-medium leading-tight" style={{ fontSize: "clamp(15px, 1.15vw, 19px)" }}>
+              {ANCHOR_META[anchorIdx].title}
+              <span className="text-charcoal/55 font-normal">, {ANCHOR_META[anchorIdx].year}</span>
+            </p>
+            <p className="mt-1 text-charcoal/55" style={{ fontSize: "clamp(12px, 0.9vw, 14px)" }}>
+              {ANCHOR_META[anchorIdx].collection}
+            </p>
+          </div>
+
           <p
             className="font-serif italic text-charcoal/80 leading-relaxed"
             style={{
-              fontSize: "clamp(15px, 1.4vw, 19px)",
+              fontSize: "clamp(15px, 1.2vw, 20px)",
               textWrap: "pretty",
             }}
           >
             {avoidWidow(ANCHOR_DESCRIPTIONS[anchorIdx])}
           </p>
-        </div>
 
-        <div className="mt-5 flex items-center justify-center gap-5">
-          <button
-            type="button"
-            aria-label="Previous painting (or scroll up)"
-            onClick={() => step(-1)}
-            disabled={!ready || anchorIdx === 0 || animating}
-            className="w-11 h-11 flex items-center justify-center bg-charcoal text-cream rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.18)] hover:bg-charcoal/85 transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-charcoal"
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
+          {/* Advance to next painting. Sits directly under the description so
+              the primary "read this, then move on" gesture lives in a single
+              column. Disabled (not hidden) at the last anchor so the layout
+              doesn't jump on the final step. */}
+          <div className="mt-6 flex justify-start">
+            <button
+              type="button"
+              onClick={() => step(+1)}
+              disabled={!ready || animating || anchorIdx >= anchors.length - 1}
+              aria-label="Next painting"
+              className="w-11 h-11 flex items-center justify-center rounded-full border border-charcoal/25 text-charcoal/70 hover:text-charcoal hover:border-charcoal/60 hover:bg-charcoal/5 transition-colors disabled:opacity-25 disabled:pointer-events-none"
             >
-              <polyline points="18 15 12 9 6 15" />
-            </svg>
-          </button>
-
-          <div className="flex items-center gap-2">
-            {Array.from({ length: anchors.length || 10 }).map((_, k) => (
-              <span
-                key={k}
-                className="block rounded-full transition-all"
-                style={{
-                  width: k === anchorIdx ? 10 : 6,
-                  height: k === anchorIdx ? 10 : 6,
-                  backgroundColor:
-                    k === anchorIdx
-                      ? "rgba(45,45,45,0.85)"
-                      : k < anchorIdx
-                      ? "rgba(45,45,45,0.4)"
-                      : "rgba(45,45,45,0.18)",
-                }}
-              />
-            ))}
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
           </div>
 
-          <button
-            type="button"
-            aria-label="Next painting (or scroll down)"
-            onClick={() => step(+1)}
-            disabled={!ready || anchorIdx >= anchors.length - 1 || animating}
-            className="w-11 h-11 flex items-center justify-center bg-charcoal text-cream rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.18)] hover:bg-charcoal/85 transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-charcoal"
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </button>
+          {totalCount > 0 && !preloadDone && (
+            <p className="mt-4 font-sans text-xs text-charcoal/40 tabular-nums">
+              preloading {loadedCount} / {totalCount} frames
+            </p>
+          )}
         </div>
-
-        <p className="mt-3 text-center font-sans text-[11px] uppercase tracking-[0.18em] text-charcoal/40">
-          scroll or use arrows to advance
-        </p>
-
-        {totalCount > 0 && !preloadDone && (
-          <p className="mt-2 text-center font-sans text-xs text-charcoal/40 tabular-nums">
-            preloading {loadedCount} / {totalCount} frames
-          </p>
-        )}
       </div>
     </section>
   );
