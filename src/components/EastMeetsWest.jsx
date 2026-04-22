@@ -319,8 +319,13 @@ export default function EastMeetsWest() {
               ? LILY_IMAGES[block.textIndex] || lily1
               : null;
 
+            // Vertical breathing room between rows. Text-bearing rows
+            // are taller (lily + revealed paragraph stack below the
+            // print), so we give them a noticeably larger gap to keep
+            // each block's content from crowding the next print.
+            const rowGap = hasText ? "7vh" : "4vh";
             const rowMargin = {
-              marginTop: i === 0 ? "1vh" : "4vh",
+              marginTop: i === 0 ? "1vh" : rowGap,
               marginBottom: i === PRINT_BLOCKS.length - 1 ? "1vh" : "0",
             };
 
@@ -352,77 +357,30 @@ export default function EastMeetsWest() {
               );
             }
 
-            // Mobile fallback: keep the centred print → lily → text
-            // stack we had before. The right column on small screens
-            // is too narrow to host a side-by-side scatter without
-            // crushing one or both halves.
-            if (isMobile) {
-              return (
-                <div
-                  key={block.id}
-                  className={`flex flex-col items-center gap-3 ${
-                    block.align === "left" ? "self-start" : "self-end"
-                  }`}
-                  style={{
-                    maxWidth: "70%",
-                    paddingLeft: block.align === "left" ? "2vw" : "0",
-                    paddingRight: block.align === "right" ? "2vw" : "0",
-                    ...rowMargin,
-                  }}
-                >
-                  <ScatteredPrint
-                    flow
-                    src={src}
-                    alt={entry?.title || block.id}
-                    maxSize={printMaxSize}
-                    onSelect={() => openPrintLightbox(block.id)}
-                  />
-                  <LilyTrigger
-                    flow
-                    src={lilyImg}
-                    size={lilySize}
-                    used={usedLilies.has(block.textIndex)}
-                    onSelect={() =>
-                      handleLilyClick({
-                        id: block.textIndex,
-                        textIndex: block.textIndex,
-                      })
-                    }
-                  />
-                  <InfoBlock
-                    flow
-                    text={INFO_BLOCKS[block.textIndex]}
-                    visible={revealedTexts.has(block.textIndex)}
-                  />
-                </div>
-              );
-            }
-
-            // Desktop: place the lily + revealed text on the side
-            // OPPOSITE the print so they share a horizontal row
-            // without overlapping any print. Per-lily scatter
-            // values (vertical drop + horizontal nudge) give each
-            // pair its own position so the lilies feel sprinkled
-            // around the right frame instead of marching in a line.
-            const LILY_SCATTER = [
-              { offsetTop: "1vh",  sideShift: "1.5vw" },
-              { offsetTop: "8vh",  sideShift: "0.5vw" },
-              { offsetTop: "4vh",  sideShift: "2vw" },
-              { offsetTop: "12vh", sideShift: "1vw" },
-              { offsetTop: "2vh",  sideShift: "2.5vw" },
-              { offsetTop: "10vh", sideShift: "0.75vw" },
-            ];
-            const scatter =
-              LILY_SCATTER[block.textIndex] ||
-              { offsetTop: "0", sideShift: "0" };
-
-            const printColumn = (
+            // Text-bearing row: stack the print, lily trigger, and
+            // revealed description in a single column hugged to the
+            // row's assigned side. We deliberately avoid a
+            // side-by-side print/text split because the right
+            // scroll area (~48vw on desktop) isn't wide enough to
+            // host both at the homepage's description font size
+            // (15–20px) without the paragraph either overlapping
+            // the print on its inside edge or spilling off the
+            // viewport on its outside edge. Stacking lets the
+            // paragraph use the full column width for wrapping.
+            return (
               <div
-                className="flex flex-col items-center"
+                key={block.id}
+                className={`flex flex-col items-center gap-3 ${
+                  block.align === "left" ? "self-start" : "self-end"
+                }`}
                 style={{
-                  maxWidth: "55%",
+                  // Wider column than decorative rows so the bigger
+                  // description type wraps to comfortable line
+                  // lengths instead of laddering down at ~12 chars.
+                  maxWidth: isMobile ? "85%" : "60%",
                   paddingLeft: block.align === "left" ? "2vw" : "0",
                   paddingRight: block.align === "right" ? "2vw" : "0",
+                  ...rowMargin,
                 }}
               >
                 <ScatteredPrint
@@ -432,21 +390,6 @@ export default function EastMeetsWest() {
                   maxSize={printMaxSize}
                   onSelect={() => openPrintLightbox(block.id)}
                 />
-              </div>
-            );
-
-            const lilyColumn = (
-              <div
-                className="flex flex-col items-center gap-3"
-                style={{
-                  maxWidth: "42%",
-                  marginTop: scatter.offsetTop,
-                  paddingLeft:
-                    block.align === "right" ? scatter.sideShift : "0",
-                  paddingRight:
-                    block.align === "left" ? scatter.sideShift : "0",
-                }}
-              >
                 <LilyTrigger
                   flow
                   src={lilyImg}
@@ -464,26 +407,6 @@ export default function EastMeetsWest() {
                   text={INFO_BLOCKS[block.textIndex]}
                   visible={revealedTexts.has(block.textIndex)}
                 />
-              </div>
-            );
-
-            return (
-              <div
-                key={block.id}
-                className="flex w-full justify-between items-start"
-                style={rowMargin}
-              >
-                {block.align === "left" ? (
-                  <>
-                    {printColumn}
-                    {lilyColumn}
-                  </>
-                ) : (
-                  <>
-                    {lilyColumn}
-                    {printColumn}
-                  </>
-                )}
               </div>
             );
           })}

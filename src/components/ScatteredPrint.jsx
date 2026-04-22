@@ -6,12 +6,17 @@
 // auto), so the image's longer dimension always equals `maxSize`. That means
 // the WIDTH of a horizontal/landscape print equals the HEIGHT of a vertical/
 // portrait print, regardless of orientation.
+//
+// `flow` switches the print from absolute-positioned (legacy scatter) to
+// document-flow (used inside the vertical scroll column). When `flow` is
+// true `style` is ignored — the parent flex column controls placement.
 export default function ScatteredPrint({
   src,
   alt,
   style,
   maxSize,
   onSelect,
+  flow = false,
 }) {
   return (
     <img
@@ -19,14 +24,16 @@ export default function ScatteredPrint({
       alt={alt}
       draggable={false}
       onClick={onSelect}
-      className="absolute cursor-pointer select-none museum-frame-sm"
+      className={`cursor-pointer select-none museum-frame-sm ${
+        flow ? "block" : "absolute"
+      }`}
       style={{
-        ...style,
+        ...(flow ? {} : style),
         maxWidth: maxSize,
         maxHeight: maxSize,
         width: "auto",
         height: "auto",
-        transform: "translate(-50%, -50%)",
+        ...(flow ? {} : { transform: "translate(-50%, -50%)" }),
       }}
     />
   );

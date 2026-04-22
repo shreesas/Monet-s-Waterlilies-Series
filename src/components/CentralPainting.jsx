@@ -1,53 +1,65 @@
-// eslint-disable-next-line no-unused-vars -- `motion` is used as <motion.div>; project eslint lacks jsx-uses-vars
+// eslint-disable-next-line no-unused-vars -- `motion` is used as <motion.img>; project eslint lacks jsx-uses-vars
 import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
 
-// The Monet painting. Anchored to the viewport (parent is a
-// `fixed inset-0` wrapper in EastMeetsWest) so it stays put while the
-// pannable canvas of prints/lilies/texts slides behind it. The parent
-// wrapper is pointer-events-none so clicks pass through to the canvas
-// behind; we re-enable pointer-events on this bounding box so the
-// painting itself can still be clicked.
+// The Monet painting, rendered as a single image slab. No frame, no
+// glass effect — the painting fills its own slab edge-to-edge and
+// the parent component is responsible for placing/centring it.
 //
-// All positioning (top/left/transform/etc.) is supplied by the caller via
-// `style`. The frame size is fixed by `width` and `height` props — the
-// img fills that frame using `object-cover`, so it crops to fit instead
-// of letterboxing. This lets us guarantee a constant 40vw × 100vh slab
-// on the left of the screen regardless of the underlying painting's
-// aspect ratio.
-//
-// No frame: the painting sits raw on the page (no museum-frame border),
-// flush with whatever bounding box the caller positions it in.
+// Sizing: the slab grows to match the painting's *natural* aspect at
+// the supplied `height`, capped at `maxWidth` so it never crowds the
+// scattered prints. The slab's aspect is locked to the FIRST painting
+// loaded so the box doesn't reshape when the user clicks through
+// subsequent paintings (those are cropped to fit via `object-cover`).
 export default function CentralPainting({
   painting,
-  style,
-  width,
   height,
+  maxWidth,
   onSelect,
 }) {
+  const [aspect, setAspect] = useState(null);
+
+  useEffect(() => {
+    if (aspect !== null) return; // already locked; never re-measure
+    if (!painting?.image_url) return;
+    const probe = new Image();
+    probe.onload = () => {
+      if (probe.naturalWidth && probe.naturalHeight) {
+        setAspect(probe.naturalWidth / probe.naturalHeight);
+      }
+    };
+    probe.src = painting.image_url;
+  }, [aspect, painting?.image_url]);
+
   if (!painting) return null;
 
+  // Sensible portrait fallback so the slab renders before the first
+  // measurement comes back, then locks to the first painting's aspect.
+  const lockedAspect = aspect ?? 0.78;
+  const slabWidth = `min(${maxWidth}, calc(${lockedAspect} * ${height}))`;
+
   return (
-    // Default `sync` mode (no `mode` prop) keeps BOTH the outgoing and
-    // incoming children mounted simultaneously while they animate, which
-    // is exactly what we need for a smooth crossfade dissolve.
-    <AnimatePresence>
-      <motion.div
-        key={painting.catalog_number}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 1.4, ease: "easeInOut" }}
-        className="absolute pointer-events-auto cursor-pointer overflow-hidden"
-        style={{ ...style, width, height }}
-        onClick={onSelect}
-      >
-        <img
+    <div
+      className="relative pointer-events-auto cursor-pointer overflow-hidden"
+      style={{
+        width: slabWidth,
+        height,
+      }}
+      onClick={onSelect}
+    >
+      <AnimatePresence>
+        <motion.img
+          key={painting.catalog_number}
           src={painting.image_url}
           alt={painting.alt_text || painting.title}
           draggable={false}
-          className="block w-full h-full object-cover select-none"
+          className="absolute inset-0 block w-full h-full select-none object-cover"
+          initial={aspect === null ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.4, ease: "easeInOut" }}
         />
-      </motion.div>
-    </AnimatePresence>
+      </AnimatePresence>
+    </div>
   );
 }

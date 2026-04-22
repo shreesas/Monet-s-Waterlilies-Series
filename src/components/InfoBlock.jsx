@@ -10,16 +10,17 @@ export default function InfoBlock({ text, visible, style, flow = false }) {
   if (flow) {
     return (
       <div
-        className="relative"
-        style={{ width: "min(260px, 22vw)" }}
+        className="relative w-full"
+        style={{ maxWidth: "min(520px, 100%)" }}
       >
         <motion.p
           initial={false}
           animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 8 }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="font-serif text-charcoal text-center leading-snug"
+          className="font-serif italic text-charcoal/80 text-center leading-relaxed"
           style={{
-            fontSize: "clamp(0.72rem, 0.95vw, 0.92rem)",
+            fontSize: "clamp(15px, 1.2vw, 20px)",
+            textWrap: "pretty",
             // Keep the text laid out (and therefore measured) even
             // when invisible, so the column never re-flows on reveal.
             visibility: "visible",
@@ -39,7 +40,7 @@ export default function InfoBlock({ text, visible, style, flow = false }) {
       style={{
         ...style,
         transform: "translate(-50%, 0)",
-        width: "min(260px, 22vw)",
+        width: "min(420px, 32vw)",
       }}
     >
       <AnimatePresence>
@@ -49,8 +50,11 @@ export default function InfoBlock({ text, visible, style, flow = false }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="font-serif text-charcoal text-center leading-snug"
-            style={{ fontSize: "clamp(0.72rem, 0.95vw, 0.92rem)" }}
+            className="font-serif italic text-charcoal/80 text-center leading-relaxed"
+            style={{
+              fontSize: "clamp(15px, 1.2vw, 20px)",
+              textWrap: "pretty",
+            }}
           >
             {text}
           </motion.p>

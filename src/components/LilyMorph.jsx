@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 const MANIFEST_URL = "/lily_morphs/manifest.json";
 const BASE = "/lily_morphs/";
@@ -35,6 +35,11 @@ const TIMELINE_YEARS = [
 
 const TIMELINE_ACTIVE_COLOR = "#86B89A";
 
+// Fixed vertical slot for each timeline item. The timeline container slides
+// up/down so the active item's slot lines up with the painting title in the
+// right-side text column. See the `titleY` measurement below.
+const TIMELINE_ITEM_HEIGHT = 72;
+
 const ANCHOR_DESCRIPTIONS = [
   "Monet didn't just paint a garden, he built one. He diverted a river, dug a pond, and built a Japanese bridge, inspired by the 231 ukiyo-e woodblock prints hanging on his walls at Giverny. These early paintings are the first record of what that pond looked like.",
   "At 59, Monet painted 18 views of this Japanese bridge in a single summer. Eight gardeners and a full-time pond keeper maintained his living canvas. The lilies became the subject.",
@@ -68,6 +73,15 @@ export default function LilyMorph() {
   const imgRef = useRef(null);
   const animatingRef = useRef(false);
   const anchorIdxRef = useRef(0);
+
+  // Refs + state for aligning the timeline with the painting title in the
+  // right-side text column. `titleY` is the vertical center of the title
+  // measured in the aside's local coordinate space; the timeline container
+  // translates by `(titleY - (i+0.5)*ITEM_HEIGHT)` so item `i` lands on that
+  // line.
+  const asideRef = useRef(null);
+  const titleRef = useRef(null);
+  const [titleY, setTitleY] = useState(null);
 
   useEffect(() => {
     animatingRef.current = animating;
@@ -138,6 +152,31 @@ export default function LilyMorph() {
     if (animatingRef.current) return;
     imgRef.current.src = anchors[anchorIdx].frame.img.src;
   }, [anchors, anchorIdx]);
+
+  // Measure the vertical position of the painting title (in the right-side
+  // text column) relative to the timeline aside, so we can slide the timeline
+  // to put the active year right next to the title. Runs:
+  //   - on anchor change (title text swaps, which may change its height/pos)
+  //   - on window resize and any size change of aside/title (via ResizeObserver,
+  //     which also catches late font loads and content reflow)
+  useLayoutEffect(() => {
+    function update() {
+      if (!titleRef.current || !asideRef.current) return;
+      const asideRect = asideRef.current.getBoundingClientRect();
+      const titleRect = titleRef.current.getBoundingClientRect();
+      if (asideRect.height === 0 || titleRect.height === 0) return;
+      setTitleY(titleRect.top + titleRect.height / 2 - asideRect.top);
+    }
+    update();
+    const ro = new ResizeObserver(update);
+    if (asideRef.current) ro.observe(asideRef.current);
+    if (titleRef.current) ro.observe(titleRef.current);
+    window.addEventListener("resize", update);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, [anchorIdx]);
 
   function playFrames(frames, onDone) {
     setAnimating(true);
@@ -238,9 +277,9 @@ export default function LilyMorph() {
   const preloadDone = totalCount > 0 && loadedCount >= totalCount;
 
   return (
-    <section className="h-full w-full flex flex-col lg:grid lg:grid-cols-[96px_1fr_22%] xl:grid-cols-[112px_1fr_20%] lg:grid-rows-[auto_minmax(0,1fr)]">
+    <section className="h-full w-full flex flex-col lg:grid lg:grid-cols-[1fr_96px_22%] xl:grid-cols-[1fr_112px_20%] lg:grid-rows-[auto_minmax(0,1fr)]">
       {/* TOP: title + subtitle — sits above the painting column only on desktop */}
-      <header className="order-1 lg:order-none lg:col-start-2 lg:col-end-3 lg:row-start-1 px-4 pt-6 md:pt-8 pb-3 text-center shrink-0">
+      <header className="order-1 lg:order-none lg:col-start-1 lg:col-end-2 lg:row-start-1 px-4 pt-6 md:pt-8 pb-3 text-center shrink-0">
         <h1
           className="font-serif text-charcoal leading-[1.05]"
           style={{ fontSize: "clamp(1.75rem, 2.6vw, 2.75rem)" }}
@@ -260,58 +299,75 @@ export default function LilyMorph() {
         </p>
       </header>
 
-      {/* DESKTOP: vertical year timeline on the far left.
-          Spans both grid rows so it runs from the top of the screen down to
-          the bottom. Each item = [year label, dot, connecting line-segment].
-          The last item omits the trailing line. Items share vertical space
-          evenly via flex-1, producing uniformly spaced dots regardless of
-          anchor count. */}
+      {/* DESKTOP: vertical year timeline next to the painting.
+          A single continuous vertical line runs top-to-bottom behind the
+          aside (stationary). The year-dot strip sits in front and slides
+          vertically so the active year lines up with the painting title in
+          the right-side text column. Items that slide off the top/bottom of
+          the aside are clipped by overflow-hidden. */}
       <aside
-        className="hidden lg:flex lg:col-start-1 lg:row-start-1 lg:row-end-3 flex-col items-stretch py-10 px-2 xl:px-3"
+        ref={asideRef}
+        className="hidden lg:block lg:col-start-2 lg:row-start-1 lg:row-end-3 relative overflow-hidden px-2 xl:px-3"
         aria-label="Timeline"
       >
-        {TIMELINE_YEARS.map((year, i) => {
-          const isLast = i === TIMELINE_YEARS.length - 1;
-          const isActive = i === anchorIdx;
-          return (
-            <div
-              key={i}
-              className={`${isLast ? "" : "flex-1"} flex flex-col items-center`}
-            >
-              <button
-                type="button"
-                aria-label={`Go to painting ${i + 1}, ${year}`}
-                aria-current={isActive ? "true" : undefined}
-                onClick={() => jumpTo(i)}
-                disabled={!ready || animating}
-                className="flex flex-col items-center gap-1.5 px-2 py-1 rounded group disabled:cursor-not-allowed"
+        {/* Stationary, always-visible vertical line — gives the timeline a
+            continuous spine no matter where the dots translate to. */}
+        <div
+          className="pointer-events-none absolute top-0 bottom-0 left-1/2 w-px -translate-x-1/2 bg-charcoal/15"
+          aria-hidden="true"
+        />
+
+        {/* Sliding year-dot strip. Each slot is a fixed height so the math
+            for aligning slot `i` to `titleY` is a clean linear translate. */}
+        <div
+          className="absolute inset-x-0 top-0 flex flex-col items-stretch transition-transform duration-500 ease-out"
+          style={{
+            transform:
+              titleY !== null
+                ? `translateY(${titleY - (anchorIdx + 0.5) * TIMELINE_ITEM_HEIGHT}px)`
+                : `translateY(calc(50% - ${(anchorIdx + 0.5) * TIMELINE_ITEM_HEIGHT}px))`,
+          }}
+        >
+          {TIMELINE_YEARS.map((year, i) => {
+            const isActive = i === anchorIdx;
+            return (
+              <div
+                key={i}
+                className="relative flex flex-col items-center justify-center"
+                style={{ height: TIMELINE_ITEM_HEIGHT }}
               >
-                <span
-                  className={`font-sans font-medium text-xs tabular-nums transition-colors ${
-                    isActive
-                      ? "text-charcoal"
-                      : "text-charcoal/40 group-hover:text-charcoal/70"
-                  }`}
+                <button
+                  type="button"
+                  aria-label={`Go to painting ${i + 1}, ${year}`}
+                  aria-current={isActive ? "true" : undefined}
+                  onClick={() => jumpTo(i)}
+                  disabled={!ready || animating}
+                  className="relative z-10 flex flex-col items-center gap-1.5 px-2 py-1 rounded group disabled:cursor-not-allowed bg-white"
                 >
-                  {year}
-                </span>
-                <span
-                  className="block rounded-full transition-all"
-                  style={{
-                    width: isActive ? 10 : 7,
-                    height: isActive ? 10 : 7,
-                    backgroundColor: isActive
-                      ? TIMELINE_ACTIVE_COLOR
-                      : `${TIMELINE_ACTIVE_COLOR}55`,
-                  }}
-                />
-              </button>
-              {!isLast && (
-                <div className="w-px flex-1 bg-charcoal/15 my-1" aria-hidden="true" />
-              )}
-            </div>
-          );
-        })}
+                  <span
+                    className={`font-sans font-medium text-xs tabular-nums transition-colors ${
+                      isActive
+                        ? "text-charcoal"
+                        : "text-charcoal/40 group-hover:text-charcoal/70"
+                    }`}
+                  >
+                    {year}
+                  </span>
+                  <span
+                    className="block rounded-full transition-all"
+                    style={{
+                      width: isActive ? 10 : 7,
+                      height: isActive ? 10 : 7,
+                      backgroundColor: isActive
+                        ? TIMELINE_ACTIVE_COLOR
+                        : `${TIMELINE_ACTIVE_COLOR}55`,
+                    }}
+                  />
+                </button>
+              </div>
+            );
+          })}
+        </div>
       </aside>
 
       {/* MOBILE: compact horizontal pagination (chevron / dots / chevron).
@@ -369,7 +425,7 @@ export default function LilyMorph() {
       </div>
 
       {/* MIDDLE: morph painting */}
-      <div className="order-2 lg:order-none lg:col-start-2 lg:row-start-2 lg:min-w-0 relative min-h-[40vh] lg:min-h-0">
+      <div className="order-2 lg:order-none lg:col-start-1 lg:row-start-2 lg:min-w-0 relative min-h-[40vh] lg:min-h-0">
         <img
           ref={imgRef}
           alt=""
@@ -392,7 +448,11 @@ export default function LilyMorph() {
       <div className="order-4 lg:order-none lg:col-start-3 lg:row-start-2 flex flex-col justify-center px-6 md:px-10 lg:px-6 xl:px-8 py-8 lg:py-0">
         <div className="max-w-prose">
           <div className="mb-5 font-sans">
-            <p className="text-charcoal font-medium leading-tight" style={{ fontSize: "clamp(15px, 1.15vw, 19px)" }}>
+            <p
+              ref={titleRef}
+              className="text-charcoal font-medium leading-tight"
+              style={{ fontSize: "clamp(15px, 1.15vw, 19px)" }}
+            >
               {ANCHOR_META[anchorIdx].title}
               <span className="text-charcoal/55 font-normal">, {ANCHOR_META[anchorIdx].year}</span>
             </p>

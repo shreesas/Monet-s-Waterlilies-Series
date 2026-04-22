@@ -6,7 +6,7 @@ export default function PanSlider({ value, onChange }) {
   return (
     <div
       className="fixed bottom-5 md:bottom-7 right-4 md:right-8 z-40 pointer-events-none"
-      style={{ left: "calc(50vw - min(13vh, 9vw))" }}
+      style={{ left: "calc(60vw - min(13vh, 9vw))" }}
     >
       <div className="rounded-full bg-white/85 backdrop-blur px-5 py-3 shadow-[0_4px_20px_rgba(0,0,0,0.18)] pointer-events-auto">
         <input
