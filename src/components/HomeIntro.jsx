@@ -20,9 +20,9 @@ const SCREENS = [
     image:
       "https://upload.wikimedia.org/wikipedia/commons/0/07/Claude_Monet_-_Waterlilies_-_Nympheas_%281908%29.jpg",
     alt: "Claude Monet, Water-Lilies (1908) — soft greens and pinks across the pond",
-    // Push the crop down so the lily-filled water surface is visible rather
-    // than the pale sky/reflection band at the top of the painting.
-    objectPosition: "center 62%",
+    // Show the calm reflective mid-section of the painting behind the text;
+    // lower percentage shifts the visible crop toward the top of the image.
+    objectPosition: "center 45%",
     render: () => (
       // Subtitle is ~2× the character length of the title, so it needs
       // roughly half the font size to span the same visual column width.
