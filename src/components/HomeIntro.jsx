@@ -192,7 +192,7 @@ export default function HomeIntro({ onComplete }) {
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); advance(); }}
-                  className="mt-10 rounded-full bg-black/80 text-white font-sans text-sm tracking-wide px-8 py-3 hover:bg-black transition-colors"
+                  className="mt-10 rounded-full border border-black/70 bg-transparent text-black/85 font-sans text-sm tracking-wide px-8 py-3 hover:bg-black hover:text-white hover:border-black transition-all duration-300"
                 >
                   {i === SCREENS.length - 1 ? "Begin" : "Continue"}
                 </button>
