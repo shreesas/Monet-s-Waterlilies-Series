@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { motion } from "framer-motion";
 
 const MANIFEST_URL = "/lily_morphs/manifest.json";
 const BASE = "/lily_morphs/";
@@ -69,6 +70,7 @@ export default function LilyMorph() {
   const [loadedCount, setLoadedCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [error, setError] = useState(null);
+  const [paintingVisible, setPaintingVisible] = useState(false);
 
   const imgRef = useRef(null);
   const animatingRef = useRef(false);
@@ -284,10 +286,13 @@ export default function LilyMorph() {
           vertically so the active year lines up with the painting title in
           the right-side text column. Items that slide off the top/bottom of
           the aside are clipped by overflow-hidden. */}
-      <aside
+      <motion.aside
         ref={asideRef}
         className="hidden lg:block lg:col-start-2 lg:row-start-1 relative overflow-hidden px-2 xl:px-3"
         aria-label="Timeline"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: paintingVisible ? 1 : 0 }}
+        transition={{ duration: 0.7, delay: 0.3 }}
       >
         {/* Stationary, always-visible vertical line — gives the timeline a
             continuous spine no matter where the dots translate to. */}
@@ -347,11 +352,16 @@ export default function LilyMorph() {
             );
           })}
         </div>
-      </aside>
+      </motion.aside>
 
       {/* MOBILE: compact horizontal pagination (chevron / dots / chevron).
           Hidden at lg+ because the vertical timeline takes over. */}
-      <div className="order-3 lg:hidden flex flex-row items-center justify-center gap-1 shrink-0 px-4 py-3">
+      <motion.div
+        className="order-3 lg:hidden flex flex-row items-center justify-center gap-1 shrink-0 px-4 py-3"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: paintingVisible ? 1 : 0 }}
+        transition={{ duration: 0.7, delay: 0.3 }}
+      >
         <button
           type="button"
           aria-label="Previous painting"
@@ -401,7 +411,7 @@ export default function LilyMorph() {
             <polyline points="9 18 15 12 9 6" />
           </svg>
         </button>
-      </div>
+      </motion.div>
 
       {/* MIDDLE: morph painting */}
       <div className="order-2 lg:order-none lg:col-start-1 lg:row-start-1 lg:min-w-0 relative min-h-[40vh] lg:min-h-0">
@@ -409,6 +419,7 @@ export default function LilyMorph() {
           ref={imgRef}
           alt=""
           className="absolute inset-0 w-full h-full object-cover"
+          onLoad={() => setPaintingVisible(true)}
         />
 
         {!ready && !error && (
@@ -424,7 +435,12 @@ export default function LilyMorph() {
       </div>
 
       {/* RIGHT: per-anchor metadata + description */}
-      <div className="order-4 lg:order-none lg:col-start-3 lg:row-start-1 flex flex-col justify-center px-6 md:px-10 lg:px-6 xl:px-8 py-8 lg:py-0">
+      <motion.div
+        className="order-4 lg:order-none lg:col-start-3 lg:row-start-1 flex flex-col justify-center px-6 md:px-10 lg:px-6 xl:px-8 py-8 lg:py-0"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: paintingVisible ? 1 : 0 }}
+        transition={{ duration: 0.7, delay: 0.5 }}
+      >
         <div className="max-w-prose">
           <div className="mb-5 font-sans">
             <p
@@ -474,7 +490,7 @@ export default function LilyMorph() {
             </p>
           )}
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }
