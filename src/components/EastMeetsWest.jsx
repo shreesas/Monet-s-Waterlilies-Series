@@ -186,13 +186,14 @@ export default function EastMeetsWest() {
   const printMaxSize = isMobile ? "min(27vh, 45vw)" : "min(39vh, 27vw)";
   // Water-lily trigger icons.
   const lilySize = isMobile ? "10vh" : "12vh";
-  // Central painting layout (unchanged from the horizontal version).
-  const titleAreaHeight = "16vh";
+  // Central painting layout.
+  // titleAreaHeight is now just the single subtitle line.
+  const titleAreaHeight = "7vh";
   const centralMaxWidth = "50vw";
   const sideMargin = isMobile ? "1rem" : "2rem";
   const bottomMargin = isMobile ? "1.25rem" : "1.75rem";
   // Reserve space below the painting for the title / year / collection
-  // caption (matches LilyMorph's style on the home page).
+  // caption.
   const captionReserve = "5.5vh";
   const centralHeight = `calc(100vh - ${titleAreaHeight} - ${bottomMargin} - ${captionReserve})`;
 
@@ -422,13 +423,13 @@ export default function EastMeetsWest() {
       </div>
 
       {/* Central Monet painting — horizontally centred inside the
-          white left-side panel, vertically pinned just below the
-          title area. The wrapper itself is pointer-events-none so
-          clicks elsewhere on screen still reach the prints/lilies
-          behind; CentralPainting re-enables pointer events on its
-          own bounding box so the painting remains clickable. */}
+          white left-side panel, vertically centred in the space
+          below the subtitle bar. The wrapper itself is
+          pointer-events-none so clicks elsewhere reach the
+          prints/lilies behind; CentralPainting re-enables pointer
+          events on its own bounding box so the painting is clickable. */}
       <div
-        className="fixed pointer-events-none z-20 flex flex-col items-center"
+        className="fixed pointer-events-none z-20 flex flex-col items-center justify-center"
         style={{
           top: titleAreaHeight,
           left: 0,
