@@ -148,6 +148,12 @@ export default function EastMeetsWest() {
     setShowIntro(false);
   };
 
+  // Each lily is tied to a specific painting in the central pool.
+  // The pool is already in chronological order (W.1509 → W.1631).
+  // centralIndex starts at 0 (earliest painting, shown before any
+  // click). Clicking lily N (0-based scroll order, top → bottom)
+  // jumps to pool index N+1, so the six lilies walk the viewer
+  // through the remaining six paintings chronologically.
   const handleLilyClick = (lily) => {
     if (usedLilies.has(lily.id)) return;
     setUsedLilies((prev) => {
@@ -161,9 +167,11 @@ export default function EastMeetsWest() {
         next.add(lily.textIndex);
         return next;
       });
-    }
-    if (centralPool.length > 0) {
-      setCentralIndex((i) => (i + 1) % centralPool.length);
+      // Jump to the painting that corresponds to this lily's position
+      // in the scroll order (textIndex 0 = topmost lily → pool[1],
+      // textIndex 5 = bottommost lily → pool[6]).
+      const targetIndex = Math.min(lily.textIndex + 1, centralPool.length - 1);
+      setCentralIndex(targetIndex);
     }
   };
 
