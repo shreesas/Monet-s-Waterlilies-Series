@@ -22,6 +22,9 @@ const SCREENS = [
     alt: "Claude Monet, Water-Lilies (1908) — soft greens and pinks across the pond",
     objectPosition: "center 35%",
     render: () => (
+      // Title and subtitle should sit at roughly equal visual width. The
+      // title is ~25 chars and the subtitle is ~45 chars, so the subtitle
+      // needs to scale up to about ~55% of the title's font size to match.
       <>
         <h1
           className="font-serif text-charcoal leading-[1.05]"
@@ -30,8 +33,8 @@ const SCREENS = [
           A garden. A pond. 30 years.
         </h1>
         <p
-          className="mt-4"
-          style={{ fontSize: "clamp(1.05rem, 1.6vw, 1.5rem)" }}
+          className="mt-5"
+          style={{ fontSize: "clamp(1.25rem, 3vw, 2.6rem)" }}
         >
           <span className="font-sans text-charcoal/85">
             Exploring the shape of{" "}
@@ -50,17 +53,25 @@ const SCREENS = [
     alt: "Claude Monet, Nymphéas (1908) — pale lavender and green pond surface",
     objectPosition: "center 40%",
     render: () => (
-      <div className="max-w-[34rem] text-center">
+      // Title is forced to one line at md+ via whitespace-nowrap; the body
+      // copy is widened so it sits at roughly the same column width as the
+      // single-line title, and bumped up to read close to the screen-1
+      // subtitle. On narrow viewports we let the title wrap normally so it
+      // doesn't overflow.
+      <div className="max-w-[60rem] text-center mx-auto">
         <h2
-          className="font-serif text-charcoal leading-[1.1]"
-          style={{ fontSize: "clamp(1.75rem, 3.4vw, 2.75rem)" }}
+          className="font-serif text-charcoal leading-[1.1] md:whitespace-nowrap"
+          style={{ fontSize: "clamp(1.75rem, 4vw, 3.25rem)" }}
         >
           Monet&rsquo;s obsession with{" "}
           <span className="italic">water lilies</span>
         </h2>
         <p
-          className="mt-6 font-sans text-charcoal/85 leading-relaxed mx-auto"
-          style={{ fontSize: "clamp(0.98rem, 1.2vw, 1.1rem)", textWrap: "pretty" }}
+          className="mt-6 font-sans text-charcoal/85 leading-snug mx-auto"
+          style={{
+            fontSize: "clamp(1.1rem, 1.8vw, 1.6rem)",
+            textWrap: "pretty",
+          }}
         >
           From 1897 until his death in 1926, Monet painted the same water lily
           pond over and over. Across those three decades his wife died, his
@@ -69,8 +80,11 @@ const SCREENS = [
           the dissolving of the horizon.
         </p>
         <p
-          className="mt-6 font-serif italic text-charcoal/85 leading-relaxed"
-          style={{ fontSize: "clamp(1rem, 1.3vw, 1.2rem)", textWrap: "pretty" }}
+          className="mt-6 font-serif italic text-charcoal/85 leading-snug"
+          style={{
+            fontSize: "clamp(1.1rem, 1.8vw, 1.6rem)",
+            textWrap: "pretty",
+          }}
         >
           Follow the pond through life, across 10 paintings.
         </p>
