@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 // eslint-disable-next-line no-unused-vars -- `motion` is used as <motion.div>; project eslint lacks jsx-uses-vars
 import { AnimatePresence, motion } from "framer-motion";
 
-import FixedTitle from "./FixedTitle";
 import EastMeetsWestIntro from "./EastMeetsWestIntro";
 import CentralPainting from "./CentralPainting";
 import ScatteredPrint from "./ScatteredPrint";
@@ -195,8 +194,8 @@ export default function EastMeetsWest() {
   // Water-lily trigger icons.
   const lilySize = isMobile ? "10vh" : "12vh";
   // Central painting layout.
-  // titleAreaHeight is now just the single subtitle line.
-  const titleAreaHeight = "7vh";
+  // No title bar on the left — painting runs from the very top.
+  const titleAreaHeight = "0px";
   const centralMaxWidth = "50vw";
   const sideMargin = isMobile ? "1rem" : "2rem";
   const bottomMargin = isMobile ? "1.25rem" : "1.75rem";
@@ -233,8 +232,6 @@ export default function EastMeetsWest() {
         className="fixed top-0 left-0 bottom-0 pointer-events-none bg-white"
         style={{ width: rightColumnLeft }}
       />
-
-      <FixedTitle containerWidth={rightColumnLeft} />
 
       {/* Right column: vertically scrolling list of print blocks.
           Native overflow handles touch swipe, mouse wheel, and
@@ -313,14 +310,13 @@ export default function EastMeetsWest() {
           })()}
 
           {/* Prints column — rendered above the tiled background.
-              The top padding keeps the first print clear of the
-              title area; the bottom padding mirrors the painting's
-              bottom margin. */}
+              Top padding clears the floating pill bar at the top
+              of the right panel; bottom mirrors the painting margin. */}
         <div
           className="relative flex flex-col items-stretch w-full"
           style={{
             zIndex: 1,
-            paddingTop: titleAreaHeight,
+            paddingTop: "6vh",
             paddingBottom: bottomMargin,
           }}
         >
@@ -487,21 +483,25 @@ export default function EastMeetsWest() {
         )}
       </AnimatePresence>
 
-      {/* "x/N collected" indicator — permanently pinned to the top-right
-          of the viewport, solid white pill so it's always legible
-          against either the white left panel or the ambient pond
-          background on the right. pointer-events-none so it never
-          blocks the canvas. Kept below the lightbox (z-50) so the dim
-          overlay covers it when a painting is open. */}
-      <div className="fixed top-4 right-4 md:top-6 md:right-8 z-40 pointer-events-none">
+      {/* Top-right bar — subtitle prompt + progress counter on one line,
+          pinned to the top of the right panel. White pill so it reads
+          cleanly against the ambient pond background. */}
+      <div
+        className="fixed top-4 md:top-6 z-40 pointer-events-none flex items-center"
+        style={{ left: rightColumnLeft, right: 0, justifyContent: "center" }}
+      >
         <div
-          className="font-serif text-charcoal bg-white rounded-full shadow-[0_8px_24px_rgba(0,0,0,0.18)] whitespace-nowrap"
+          className="font-serif text-charcoal bg-white rounded-full shadow-[0_8px_24px_rgba(0,0,0,0.18)] whitespace-nowrap flex items-center gap-3"
           style={{
             fontSize: "clamp(12px, 0.9vw, 14px)",
             padding: "10px 22px",
           }}
         >
-          {usedLilies.size}/{INFO_BLOCKS.length} collected
+          <span>
+            Collect the 6 pink <em>Water lilies</em> from the pond.
+          </span>
+          <span className="text-charcoal/40 select-none" aria-hidden="true">·</span>
+          <span>{usedLilies.size}/{INFO_BLOCKS.length} collected</span>
         </div>
       </div>
       </>)}
