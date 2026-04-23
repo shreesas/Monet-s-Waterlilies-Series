@@ -7,12 +7,19 @@ import { motion } from "framer-motion";
 //   • Screen 1 — W.1727 (1908, Private collection)
 //   • Screen 2 — W.1731 (1908, Tokyo Fuji Art Museum)
 //
-// Transition design: the splashes are rendered as a *stack*, all mounted at
-// once. The active screen sits on top with full opacity; previous screens stay
-// rendered underneath at full opacity so when the next one fades in over them
-// there is never a transparent frame. Without this, an opacity cross-fade
-// between two absolute-positioned siblings briefly drops total coverage below
-// 100% and reveals whatever is mounted behind the intro layer (the homepage).
+// Sequence for each screen:
+//   1. Painting layer fades in over SCREEN_FADE_S seconds.
+//   2. After TEXT_DELAY_S seconds (painting mostly in), text dissolves in
+//      over TEXT_DURATION_S seconds.
+//
+// The stack layout (all screens mounted, active one on top) keeps total
+// opacity at 100% throughout every dissolve so the homepage never shows.
+
+const SCREEN_FADE_S  = 1.8;  // painting cross-dissolve duration
+const TEXT_DELAY_S   = 1.2;  // text starts this many seconds after painting
+const TEXT_DURATION_S = 1.5; // text fade-in duration
+// Lock advance() for this long so clicks during the dissolve don't skip.
+const ADVANCE_LOCK_MS = Math.round(SCREEN_FADE_S * 1000);
 
 const SCREENS = [
   {
@@ -20,14 +27,8 @@ const SCREENS = [
     image:
       "https://upload.wikimedia.org/wikipedia/commons/0/07/Claude_Monet_-_Waterlilies_-_Nympheas_%281908%29.jpg",
     alt: "Claude Monet, Water-Lilies (1908) — soft greens and pinks across the pond",
-    // Show the calm reflective mid-section of the painting behind the text;
-    // lower percentage shifts the visible crop toward the top of the image.
     objectPosition: "center 45%",
     render: () => (
-      // Subtitle is ~2× the character length of the title, so it needs
-      // roughly half the font size to span the same visual column width.
-      // Title: "A garden. A pond. 30 years." ≈ 28 chars
-      // Subtitle: "Exploring the shape of Monet's obsession with water lilies" ≈ 57 chars
       <>
         <h1
           className="font-serif text-black leading-[1.05]"
@@ -65,11 +66,8 @@ const SCREENS = [
           <span className="italic">water lilies</span>
         </h2>
         <p
-          className="mt-6 font-sans text-black/85 leading-snug mx-auto"
-          style={{
-            fontSize: "clamp(1.1rem, 1.8vw, 1.6rem)",
-            textWrap: "pretty",
-          }}
+          className="mt-6 font-sans text-black/85 leading-snug"
+          style={{ fontSize: "clamp(1.1rem, 1.8vw, 1.6rem)", textWrap: "pretty" }}
         >
           From 1897 until his death in 1926, Monet painted the same water lily
           pond over and over. Across those three decades his wife died, his
@@ -79,10 +77,7 @@ const SCREENS = [
         </p>
         <p
           className="mt-6 font-serif italic text-black/85 leading-snug"
-          style={{
-            fontSize: "clamp(1.1rem, 1.8vw, 1.6rem)",
-            textWrap: "pretty",
-          }}
+          style={{ fontSize: "clamp(1.1rem, 1.8vw, 1.6rem)", textWrap: "pretty" }}
         >
           Follow the pond through life, across 10 paintings.
         </p>
@@ -91,15 +86,11 @@ const SCREENS = [
   },
 ];
 
-const FADE_MS = 900;
-
 export default function HomeIntro({ onComplete }) {
   const [index, setIndex] = useState(0);
-  // While true, swallow advance attempts so a second click during a dissolve
-  // doesn't skip a screen.
   const [transitioning, setTransitioning] = useState(false);
 
-  // Preload both images upfront so the dissolve doesn't wait on the network.
+  // Preload both images so the dissolve doesn't stall on the network.
   useEffect(() => {
     SCREENS.forEach((s) => {
       const img = new Image();
@@ -112,9 +103,7 @@ export default function HomeIntro({ onComplete }) {
     if (index < SCREENS.length - 1) {
       setTransitioning(true);
       setIndex(index + 1);
-      // Re-enable input slightly after the visual fade so a fast clicker
-      // can't queue a third advance during the tail of the dissolve.
-      window.setTimeout(() => setTransitioning(false), FADE_MS);
+      window.setTimeout(() => setTransitioning(false), ADVANCE_LOCK_MS);
     } else {
       onComplete();
     }
@@ -122,13 +111,7 @@ export default function HomeIntro({ onComplete }) {
 
   useEffect(() => {
     function onKey(e) {
-      if (
-        e.key === "Enter" ||
-        e.key === " " ||
-        e.key === "ArrowRight" ||
-        e.key === "ArrowDown" ||
-        e.key === "PageDown"
-      ) {
+      if (["Enter", " ", "ArrowRight", "ArrowDown", "PageDown"].includes(e.key)) {
         e.preventDefault();
         advance();
       } else if (e.key === "Escape") {
@@ -146,35 +129,34 @@ export default function HomeIntro({ onComplete }) {
     <motion.div
       initial={{ opacity: 1 }}
       animate={{ opacity: 1 }}
-      // When the parent un-mounts us (intro complete), fade the whole splash
-      // out as one piece so we hand off cleanly to the homepage.
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
       className="fixed inset-0 z-50 overflow-hidden cursor-pointer select-none bg-stone"
       onClick={advance}
       role="button"
       tabIndex={0}
       aria-label={isLast ? "Enter the experience" : "Continue"}
     >
-      {/* Layer stack: every screen is mounted from the start. Screens with a
-          lower index sit underneath fully opaque; screens with index > the
-          active one are invisible until they become active and fade in on top
-          of whatever is below them. There is no moment where the stack is
-          less than 100% opaque. */}
       {SCREENS.map((s, i) => {
-        const visible = i <= index;
+        const active = i === index;
+        // Screens below the active one stay fully opaque as an opaque backdrop.
+        // The active screen fades in on top; screens above active stay hidden.
+        const shouldShow = i <= index;
+
         return (
-          <div
+          <motion.div
             key={s.id}
             className="absolute inset-0"
-            style={{
-              opacity: visible ? 1 : 0,
-              transition: `opacity ${FADE_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`,
-              zIndex: i,
-              pointerEvents: i === index ? "auto" : "none",
+            initial={{ opacity: 0 }}
+            animate={{ opacity: shouldShow ? 1 : 0 }}
+            transition={{
+              duration: SCREEN_FADE_S,
+              ease: [0.22, 1, 0.36, 1],
             }}
-            aria-hidden={i !== index}
+            style={{ zIndex: i, pointerEvents: active ? "auto" : "none" }}
+            aria-hidden={!active}
           >
+            {/* Painting — fades in as part of the layer transition above */}
             <img
               src={s.image}
               alt={s.alt}
@@ -183,39 +165,43 @@ export default function HomeIntro({ onComplete }) {
               draggable={false}
             />
 
+            {/* Text — delayed so the painting is mostly visible before copy appears */}
             <div className="absolute inset-0 flex items-center justify-start px-12 md:px-20 lg:px-28">
-              {/* Text rides its own subtle fade-up only on the *active* screen,
-                  so the body copy doesn't pop in pre-rendered for inactive
-                  layers underneath. */}
               <motion.div
-                initial={false}
+                className="text-left"
+                initial={{ opacity: 0, y: 8 }}
                 animate={
-                  i === index
+                  active
                     ? { opacity: 1, y: 0 }
                     : { opacity: 0, y: 8 }
                 }
                 transition={{
-                  duration: 0.7,
-                  delay: i === index ? 0.2 : 0,
-                  ease: [0.22, 1, 0.36, 1],
+                  opacity: {
+                    duration: TEXT_DURATION_S,
+                    delay: active ? TEXT_DELAY_S : 0,
+                    ease: [0.22, 1, 0.36, 1],
+                  },
+                  y: {
+                    duration: TEXT_DURATION_S,
+                    delay: active ? TEXT_DELAY_S : 0,
+                    ease: [0.22, 1, 0.36, 1],
+                  },
                 }}
-                className="text-left"
               >
                 {s.render()}
               </motion.div>
             </div>
-          </div>
+          </motion.div>
         );
       })}
 
-      {/* Progress dots + hint sit above the painting stack and stay in place
-          across screens so the user always knows where they are. */}
+      {/* Progress dots — sit above everything, don't participate in dissolves */}
       <div className="absolute bottom-6 inset-x-0 z-20 flex flex-col items-center gap-3 pointer-events-none">
         <div className="flex items-center gap-2">
           {SCREENS.map((s, i) => (
             <span
               key={s.id}
-              className="block rounded-full transition-all"
+              className="block rounded-full transition-all duration-500"
               style={{
                 width: i === index ? 8 : 6,
                 height: i === index ? 8 : 6,
