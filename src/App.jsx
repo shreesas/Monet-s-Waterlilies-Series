@@ -45,7 +45,7 @@ function ScreenOne() {
     <div className="relative h-screen overflow-hidden bg-white flex flex-col">
       {!showIntro && (
         <>
-          <main className="relative z-10 flex-1 min-h-0">
+          <main className="relative z-10 flex-1 min-h-0 flex items-center">
             <LilyMorph />
           </main>
 
