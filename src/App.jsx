@@ -5,11 +5,14 @@ import EastMeetsWest from "./components/EastMeetsWest";
 import LilyMorph from "./components/LilyMorph";
 import HomeIntro from "./components/HomeIntro";
 
-const HOME_INTRO_DISMISSED_KEY = "home:introDismissed";
+// Module-level flag: true until the home intro is dismissed once per
+// page load. Resets to true on every full reload; survives within-tab
+// hash navigation so going to East Meets West and back doesn't replay
+// the intro in the same visit.
+let homeIntroDismissed = false;
 
 // Tiny hash router: '#/east-meets-west' renders Screen 2; everything else
-// falls back to the original Screen 1. TODO: wire up navigation to screens
-// 1 and 3 with proper links once they exist.
+// falls back to the original Screen 1.
 function useHashRoute() {
   const [hash, setHash] = useState(() =>
     typeof window === "undefined" ? "" : window.location.hash
@@ -23,17 +26,13 @@ function useHashRoute() {
 }
 
 function ScreenOne() {
-  // Two full-bleed splash screens precede the home page on first visit. We
-  // remember dismissal in sessionStorage so internal navigation (e.g.
-  // bouncing between routes) doesn't replay the intro.
-  const [showIntro, setShowIntro] = useState(
-    () =>
-      typeof window !== "undefined" &&
-      sessionStorage.getItem(HOME_INTRO_DISMISSED_KEY) !== "1"
-  );
+  // Show the intro on every page load; once dismissed in this JS session
+  // (e.g. user navigates away and comes back via the hash router) don't
+  // replay it.
+  const [showIntro, setShowIntro] = useState(() => !homeIntroDismissed);
 
   const handleIntroComplete = () => {
-    sessionStorage.setItem(HOME_INTRO_DISMISSED_KEY, "1");
+    homeIntroDismissed = true;
     setShowIntro(false);
   };
 

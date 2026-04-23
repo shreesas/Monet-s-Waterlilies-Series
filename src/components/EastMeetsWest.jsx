@@ -41,7 +41,9 @@ const PRINT_IMAGES = Object.fromEntries(
   })
 );
 
-const INTRO_DISMISSED_KEY = "eastMeetsWest:introDismissed";
+// No persistence — the intro shows every time the user navigates
+// to this route (component is remounted on each hash change).
+
 
 export default function EastMeetsWest() {
   // TODO: wire up navigation to screens 1 and 3
@@ -52,11 +54,9 @@ export default function EastMeetsWest() {
   const [usedLilies, setUsedLilies] = useState(() => new Set());
   const [userRevealed, setUserRevealed] = useState(() => new Set());
   const [lightbox, setLightbox] = useState(null);
-  const [showIntro, setShowIntro] = useState(
-    () =>
-      typeof window !== "undefined" &&
-      sessionStorage.getItem(INTRO_DISMISSED_KEY) !== "1"
-  );
+  // Always show the intro when this component mounts (i.e. every time
+  // the user clicks "East Meets West").
+  const [showIntro, setShowIntro] = useState(true);
   const [isMobile, setIsMobile] = useState(
     () => typeof window !== "undefined" && window.innerWidth < 768
   );
@@ -143,7 +143,6 @@ export default function EastMeetsWest() {
   }, [japanesePrints]);
 
   const handleDismissIntro = () => {
-    sessionStorage.setItem(INTRO_DISMISSED_KEY, "1");
     setShowIntro(false);
   };
 
