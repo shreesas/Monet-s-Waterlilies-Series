@@ -218,7 +218,7 @@ export default function EastMeetsWest() {
   const rightColumnLeft = `calc(${sideMargin} + ${centralMaxWidth} + 20px)`;
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-stone">
+    <div className="relative w-screen h-screen overflow-hidden overscroll-none bg-stone">
       {/* Intro splash — rendered first. Page content is held back until
           showIntro is false so nothing bleeds through during the dissolve. */}
       <AnimatePresence>
@@ -244,7 +244,7 @@ export default function EastMeetsWest() {
           area (no padding), and the prints column applies its own
           top padding so it clears the title region. */}
       <div
-        className="absolute overflow-y-auto overflow-x-hidden"
+        className="absolute overflow-y-auto overflow-x-hidden overscroll-none"
         style={{
           top: 0,
           left: rightColumnLeft,
