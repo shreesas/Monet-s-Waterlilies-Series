@@ -189,6 +189,13 @@ export default function HomeIntro({ onComplete }) {
                 }}
               >
                 {s.render()}
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); advance(); }}
+                  className="mt-10 rounded-full bg-black/80 text-white font-sans text-sm tracking-wide px-8 py-3 hover:bg-black transition-colors"
+                >
+                  {i === SCREENS.length - 1 ? "Begin" : "Continue"}
+                </button>
               </motion.div>
             </div>
           </motion.div>

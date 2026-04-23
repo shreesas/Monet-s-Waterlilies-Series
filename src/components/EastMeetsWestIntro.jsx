@@ -89,14 +89,15 @@ export default function EastMeetsWestIntro({ onDismiss }) {
           >
             Pick a lily to see how.
           </p>
-        </motion.div>
-      </div>
 
-      {/* Hint */}
-      <div className="absolute bottom-6 inset-x-0 z-10 flex justify-center pointer-events-none">
-        <p className="font-sans text-xs tracking-wide uppercase text-black/50">
-          Click to begin
-        </p>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onDismiss(); }}
+            className="mt-10 rounded-full bg-black/80 text-white font-sans text-sm tracking-wide px-8 py-3 hover:bg-black transition-colors"
+          >
+            Begin
+          </button>
+        </motion.div>
       </div>
     </motion.div>
   );
