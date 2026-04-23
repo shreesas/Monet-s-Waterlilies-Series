@@ -202,8 +202,8 @@ export default function HomeIntro({ onComplete }) {
         );
       })}
 
-      {/* Progress dots — sit above everything, don't participate in dissolves */}
-      <div className="absolute bottom-6 inset-x-0 z-20 flex flex-col items-center gap-3 pointer-events-none">
+      {/* Progress dots */}
+      <div className="absolute bottom-6 inset-x-0 z-20 flex justify-center pointer-events-none">
         <div className="flex items-center gap-2">
           {SCREENS.map((s, i) => (
             <span
@@ -218,9 +218,6 @@ export default function HomeIntro({ onComplete }) {
             />
           ))}
         </div>
-        <p className="font-sans text-xs tracking-wide uppercase text-black/50">
-          {isLast ? "Click to begin" : "Click to continue"}
-        </p>
       </div>
     </motion.div>
   );
