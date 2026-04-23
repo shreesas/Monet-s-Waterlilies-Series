@@ -64,7 +64,7 @@ export default function EastMeetsWest() {
   // Derived: on mobile every block is auto-revealed; on desktop only the ones
   // the user has clicked. We avoid an extra useEffect+setState cascade.
   const revealedTexts = useMemo(() => {
-    if (isMobile) return new Set([0, 1, 2, 3, 4, 5]);
+    if (isMobile) return new Set(INFO_BLOCKS.map((_, idx) => idx));
     return userRevealed;
   }, [isMobile, userRevealed]);
 
@@ -475,7 +475,7 @@ export default function EastMeetsWest() {
         )}
       </AnimatePresence>
 
-      {/* "x/6 collected" indicator — permanently pinned to the top-right
+      {/* "x/N collected" indicator — permanently pinned to the top-right
           of the viewport, solid white pill so it's always legible
           against either the white left panel or the ambient pond
           background on the right. pointer-events-none so it never
@@ -489,7 +489,7 @@ export default function EastMeetsWest() {
             padding: "10px 22px",
           }}
         >
-          {usedLilies.size}/6 collected
+          {usedLilies.size}/{INFO_BLOCKS.length} collected
         </div>
       </div>
     </div>
