@@ -166,10 +166,14 @@ export default function EastMeetsWest() {
         next.add(lily.textIndex);
         return next;
       });
-      // Jump to the painting that corresponds to this lily's position
-      // in the scroll order (textIndex 0 = topmost lily → pool[1],
-      // textIndex 5 = bottommost lily → pool[6]).
-      const targetIndex = Math.min(lily.textIndex + 1, centralPool.length - 1);
+      // Explicit mapping from lily scroll-position (textIndex 0–5) to
+      // painting pool index. Lilies 1 and 2 (2nd and 3rd from top)
+      // are swapped relative to strict chronological order.
+      const LILY_TO_PAINTING = [1, 3, 2, 4, 5, 6];
+      const targetIndex = Math.min(
+        LILY_TO_PAINTING[lily.textIndex] ?? lily.textIndex + 1,
+        centralPool.length - 1
+      );
       setCentralIndex(targetIndex);
     }
   };
