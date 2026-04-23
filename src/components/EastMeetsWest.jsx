@@ -194,15 +194,15 @@ export default function EastMeetsWest() {
   // Water-lily trigger icons.
   const lilySize = isMobile ? "10vh" : "12vh";
   // Central painting layout.
-  // No title bar on the left — painting runs from the very top.
   const titleAreaHeight = "0px";
   const centralMaxWidth = "50vw";
   const sideMargin = isMobile ? "1rem" : "2rem";
+  const topMargin = isMobile ? "1.25rem" : "1.75rem";   // matches bottom
   const bottomMargin = isMobile ? "1.25rem" : "1.75rem";
   // Reserve space below the painting for the title / year / collection
   // caption.
   const captionReserve = "5.5vh";
-  const centralHeight = `calc(100vh - ${titleAreaHeight} - ${bottomMargin} - ${captionReserve})`;
+  const centralHeight = `calc(100vh - ${titleAreaHeight} - ${topMargin} - ${bottomMargin} - ${captionReserve})`;
 
   const centralPainting = centralPool[centralIndex];
 
@@ -316,7 +316,7 @@ export default function EastMeetsWest() {
           className="relative flex flex-col items-stretch w-full"
           style={{
             zIndex: 1,
-            paddingTop: "6vh",
+            paddingTop: "11vh",
             paddingBottom: bottomMargin,
           }}
         >
@@ -435,7 +435,7 @@ export default function EastMeetsWest() {
       <div
         className="fixed pointer-events-none z-20 flex flex-col items-center justify-center"
         style={{
-          top: titleAreaHeight,
+          top: topMargin,
           left: 0,
           width: rightColumnLeft,
           bottom: bottomMargin,
