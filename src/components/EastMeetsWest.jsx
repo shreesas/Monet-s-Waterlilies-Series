@@ -207,6 +207,13 @@ export default function EastMeetsWest() {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-stone">
+      {/* Intro splash — rendered first. Page content is held back until
+          showIntro is false so nothing bleeds through during the dissolve. */}
+      <AnimatePresence>
+        {showIntro && <EastMeetsWestIntro onDismiss={handleDismissIntro} />}
+      </AnimatePresence>
+
+      {showIntro ? null : (<>
       {/* Solid white panel covering the LEFT side of the viewport — the
           area that holds the title and the central Monet painting. This
           sits above the ambient background but below the painting and
@@ -463,10 +470,6 @@ export default function EastMeetsWest() {
       </div>
 
       <AnimatePresence>
-        {showIntro && <EastMeetsWestIntro onDismiss={handleDismissIntro} />}
-      </AnimatePresence>
-
-      <AnimatePresence>
         {lightbox && (
           <FullscreenLightbox
             data={lightbox}
@@ -492,6 +495,7 @@ export default function EastMeetsWest() {
           {usedLilies.size}/{INFO_BLOCKS.length} collected
         </div>
       </div>
+      </>)}
     </div>
   );
 }
