@@ -37,18 +37,26 @@ function ScreenOne() {
     setShowIntro(false);
   };
 
+  // Hold the LilyMorph mount until the intro is dismissed. Otherwise the
+  // morph component starts loading 225 image frames immediately and the
+  // already-rendered homepage flickers through any transparent frame in the
+  // splash transitions.
   return (
-    <div className="relative h-screen overflow-hidden bg-white flex flex-col">
-      <main className="relative z-10 flex-1 min-h-0">
-        <LilyMorph />
-      </main>
+    <div className="relative h-screen overflow-hidden bg-stone flex flex-col">
+      {!showIntro && (
+        <>
+          <main className="relative z-10 flex-1 min-h-0">
+            <LilyMorph />
+          </main>
 
-      <a
-        href="#/east-meets-west"
-        className="fixed bottom-6 right-6 z-30 rounded-full bg-charcoal text-cream font-sans text-sm px-5 py-2.5 shadow-[0_4px_16px_rgba(0,0,0,0.18)] hover:bg-charcoal/85 transition-colors"
-      >
-        East Meets West &rarr;
-      </a>
+          <a
+            href="#/east-meets-west"
+            className="fixed bottom-6 right-6 z-30 rounded-full bg-charcoal text-cream font-sans text-sm px-5 py-2.5 shadow-[0_4px_16px_rgba(0,0,0,0.18)] hover:bg-charcoal/85 transition-colors"
+          >
+            East Meets West &rarr;
+          </a>
+        </>
+      )}
 
       <AnimatePresence>
         {showIntro && <HomeIntro onComplete={handleIntroComplete} />}

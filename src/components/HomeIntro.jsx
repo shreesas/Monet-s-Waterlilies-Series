@@ -1,13 +1,18 @@
 import { useEffect, useState } from "react";
-// eslint-disable-next-line no-unused-vars -- `motion` / `AnimatePresence` are used in JSX; project eslint lacks jsx-uses-vars
-import { motion, AnimatePresence } from "framer-motion";
+// eslint-disable-next-line no-unused-vars -- `motion` is used in JSX; project eslint lacks jsx-uses-vars
+import { motion } from "framer-motion";
 
 // Two full-bleed intro splashes shown before the home page (LilyMorph).
-// Painting fills the viewport behind the text. No overlay: each background
-// painting is luminous enough that body copy reads cleanly directly on top.
-// Catalog references picked by the editorial side:
+// Each painting fills the viewport behind the text. Catalog references:
 //   • Screen 1 — W.1727 (1908, Private collection)
 //   • Screen 2 — W.1731 (1908, Tokyo Fuji Art Museum)
+//
+// Transition design: the splashes are rendered as a *stack*, all mounted at
+// once. The active screen sits on top with full opacity; previous screens stay
+// rendered underneath at full opacity so when the next one fades in over them
+// there is never a transparent frame. Without this, an opacity cross-fade
+// between two absolute-positioned siblings briefly drops total coverage below
+// 100% and reveals whatever is mounted behind the intro layer (the homepage).
 
 const SCREENS = [
   {
@@ -15,8 +20,6 @@ const SCREENS = [
     image:
       "https://upload.wikimedia.org/wikipedia/commons/0/07/Claude_Monet_-_Waterlilies_-_Nympheas_%281908%29.jpg",
     alt: "Claude Monet, Water-Lilies (1908) — soft greens and pinks across the pond",
-    // object-position keeps the brightest part of the painting behind the
-    // text on common laptop aspect ratios.
     objectPosition: "center 35%",
     render: () => (
       <>
@@ -76,11 +79,15 @@ const SCREENS = [
   },
 ];
 
+const FADE_MS = 900;
+
 export default function HomeIntro({ onComplete }) {
   const [index, setIndex] = useState(0);
+  // While true, swallow advance attempts so a second click during a dissolve
+  // doesn't skip a screen.
+  const [transitioning, setTransitioning] = useState(false);
 
-  // Preload the next screen's image so the cross-fade isn't jarring on slow
-  // connections. Cheap: just two ~1MB JPGs from Wikimedia.
+  // Preload both images upfront so the dissolve doesn't wait on the network.
   useEffect(() => {
     SCREENS.forEach((s) => {
       const img = new Image();
@@ -88,10 +95,17 @@ export default function HomeIntro({ onComplete }) {
     });
   }, []);
 
-  // Keyboard / click anywhere advances. Last screen → enter home.
   function advance() {
-    if (index < SCREENS.length - 1) setIndex(index + 1);
-    else onComplete();
+    if (transitioning) return;
+    if (index < SCREENS.length - 1) {
+      setTransitioning(true);
+      setIndex(index + 1);
+      // Re-enable input slightly after the visual fade so a fast clicker
+      // can't queue a third advance during the tail of the dissolve.
+      window.setTimeout(() => setTransitioning(false), FADE_MS);
+    } else {
+      onComplete();
+    }
   }
 
   useEffect(() => {
@@ -112,57 +126,79 @@ export default function HomeIntro({ onComplete }) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [index]);
+  }, [index, transitioning]);
 
-  const screen = SCREENS[index];
   const isLast = index === SCREENS.length - 1;
 
   return (
-    <div
-      className="fixed inset-0 z-50 overflow-hidden cursor-pointer select-none"
+    <motion.div
+      initial={{ opacity: 1 }}
+      animate={{ opacity: 1 }}
+      // When the parent un-mounts us (intro complete), fade the whole splash
+      // out as one piece so we hand off cleanly to the homepage.
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className="fixed inset-0 z-50 overflow-hidden cursor-pointer select-none bg-stone"
       onClick={advance}
       role="button"
       tabIndex={0}
       aria-label={isLast ? "Enter the experience" : "Continue"}
     >
-      <AnimatePresence mode="sync">
-        <motion.div
-          key={screen.id}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="absolute inset-0"
-        >
-          <img
-            src={screen.image}
-            alt={screen.alt}
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{ objectPosition: screen.objectPosition }}
-            draggable={false}
-          />
+      {/* Layer stack: every screen is mounted from the start. Screens with a
+          lower index sit underneath fully opaque; screens with index > the
+          active one are invisible until they become active and fade in on top
+          of whatever is below them. There is no moment where the stack is
+          less than 100% opaque. */}
+      {SCREENS.map((s, i) => {
+        const visible = i <= index;
+        return (
+          <div
+            key={s.id}
+            className="absolute inset-0"
+            style={{
+              opacity: visible ? 1 : 0,
+              transition: `opacity ${FADE_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`,
+              zIndex: i,
+              pointerEvents: i === index ? "auto" : "none",
+            }}
+            aria-hidden={i !== index}
+          >
+            <img
+              src={s.image}
+              alt={s.alt}
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ objectPosition: s.objectPosition }}
+              draggable={false}
+            />
 
-          <div className="absolute inset-0 flex items-center justify-center px-6">
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{
-                duration: 0.7,
-                delay: 0.15,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              className="text-center"
-            >
-              {screen.render()}
-            </motion.div>
+            <div className="absolute inset-0 flex items-center justify-center px-6">
+              {/* Text rides its own subtle fade-up only on the *active* screen,
+                  so the body copy doesn't pop in pre-rendered for inactive
+                  layers underneath. */}
+              <motion.div
+                initial={false}
+                animate={
+                  i === index
+                    ? { opacity: 1, y: 0 }
+                    : { opacity: 0, y: 8 }
+                }
+                transition={{
+                  duration: 0.7,
+                  delay: i === index ? 0.2 : 0,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className="text-center"
+              >
+                {s.render()}
+              </motion.div>
+            </div>
           </div>
-        </motion.div>
-      </AnimatePresence>
+        );
+      })}
 
-      {/* Progress dots + hint sit at the bottom across both screens, outside
-          the AnimatePresence so they don't fade with each slide. */}
-      <div className="absolute bottom-6 inset-x-0 z-10 flex flex-col items-center gap-3 pointer-events-none">
+      {/* Progress dots + hint sit above the painting stack and stay in place
+          across screens so the user always knows where they are. */}
+      <div className="absolute bottom-6 inset-x-0 z-20 flex flex-col items-center gap-3 pointer-events-none">
         <div className="flex items-center gap-2">
           {SCREENS.map((s, i) => (
             <span
@@ -181,6 +217,6 @@ export default function HomeIntro({ onComplete }) {
           {isLast ? "Click to begin" : "Click to continue"}
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 }
