@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import FixedTitle from "./FixedTitle";
-import IntroModal from "./IntroModal";
+import EastMeetsWestIntro from "./EastMeetsWestIntro";
 import CentralPainting from "./CentralPainting";
 import ScatteredPrint from "./ScatteredPrint";
 import LilyTrigger from "./LilyTrigger";
@@ -463,7 +463,7 @@ export default function EastMeetsWest() {
       </div>
 
       <AnimatePresence>
-        {showIntro && <IntroModal onDismiss={handleDismissIntro} />}
+        {showIntro && <EastMeetsWestIntro onDismiss={handleDismissIntro} />}
       </AnimatePresence>
 
       <AnimatePresence>
