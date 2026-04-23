@@ -20,26 +20,29 @@ const SCREENS = [
     image:
       "https://upload.wikimedia.org/wikipedia/commons/0/07/Claude_Monet_-_Waterlilies_-_Nympheas_%281908%29.jpg",
     alt: "Claude Monet, Water-Lilies (1908) — soft greens and pinks across the pond",
-    objectPosition: "center 35%",
+    // Push the crop down so the lily-filled water surface is visible rather
+    // than the pale sky/reflection band at the top of the painting.
+    objectPosition: "center 62%",
     render: () => (
-      // Title and subtitle should sit at roughly equal visual width. The
-      // title is ~25 chars and the subtitle is ~45 chars, so the subtitle
-      // needs to scale up to about ~55% of the title's font size to match.
+      // Subtitle is ~2× the character length of the title, so it needs
+      // roughly half the font size to span the same visual column width.
+      // Title: "A garden. A pond. 30 years." ≈ 28 chars
+      // Subtitle: "Exploring the shape of Monet's obsession with water lilies" ≈ 57 chars
       <>
         <h1
-          className="font-serif text-charcoal leading-[1.05]"
+          className="font-serif text-black leading-[1.05]"
           style={{ fontSize: "clamp(2.25rem, 5.5vw, 4.75rem)" }}
         >
           A garden. A pond. 30 years.
         </h1>
         <p
-          className="mt-5"
-          style={{ fontSize: "clamp(1.25rem, 3vw, 2.6rem)" }}
+          className="mt-4"
+          style={{ fontSize: "clamp(1.05rem, 2.55vw, 2.2rem)" }}
         >
-          <span className="font-sans text-charcoal/85">
+          <span className="font-sans text-black/85">
             Exploring the shape of{" "}
           </span>
-          <span className="font-serif italic text-charcoal/85">
+          <span className="font-serif italic text-black/85">
             Monet&rsquo;s obsession with water lilies
           </span>
         </p>
@@ -51,23 +54,18 @@ const SCREENS = [
     image:
       "https://upload.wikimedia.org/wikipedia/commons/9/9e/Claude_Monet_-_Nymph%C3%A9as_%281908%29.jpg",
     alt: "Claude Monet, Nymphéas (1908) — pale lavender and green pond surface",
-    objectPosition: "center 40%",
+    objectPosition: "center 50%",
     render: () => (
-      // Title is forced to one line at md+ via whitespace-nowrap; the body
-      // copy is widened so it sits at roughly the same column width as the
-      // single-line title, and bumped up to read close to the screen-1
-      // subtitle. On narrow viewports we let the title wrap normally so it
-      // doesn't overflow.
-      <div className="max-w-[60rem] text-center mx-auto">
+      <div className="max-w-[60rem] text-left">
         <h2
-          className="font-serif text-charcoal leading-[1.1] md:whitespace-nowrap"
+          className="font-serif text-black leading-[1.1] md:whitespace-nowrap"
           style={{ fontSize: "clamp(1.75rem, 4vw, 3.25rem)" }}
         >
           Monet&rsquo;s obsession with{" "}
           <span className="italic">water lilies</span>
         </h2>
         <p
-          className="mt-6 font-sans text-charcoal/85 leading-snug mx-auto"
+          className="mt-6 font-sans text-black/85 leading-snug mx-auto"
           style={{
             fontSize: "clamp(1.1rem, 1.8vw, 1.6rem)",
             textWrap: "pretty",
@@ -80,7 +78,7 @@ const SCREENS = [
           the dissolving of the horizon.
         </p>
         <p
-          className="mt-6 font-serif italic text-charcoal/85 leading-snug"
+          className="mt-6 font-serif italic text-black/85 leading-snug"
           style={{
             fontSize: "clamp(1.1rem, 1.8vw, 1.6rem)",
             textWrap: "pretty",
@@ -185,7 +183,7 @@ export default function HomeIntro({ onComplete }) {
               draggable={false}
             />
 
-            <div className="absolute inset-0 flex items-center justify-center px-6">
+            <div className="absolute inset-0 flex items-center justify-start px-12 md:px-20 lg:px-28">
               {/* Text rides its own subtle fade-up only on the *active* screen,
                   so the body copy doesn't pop in pre-rendered for inactive
                   layers underneath. */}
@@ -201,7 +199,7 @@ export default function HomeIntro({ onComplete }) {
                   delay: i === index ? 0.2 : 0,
                   ease: [0.22, 1, 0.36, 1],
                 }}
-                className="text-center"
+                className="text-left"
               >
                 {s.render()}
               </motion.div>
@@ -222,12 +220,12 @@ export default function HomeIntro({ onComplete }) {
                 width: i === index ? 8 : 6,
                 height: i === index ? 8 : 6,
                 backgroundColor:
-                  i === index ? "rgba(45,45,45,0.85)" : "rgba(45,45,45,0.3)",
+                  i === index ? "rgba(0,0,0,0.85)" : "rgba(0,0,0,0.3)",
               }}
             />
           ))}
         </div>
-        <p className="font-sans text-xs tracking-wide uppercase text-charcoal/55">
+        <p className="font-sans text-xs tracking-wide uppercase text-black/50">
           {isLast ? "Click to begin" : "Click to continue"}
         </p>
       </div>
