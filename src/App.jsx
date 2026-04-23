@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
 import EastMeetsWest from "./components/EastMeetsWest";
 import LilyMorph from "./components/LilyMorph";
-import HomeIntroModal from "./components/HomeIntroModal";
+import HomeIntro from "./components/HomeIntro";
 
 const HOME_INTRO_DISMISSED_KEY = "home:introDismissed";
 
@@ -23,13 +23,16 @@ function useHashRoute() {
 }
 
 function ScreenOne() {
+  // Two full-bleed splash screens precede the home page on first visit. We
+  // remember dismissal in sessionStorage so internal navigation (e.g.
+  // bouncing between routes) doesn't replay the intro.
   const [showIntro, setShowIntro] = useState(
     () =>
       typeof window !== "undefined" &&
       sessionStorage.getItem(HOME_INTRO_DISMISSED_KEY) !== "1"
   );
 
-  const handleDismissIntro = () => {
+  const handleIntroComplete = () => {
     sessionStorage.setItem(HOME_INTRO_DISMISSED_KEY, "1");
     setShowIntro(false);
   };
@@ -48,7 +51,7 @@ function ScreenOne() {
       </a>
 
       <AnimatePresence>
-        {showIntro && <HomeIntroModal onDismiss={handleDismissIntro} />}
+        {showIntro && <HomeIntro onComplete={handleIntroComplete} />}
       </AnimatePresence>
     </div>
   );
