@@ -42,7 +42,7 @@ function ScreenOne() {
   // already-rendered homepage flickers through any transparent frame in the
   // splash transitions.
   return (
-    <div className="relative h-screen overflow-hidden bg-stone flex flex-col">
+    <div className="relative h-screen overflow-hidden bg-white flex flex-col">
       {!showIntro && (
         <>
           <main className="relative z-10 flex-1 min-h-0">

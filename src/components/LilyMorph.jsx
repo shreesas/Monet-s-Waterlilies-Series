@@ -277,28 +277,7 @@ export default function LilyMorph() {
   const preloadDone = totalCount > 0 && loadedCount >= totalCount;
 
   return (
-    <section className="h-full w-full flex flex-col lg:grid lg:grid-cols-[1fr_96px_22%] xl:grid-cols-[1fr_112px_20%] lg:grid-rows-[auto_minmax(0,1fr)]">
-      {/* TOP: title + subtitle — sits above the painting column only on desktop */}
-      <header className="order-1 lg:order-none lg:col-start-1 lg:col-end-2 lg:row-start-1 px-4 pt-6 md:pt-8 pb-3 text-center shrink-0">
-        <h1
-          className="font-serif text-charcoal leading-[1.05]"
-          style={{ fontSize: "clamp(1.75rem, 2.6vw, 2.75rem)" }}
-        >
-          A garden. A pond. 30 years.
-        </h1>
-        <p
-          className="mt-2"
-          style={{ fontSize: "clamp(1.05rem, 1.4vw, 1.4rem)" }}
-        >
-          <span className="font-sans text-charcoal/85">
-            Exploring the shape of{" "}
-          </span>
-          <span className="font-serif italic text-charcoal/85">
-            Monet&rsquo;s obsession with water lilies
-          </span>
-        </p>
-      </header>
-
+    <section className="h-full w-full flex flex-col lg:grid lg:grid-cols-[1fr_96px_22%] xl:grid-cols-[1fr_112px_20%] lg:grid-rows-1">
       {/* DESKTOP: vertical year timeline next to the painting.
           A single continuous vertical line runs top-to-bottom behind the
           aside (stationary). The year-dot strip sits in front and slides
@@ -307,7 +286,7 @@ export default function LilyMorph() {
           the aside are clipped by overflow-hidden. */}
       <aside
         ref={asideRef}
-        className="hidden lg:block lg:col-start-2 lg:row-start-1 lg:row-end-3 relative overflow-hidden px-2 xl:px-3"
+        className="hidden lg:block lg:col-start-2 lg:row-start-1 relative overflow-hidden px-2 xl:px-3"
         aria-label="Timeline"
       >
         {/* Stationary, always-visible vertical line — gives the timeline a
@@ -425,11 +404,11 @@ export default function LilyMorph() {
       </div>
 
       {/* MIDDLE: morph painting */}
-      <div className="order-2 lg:order-none lg:col-start-1 lg:row-start-2 lg:min-w-0 relative min-h-[40vh] lg:min-h-0">
+      <div className="order-2 lg:order-none lg:col-start-1 lg:row-start-1 lg:min-w-0 relative min-h-[40vh] lg:min-h-0">
         <img
           ref={imgRef}
           alt=""
-          className="absolute inset-0 w-full h-full object-contain"
+          className="absolute inset-0 w-full h-full object-cover"
         />
 
         {!ready && !error && (
@@ -445,7 +424,7 @@ export default function LilyMorph() {
       </div>
 
       {/* RIGHT: per-anchor metadata + description */}
-      <div className="order-4 lg:order-none lg:col-start-3 lg:row-start-2 flex flex-col justify-center px-6 md:px-10 lg:px-6 xl:px-8 py-8 lg:py-0">
+      <div className="order-4 lg:order-none lg:col-start-3 lg:row-start-1 flex flex-col justify-center px-6 md:px-10 lg:px-6 xl:px-8 py-8 lg:py-0">
         <div className="max-w-prose">
           <div className="mb-5 font-sans">
             <p
