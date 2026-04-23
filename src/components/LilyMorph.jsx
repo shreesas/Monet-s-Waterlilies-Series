@@ -277,7 +277,7 @@ export default function LilyMorph() {
   const preloadDone = totalCount > 0 && loadedCount >= totalCount;
 
   return (
-    <section className="h-full w-full flex flex-col lg:grid lg:grid-cols-[1fr_96px_22%] xl:grid-cols-[1fr_112px_20%] lg:grid-rows-1">
+    <section className="h-[80vh] w-full flex flex-col lg:grid lg:grid-cols-[1fr_96px_22%] xl:grid-cols-[1fr_112px_20%] lg:grid-rows-1">
       {/* DESKTOP: vertical year timeline next to the painting.
           A single continuous vertical line runs top-to-bottom behind the
           aside (stationary). The year-dot strip sits in front and slides
