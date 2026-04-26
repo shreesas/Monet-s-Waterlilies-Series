@@ -682,7 +682,7 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
         {/* Two images side by side — full viewport width */}
         <div className="flex flex-row gap-8 w-full px-10 pt-12">
           {/* Monet painting */}
-          <div className="flex flex-col gap-1.5" style={{ flex: 1 }}>
+          <div className="flex flex-col items-center gap-1.5" style={{ flex: 1 }}>
             {monetImageUrl ? (
               <img
                 src={monetImageUrl}
@@ -696,15 +696,15 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
                 <span className="font-serif italic text-black/40 text-xs text-center px-3">Monet, Water Lilies</span>
               </div>
             )}
-            <p className="font-sans text-black text-xs mt-1">Claude Monet</p>
-            <p className="font-serif italic text-black text-xs">{monetEntry?.title || "Water Lilies"}</p>
-            <p className="font-sans text-black/55 text-xs">
+            <p className="font-sans text-black text-xs mt-1 text-center">Claude Monet</p>
+            <p className="font-serif italic text-black text-xs text-center">{monetEntry?.title || "Water Lilies"}</p>
+            <p className="font-sans text-black/55 text-xs text-center">
               {[monetEntry?.year, monetEntry?.collection].filter(Boolean).join(", ")}
             </p>
           </div>
 
           {/* Influenced painting */}
-          <div className="flex flex-col gap-1.5" style={{ flex: 1 }}>
+          <div className="flex flex-col items-center gap-1.5" style={{ flex: 1 }}>
             {imageUrl ? (
               <img
                 src={imageUrl}
@@ -718,9 +718,9 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
                 <span className="font-serif italic text-black/40 text-xs text-center px-3">Image rights restricted</span>
               </div>
             )}
-            <p className="font-sans text-black text-xs mt-1">{painting.artist}</p>
-            <p className="font-serif italic text-black text-xs">{painting.title}</p>
-            <p className="font-sans text-black/55 text-xs">
+            <p className="font-sans text-black text-xs mt-1 text-center">{painting.artist}</p>
+            <p className="font-serif italic text-black text-xs text-center">{painting.title}</p>
+            <p className="font-sans text-black/55 text-xs text-center">
               {[painting.year, painting.collection].filter(Boolean).join(", ")}
             </p>
           </div>
