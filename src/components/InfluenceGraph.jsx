@@ -676,23 +676,23 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.97 }}
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-10 flex flex-col gap-8 w-full max-h-[90vh] overflow-y-auto"
+        className="relative z-10 flex flex-row w-full h-screen overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Two images side by side — full viewport width */}
-        <div className="flex flex-row gap-8 w-full px-10 pt-12">
+        {/* Left column — 60%: Monet on top, influenced painting below */}
+        <div className="flex flex-col overflow-y-auto" style={{ width: "60%" }}>
           {/* Monet painting */}
-          <div className="flex flex-col items-center gap-1.5" style={{ flex: 1 }}>
+          <div className="flex flex-col items-center gap-1.5 px-10 pt-12 pb-8">
             {monetImageUrl ? (
               <img
                 src={monetImageUrl}
                 alt={monetEntry?.title || "Monet, Water Lilies"}
                 className="w-full h-auto object-contain"
-                style={{ maxHeight: "42vh" }}
+                style={{ maxHeight: "38vh" }}
                 draggable={false}
               />
             ) : (
-              <div className="w-full bg-warmgray flex items-center justify-center" style={{ height: "42vh" }}>
+              <div className="w-full bg-warmgray flex items-center justify-center" style={{ height: "38vh" }}>
                 <span className="font-serif italic text-black/40 text-xs text-center px-3">Monet, Water Lilies</span>
               </div>
             )}
@@ -704,17 +704,17 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
           </div>
 
           {/* Influenced painting */}
-          <div className="flex flex-col items-center gap-1.5" style={{ flex: 1 }}>
+          <div className="flex flex-col items-center gap-1.5 px-10 pb-12">
             {imageUrl ? (
               <img
                 src={imageUrl}
                 alt={painting.title}
                 className="w-full h-auto object-contain"
-                style={{ maxHeight: "42vh" }}
+                style={{ maxHeight: "38vh" }}
                 draggable={false}
               />
             ) : (
-              <div className="w-full bg-warmgray flex items-center justify-center" style={{ height: "42vh" }}>
+              <div className="w-full bg-warmgray flex items-center justify-center" style={{ height: "38vh" }}>
                 <span className="font-serif italic text-black/40 text-xs text-center px-3">Image rights restricted</span>
               </div>
             )}
@@ -726,8 +726,8 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
           </div>
         </div>
 
-        {/* Connection text + learn more — centered, ~10-12 words per line */}
-        <div className="flex flex-col items-center gap-6 px-10 pb-12">
+        {/* Right column — 40%: description + learn more, vertically centered */}
+        <div className="flex flex-col justify-center gap-6 px-10 py-12 overflow-y-auto" style={{ width: "40%" }}>
           {painting.connection_claim && (
             <p className="font-serif italic text-charcoal/80 leading-relaxed text-center" style={{ fontSize: "clamp(15px, 1.2vw, 20px)", textWrap: "pretty", maxWidth: "55ch" }}>
               {painting.connection_claim}
@@ -739,8 +739,8 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
               href={painting.citation_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 font-sans text-black/60 hover:text-black transition-colors"
-              style={{ fontSize: "0.82rem", borderBottom: "1px solid rgba(0,0,0,0.25)", paddingBottom: 1 }}
+              className="inline-flex items-center justify-center gap-1.5 font-sans text-black/60 hover:text-black transition-colors"
+              style={{ fontSize: "0.82rem", borderBottom: "1px solid rgba(0,0,0,0.25)", paddingBottom: 1, width: "fit-content", alignSelf: "center" }}
               onClick={(e) => e.stopPropagation()}
             >
               Learn more
