@@ -726,14 +726,9 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
           </div>
         </div>
 
-        {/* Combined artwork heading */}
-        <h3 className="font-serif text-black" style={{ fontSize: "clamp(0.9rem, 1.4vw, 1.2rem)" }}>
-          Monet, <em>{monetEntry?.title || "Water Lilies"}</em> &amp; {painting.artist}, <em>{painting.title}</em>
-        </h3>
-
         {/* Connection text */}
         {painting.connection_claim && (
-          <p className="font-sans text-black/70 leading-relaxed" style={{ fontSize: "clamp(0.78rem, 0.95vw, 0.875rem)" }}>
+          <p className="font-serif italic text-charcoal/80 leading-relaxed" style={{ fontSize: "clamp(15px, 1.2vw, 20px)", textWrap: "pretty" }}>
             {painting.connection_claim}
           </p>
         )}
