@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-// eslint-disable-next-line no-unused-vars
+import { useState, useEffect, useCallback, useMemo } from "react";
+// eslint-disable-next-line no-unused-vars -- named imports used in JSX
 import { motion, AnimatePresence } from "framer-motion";
 
 const assetModules = import.meta.glob(
@@ -16,120 +16,10 @@ function resolveImageUrl(url) {
   return ASSETS[url.split("/").pop()] ?? null;
 }
 
-const STRENGTH_ORDER = ["direct", "documented", "critical"];
+// Thumbnail size (px) per connection strength — direct is largest.
+// Reduced by 15% globally to open more negative space between nodes.
+const STRENGTH_SIZE = { direct: 153, critical: 116, documented: 92 };
 
-// Elliptical radii as fraction of viewport dimensions (wider x for horizontal spread)
-// Slightly large so 13+ nodes on the outer ring can be separated without overlapping.
-const RING_X_FRAC = [0.2, 0.33, 0.48];
-const RING_Y_FRAC = [0.16, 0.26, 0.4];
-
-// 36° offset per ring — staggers nodes so adjacent rings never align on the same spoke
-const RING_ANGLE_OFFSET = Math.PI / 5;
-
-// Max painting thumbnail size per ring. Outer ring is narrower to guarantee
-// no two adjacent paintings touch even when both are at max width.
-const NODE_MAX_H = [104, 90, 78];
-const NODE_MAX_W = [190, 170, 136];
-
-// Monet center node radius (half of 120px circle)
-const MONET_R = 60;
-
-const HUB_COLORS = {
-  direct: "rgba(212,184,132,0.95)",
-  documented: "rgba(90,65,40,0.55)",
-  critical: "rgba(45,45,45,0.32)",
-};
-const HUB_WIDTHS = { direct: 3.5, documented: 2.5, critical: 1.5 };
-
-const RING_DASH = { direct: "3 5", documented: "3 7", critical: "2 9" };
-const RING_STROKE = {
-  direct: "rgba(212,184,132,0.3)",
-  documented: "rgba(45,45,45,0.12)",
-  critical: "rgba(45,45,45,0.08)",
-};
-
-const STRENGTH_LABELS = {
-  direct: "Artist stated",
-  documented: "Archivally documented",
-  critical: "Critical link",
-};
-
-// Ray: rim point on (cx,cy) + hubRimT * d̂, direction d̂ = normalize(target - hub).
-// First forward intersection (smallest t > 0) with the AABB, so the spoke matches
-// the line from the hub to the work — edge-midpoint shortcuts break that and read
-// as lines ending in empty space.
-function rayFromHubToImageBox(cx, cy, hubRimT, targetCx, targetCy, w, h) {
-  if (w <= 0 || h <= 0) return { x: targetCx, y: targetCy };
-  const dx = targetCx - cx;
-  const dy = targetCy - cy;
-  const len = Math.hypot(dx, dy) || 1e-9;
-  const ux = dx / len;
-  const uy = dy / len;
-  const ox = cx + ux * hubRimT;
-  const oy = cy + uy * hubRimT;
-  const left = targetCx - w / 2;
-  const right = targetCx + w / 2;
-  const top = targetCy - h / 2;
-  const bottom = targetCy + h / 2;
-  const EPS = 1e-5;
-
-  let tHit = Infinity;
-  if (Math.abs(ux) > EPS) {
-    for (const vx of [left, right]) {
-      const s = (vx - ox) / ux;
-      if (s <= EPS) continue;
-      const yAt = oy + s * uy;
-      if (yAt + EPS >= top && yAt - EPS <= bottom) tHit = Math.min(tHit, s);
-    }
-  }
-  if (Math.abs(uy) > EPS) {
-    for (const hy of [top, bottom]) {
-      const s = (hy - oy) / uy;
-      if (s <= EPS) continue;
-      const xAt = ox + s * ux;
-      if (xAt + EPS >= left && xAt - EPS <= right) tHit = Math.min(tHit, s);
-    }
-  }
-
-  if (tHit === Infinity) {
-    return { x: targetCx, y: targetCy };
-  }
-  return { x: ox + ux * tHit, y: oy + uy * tHit };
-}
-
-function separateOverlappingNodes(rawNodes) {
-  const n = rawNodes.length;
-  if (n < 2) return rawNodes;
-  const items = rawNodes.map((node) => {
-    const w = NODE_MAX_W[node.ringIndex];
-    const h = NODE_MAX_H[node.ringIndex];
-    const r = 0.5 * Math.hypot(w, h) + 4;
-    return { node, r, x: node.x, y: node.y };
-  });
-  const pad = 6;
-  for (let it = 0; it < 160; it++) {
-    for (let i = 0; i < n; i++) {
-      for (let j = i + 1; j < n; j++) {
-        const a = items[i];
-        const b = items[j];
-        const dx = b.x - a.x;
-        const dy = b.y - a.y;
-        const d = Math.hypot(dx, dy) || 1e-6;
-        const need = a.r + b.r + pad;
-        if (d >= need) continue;
-        const push = 0.5 * (need - d);
-        const k = push / d;
-        const mx = (dx * k) / 2;
-        const my = (dy * k) / 2;
-        a.x -= mx;
-        a.y -= my;
-        b.x += mx;
-        b.y += my;
-      }
-    }
-  }
-  return items.map((it) => ({ ...it.node, x: it.x, y: it.y }));
-}
 
 function findConnectedMonet(painting, catalog) {
   for (const id of painting.monet_paintings_connected || []) {
@@ -147,11 +37,8 @@ export default function InfluenceGraph() {
   const [paintings, setPaintings] = useState([]);
   const [catalog, setCatalog] = useState([]);
   const [selected, setSelected] = useState(null);
+  const [hoveredId, setHoveredId] = useState(null);
   const [dims, setDims] = useState({ w: window.innerWidth, h: window.innerHeight });
-  // Actual rendered pixel sizes keyed by painting id — populated as images load.
-  // Used to terminate spoke lines at the real painting edge, not the max bounding box.
-  const [imageSizes, setImageSizes] = useState({});
-  const wasDragging = useRef(false);
 
   useEffect(() => {
     Promise.all([
@@ -162,19 +49,17 @@ export default function InfluenceGraph() {
         setPaintings(influenced.paintings || []);
         setCatalog(Array.isArray(monet) ? monet : []);
       })
-      .catch(console.error);
+      .catch((err) => console.error("Failed to load influence data", err));
   }, []);
 
   useEffect(() => {
-    const onResize = () =>
-      setDims({ w: window.innerWidth, h: window.innerHeight });
+    const onResize = () => setDims({ w: window.innerWidth, h: window.innerHeight });
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  // Graph is laid out in viewport coordinates — no oversized canvas needed
-  const CCX = dims.w / 2;
-  const CCY = dims.h / 2;
+  const cx = dims.w / 2;
+  const cy = dims.h / 2;
 
   const centerMonet = useMemo(
     () =>
@@ -184,88 +69,306 @@ export default function InfluenceGraph() {
     [catalog]
   );
 
-  const groups = useMemo(
-    () => ({
-      direct: paintings.filter((p) => p.connection_strength === "direct"),
-      documented: paintings.filter((p) => p.connection_strength === "documented"),
-      critical: paintings.filter((p) => p.connection_strength === "critical"),
-    }),
-    [paintings]
-  );
+  // Elliptical orbital placement with no-overlap safety nudging.
+  const nodes = useMemo(() => {
+    const sorted = [
+      ...paintings.filter((p) => p.connection_strength === "direct"),
+      ...paintings.filter((p) => p.connection_strength === "critical"),
+      ...paintings.filter((p) => p.connection_strength === "documented"),
+    ];
+    if (!sorted.length) return [];
 
-  const rawNodes = useMemo(() => {
-    return STRENGTH_ORDER.flatMap((strength, ringIndex) => {
-      const group = groups[strength] || [];
-      if (!group.length) return [];
-      const xR = RING_X_FRAC[ringIndex] * dims.w;
-      const yR = RING_Y_FRAC[ringIndex] * dims.h;
-      // Each ring is rotated 36° more than the previous so nodes never
-      // stack directly on top of cross-ring neighbours.
-      const startAngle = -Math.PI / 2 + ringIndex * RING_ANGLE_OFFSET;
-      return group.map((painting, i) => {
-        const angle = startAngle + (i / group.length) * 2 * Math.PI;
-        const x = CCX + Math.cos(angle) * xR;
-        const y = CCY + Math.sin(angle) * yR;
-        return {
-          painting,
-          x,
-          y,
-          strength,
-          ringIndex,
-          imageUrl: resolveImageUrl(painting.image_url),
-        };
-      });
-    });
-  }, [groups, dims, CCX, CCY]);
+    const CENTER_R = 200; // radius of the 400 px central circle
+    const CENTER_HALO = 100; // 100px clear gap around the 400px central circle
+    const BUFFER = 10; // minimum gap between any two painting edges
+    const ORBIT_RADIAL_JITTER = 40;
 
-  const nodes = useMemo(
-    () => separateOverlappingNodes(rawNodes),
-    [rawNodes]
-  );
-
-  // Drag constraints — only non-zero when a painting bleeds past the viewport
-  // edge. This disables panning entirely when the graph fits on screen.
-  const dragConstraints = useMemo(() => {
-    if (!nodes.length) return { left: 0, right: 0, top: 0, bottom: 0 };
-    const HEADER = 90; // header height reserve
-    const PAD = 20;
-    const minX = Math.min(...nodes.map((n) => n.x - NODE_MAX_W[n.ringIndex] / 2)) - PAD;
-    const maxX = Math.max(...nodes.map((n) => n.x + NODE_MAX_W[n.ringIndex] / 2)) + PAD;
-    const minY = Math.min(...nodes.map((n) => n.y - NODE_MAX_H[n.ringIndex] / 2)) - HEADER;
-    const maxY = Math.max(...nodes.map((n) => n.y + NODE_MAX_H[n.ringIndex] / 2)) + PAD;
-    return {
-      right: minX < 0 ? -minX : 0,
-      left: maxX > dims.w ? dims.w - maxX : 0,
-      bottom: minY < 0 ? -minY : 0,
-      top: maxY > dims.h ? dims.h - maxY : 0,
+    // Deterministic LCG — fixed seed gives the same cloud every render
+    let s = 0x9e3779b9;
+    const rand = () => {
+      s = Math.imul(s ^ (s >>> 15), 0xd168aaad) ^ 0;
+      s = Math.imul(s ^ (s >>> 13), 0xaf723597) ^ 0;
+      return (s >>> 0) / 0xffffffff;
     };
-  }, [nodes, dims]);
 
-  const canDrag =
-    dragConstraints.left !== 0 ||
-    dragConstraints.right !== 0 ||
-    dragConstraints.top !== 0 ||
-    dragConstraints.bottom !== 0;
+    const ORBITS = [
+      { count: 6, ringScale: 0.52, sizeScale: 0.82 },  // Inner orbit
+      { count: 8, ringScale: 0.74, sizeScale: 0.92 },  // Middle orbit
+      { count: 10, ringScale: 1, sizeScale: 1 },       // Outer orbit
+    ];
 
-  // Record the actual rendered size of each image so spoke lines terminate
-  // at the real painting edge rather than the max bounding box.
-  const handleImageLoad = useCallback((paintingId, ringIndex, e) => {
-    const img = e.target;
-    const natW = img.naturalWidth;
-    const natH = img.naturalHeight;
-    if (!natW || !natH) return;
-    const maxW = NODE_MAX_W[ringIndex];
-    const maxH = NODE_MAX_H[ringIndex];
-    const scale = Math.min(1, maxW / natW, maxH / natH);
-    setImageSizes((prev) => ({
-      ...prev,
-      [paintingId]: { w: Math.round(natW * scale), h: Math.round(natH * scale) },
+    const maxBaseRadius = Math.max(...Object.values(STRENGTH_SIZE)) / 2;
+    // Use more of the available viewport — tighter margins so orbits fill the screen.
+    const maxSafeX = Math.max(260, dims.w / 2 - maxBaseRadius - 16);
+    const maxSafeY = Math.max(160, dims.h / 2 - maxBaseRadius - 90);
+    // Allow a slightly wider ratio (up to 2.2:1) and use full horizontal safe space.
+    const outerRy = Math.min(maxSafeY, maxSafeX * 0.46);
+    const outerRx = Math.min(maxSafeX, outerRy * 2.2);
+
+    const placed = [];
+    let cursor = 0;
+
+    for (const orbit of ORBITS) {
+      const orbitItems = sorted.slice(cursor, cursor + orbit.count);
+      cursor += orbit.count;
+      if (!orbitItems.length) continue;
+
+      const rxBase = outerRx * orbit.ringScale;
+      const ryBase = outerRy * orbit.ringScale;
+      const step = (Math.PI * 2) / orbitItems.length;
+      const phase = rand() * Math.PI * 2;
+
+      orbitItems.forEach((painting, index) => {
+        const strength = painting.connection_strength || "critical";
+        const baseSize = STRENGTH_SIZE[strength] ?? 116;
+        const size = Math.round(baseSize * orbit.sizeScale);
+        const r = size / 2;
+        const imageUrl = resolveImageUrl(painting.image_url);
+
+        const angle = phase + index * step + (rand() - 0.5) * 0.24;
+        const radialOffset = (rand() * 2 - 1) * ORBIT_RADIAL_JITTER;
+        const rx = Math.max(CENTER_R + CENTER_HALO + r + BUFFER, rxBase + radialOffset);
+        const ry = Math.max((CENTER_R + CENTER_HALO + r + BUFFER) * 0.56, ryBase + radialOffset * 0.5);
+
+        let targetX = cx + Math.cos(angle) * rx;
+        let targetY = cy + Math.sin(angle) * ry;
+
+        // FIX 1: Guarantee every target position clears the central circle.
+        // The elliptical ry can be smaller than the circular center radius,
+        // so nodes placed at the top/bottom would have targets INSIDE the
+        // center — causing the spring-pull and center-push to fight forever.
+        const minClear = CENTER_R + CENTER_HALO + r + BUFFER;
+        const targetDist = Math.hypot(targetX - cx, targetY - cy) || 1;
+        if (targetDist < minClear) {
+          const scale = minClear / targetDist;
+          targetX = cx + (targetX - cx) * scale;
+          targetY = cy + (targetY - cy) * scale;
+        }
+
+        placed.push({
+          painting,
+          strength,
+          imageUrl,
+          size,
+          r,
+          x: targetX,
+          y: targetY,
+          targetX,
+          targetY,
+        });
+      });
+    }
+
+    // If there are more than 24 paintings, continue on outer orbit settings.
+    if (cursor < sorted.length) {
+      const overflow = sorted.slice(cursor);
+      const step = (Math.PI * 2) / overflow.length;
+      const phase = rand() * Math.PI * 2;
+      overflow.forEach((painting, index) => {
+        const strength = painting.connection_strength || "critical";
+        const size = STRENGTH_SIZE[strength] ?? 116;
+        const r = size / 2;
+        const imageUrl = resolveImageUrl(painting.image_url);
+        const angle = phase + index * step + (rand() - 0.5) * 0.24;
+        const radialOffset = (rand() * 2 - 1) * ORBIT_RADIAL_JITTER;
+        const rx = Math.max(CENTER_R + CENTER_HALO + r + BUFFER, outerRx + radialOffset);
+        const ry = Math.max((CENTER_R + CENTER_HALO + r + BUFFER) * 0.56, outerRy + radialOffset * 0.5);
+        let targetX = cx + Math.cos(angle) * rx;
+        let targetY = cy + Math.sin(angle) * ry;
+        const minClear = CENTER_R + CENTER_HALO + r + BUFFER;
+        const td = Math.hypot(targetX - cx, targetY - cy) || 1;
+        if (td < minClear) { targetX = cx + (targetX - cx) * (minClear / td); targetY = cy + (targetY - cy) * (minClear / td); }
+        placed.push({
+          painting,
+          strength,
+          imageUrl,
+          size,
+          r,
+          x: targetX,
+          y: targetY,
+          targetX,
+          targetY,
+        });
+      });
+    }
+
+    // FIX 3: Loop order — center-push runs first (authority), then pair
+    // repulsion, then viewport clamp last. Running clamp before center-push
+    // previously snapped nodes back inside the central circle boundary.
+    // Spring pull removed — it fought the repulsion and prevented full convergence.
+    // Pure repulsion (center-push + pair-separation + clamp) converges cleanly.
+    for (let iter = 0; iter < 400; iter++) {
+      let moved = false;
+
+      // 1. Center push — push any node that is inside CENTER_R + halo + r + buffer
+      //    fully outward. This runs before clamp so clamp cannot override it.
+      for (const it of placed) {
+        const dx = it.x - cx;
+        const dy = it.y - cy;
+        const dist = Math.hypot(dx, dy) || 1;
+        const need = CENTER_R + CENTER_HALO + it.r + BUFFER;
+        if (dist < need) {
+          const push = need - dist;
+          it.x += (dx / dist) * push;
+          it.y += (dy / dist) * push;
+          moved = true;
+        }
+      }
+
+      // 3. Pair repulsion — resolve painting-vs-painting overlaps.
+      for (let i = 0; i < placed.length; i++) {
+        for (let j = i + 1; j < placed.length; j++) {
+          const a = placed[i];
+          const b = placed[j];
+          const dx = b.x - a.x;
+          const dy = b.y - a.y;
+          const dist = Math.hypot(dx, dy) || 1;
+          const need = a.r + b.r + BUFFER;
+          if (dist < need) {
+            const push = (need - dist) / 2;
+            a.x -= (dx / dist) * push;
+            a.y -= (dy / dist) * push;
+            b.x += (dx / dist) * push;
+            b.y += (dy / dist) * push;
+            moved = true;
+          }
+        }
+      }
+
+      // 4. Viewport clamp — last so it cannot push nodes back into the center.
+      //    Any node that would violate the center boundary after clamping is
+      //    re-pushed outward to preserve the minimum clearance.
+      for (const it of placed) {
+        const cx2 = Math.max(it.r + 20, Math.min(dims.w - it.r - 20, it.x));
+        const cy2 = Math.max(it.r + 90, Math.min(dims.h - it.r - 70, it.y));
+        if (cx2 !== it.x || cy2 !== it.y) moved = true;
+        it.x = cx2;
+        it.y = cy2;
+
+        // After clamping, re-enforce center clearance in case clamp moved a
+        // node inward (e.g. near the viewport top edge above the center).
+        const ddx = it.x - cx;
+        const ddy = it.y - cy;
+        const dd = Math.hypot(ddx, ddy) || 1;
+        const need = CENTER_R + CENTER_HALO + it.r + BUFFER;
+        if (dd < need) {
+          it.x += (ddx / dd) * (need - dd);
+          it.y += (ddy / dd) * (need - dd);
+          moved = true;
+        }
+      }
+
+      if (!moved) break;
+    }
+
+    return placed.map(({ painting, x, y, strength, imageUrl, size }) => ({
+      painting, x, y, strength, imageUrl, size,
     }));
-  }, []);
+  }, [paintings, cx, cy, dims]);
+
+  // Push neighbours away when a node is hovered.
+  //
+  // The hovered node's inner div scales to 1.7×, so its visual radius grows
+  // from r to r*1.7. We run a small iterative simulation:
+  //   Pass A — push every non-hovered node clear of the expanded hovered node.
+  //   Pass B — resolve any cascading neighbor-vs-neighbor overlaps that result.
+  // This repeats until nothing moves (or 30 iterations), then returns each
+  // node's delta offset from its resting position.
+  const pushOffsets = useMemo(() => {
+    if (!hoveredId) return {};
+    const hovNode = nodes.find((n) => n.painting.id === hoveredId);
+    if (!hovNode) return {};
+
+    const HOVER_SCALE = 2;
+    const GAP = 12; // minimum gap between circle edges after push
+
+    // Mutable working positions
+    const pts = nodes.map((n) => ({
+      id: n.painting.id,
+      x: n.x,
+      y: n.y,
+      r: (n.size ?? STRENGTH_SIZE[n.strength] ?? 68) / 2,
+      isHov: n.painting.id === hoveredId,
+    }));
+
+    const hov = pts.find((p) => p.isHov);
+    const hovR = hov.r * HOVER_SCALE; // expanded visual radius
+    const MONET_R = 300; // 200px circle radius + 100px clear gap
+
+    for (let iter = 0; iter < 30; iter++) {
+      let moved = false;
+
+      // Pass A: clear every node from the expanded hovered circle
+      for (const p of pts) {
+        if (p.isHov) continue;
+        const dx = p.x - hov.x;
+        const dy = p.y - hov.y;
+        const dist = Math.hypot(dx, dy) || 1;
+        const need = hovR + p.r + GAP;
+        if (dist < need) {
+          const push = need - dist;
+          p.x += (dx / dist) * push;
+          p.y += (dy / dist) * push;
+          moved = true;
+        }
+      }
+
+      // Pass B: resolve cascading neighbor-vs-neighbor overlaps
+      for (let i = 0; i < pts.length; i++) {
+        if (pts[i].isHov) continue;
+        for (let j = i + 1; j < pts.length; j++) {
+          if (pts[j].isHov) continue;
+          const a = pts[i];
+          const b = pts[j];
+          const dx = b.x - a.x;
+          const dy = b.y - a.y;
+          const dist = Math.hypot(dx, dy) || 1;
+          const need = a.r + b.r + GAP;
+          if (dist < need) {
+            const push = (need - dist) / 2;
+            a.x -= (dx / dist) * push;
+            a.y -= (dy / dist) * push;
+            b.x += (dx / dist) * push;
+            b.y += (dy / dist) * push;
+            moved = true;
+          }
+        }
+      }
+
+      // Pass C: keep every node clear of the fixed central Monet circle
+      for (const p of pts) {
+        if (p.isHov) continue;
+        const dx = p.x - cx;
+        const dy = p.y - cy;
+        const dist = Math.hypot(dx, dy) || 1;
+        const need = MONET_R + p.r + GAP;
+        if (dist < need) {
+          const push = need - dist;
+          p.x += (dx / dist) * push;
+          p.y += (dy / dist) * push;
+          moved = true;
+        }
+      }
+
+      if (!moved) break;
+    }
+
+    // Return deltas from each node's resting position
+    const offsets = {};
+    for (const p of pts) {
+      if (p.isHov) continue;
+      const orig = nodes.find((n) => n.painting.id === p.id);
+      const dx = p.x - orig.x;
+      const dy = p.y - orig.y;
+      if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+        offsets[p.id] = { x: dx, y: dy };
+      }
+    }
+    return offsets;
+  }, [hoveredId, nodes]);
 
   const handleSelectNode = useCallback(
     (node) => {
-      if (wasDragging.current) return;
       const monetEntry = findConnectedMonet(node.painting, catalog);
       setSelected({
         ...node,
@@ -278,204 +381,163 @@ export default function InfluenceGraph() {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-stone">
-      {/* ── Fixed header ── */}
-      <div className="fixed top-0 left-0 right-0 z-30 flex flex-col items-center pt-5 pointer-events-none">
-        <h2
-          className="font-serif italic text-charcoal text-center"
-          style={{ fontSize: "clamp(0.95rem, 1.55vw, 1.35rem)" }}
+
+      {/* ── SVG: connection lines (hidden until hover) ── */}
+      <svg
+        className="absolute inset-0 pointer-events-none"
+        style={{ width: dims.w, height: dims.h, zIndex: 1 }}
+      >
+        {nodes.map(({ painting, x, y }) => {
+          const push = pushOffsets[painting.id] ?? { x: 0, y: 0 };
+          const isHov = hoveredId === painting.id;
+          const anyHov = hoveredId !== null;
+          const ex = x + push.x;
+          const ey = y + push.y;
+          // Start line at the Monet circle's perimeter, not its centre,
+          // so it never crosses the central painting.
+          const ang = Math.atan2(ey - cy, ex - cx);
+          const x1 = cx + Math.cos(ang) * 200; // 200 = radius of the 400px central circle
+          const y1 = cy + Math.sin(ang) * 200;
+          return (
+            <line
+              key={painting.id + "-line"}
+              x1={x1}
+              y1={y1}
+              x2={ex}
+              y2={ey}
+              stroke="black"
+              strokeWidth={isHov ? 1.5 : 1}
+              opacity={anyHov ? (isHov ? 1 : 0.25) : 0}
+              style={{ transition: "opacity 0.3s, stroke-width 0.2s" }}
+            />
+          );
+        })}
+      </svg>
+
+      {/* ── Full-page backdrop blur — fades in on hover.
+           Everything at z<22 (regular nodes, dimmed lines) blurs through it.
+           The hovered painting (z-30), Monet (z-28), and connection line
+           SVG B (z-25) sit above it and remain sharp. ── */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 22,
+          backdropFilter: "blur(1px)",
+          WebkitBackdropFilter: "blur(1px)",
+          background: "transparent",
+          pointerEvents: "none",
+          opacity: hoveredId ? 1 : 0,
+          transition: "opacity 0.35s ease",
+        }}
+      />
+
+      {/* ── Center node: Monet Water Lilies — z-28 when hovering so it stays
+           above the backdrop blur overlay ── */}
+      <div
+        style={{
+          position: "absolute",
+          left: cx,
+          top: cy,
+          transform: "translate(-50%, -50%)",
+          zIndex: hoveredId ? 28 : 20,
+        }}
+      >
+        <div
+          style={{
+            width: 400,
+            height: 400,
+            borderRadius: "50%",
+            overflow: "hidden",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.28)",
+          }}
         >
-          Water Lilies: A Chain of Influence
-        </h2>
+          {centerMonet?.image_url ? (
+            <img
+              src={centerMonet.image_url}
+              alt="Monet, Water Lilies"
+              className="w-full h-full object-cover"
+              draggable={false}
+            />
+          ) : (
+            <div className="w-full h-full bg-warmgray flex items-center justify-center">
+              <span className="font-serif italic text-charcoal/60 text-xs text-center px-3">
+                Water Lilies
+              </span>
+            </div>
+          )}
+        </div>
         <p
-          className="font-sans text-charcoal/45 mt-1 text-center"
-          style={{ fontSize: "clamp(0.62rem, 0.82vw, 0.78rem)" }}
+          className="font-serif italic text-charcoal/65 text-center mt-2"
+          style={{ fontSize: "0.68rem", width: 420, marginLeft: -10, lineHeight: 1.3 }}
         >
-          {canDrag
-            ? "Closer paintings share stronger connections · drag to explore · click to learn"
-            : "Closer paintings share stronger connections · click to learn"}
+          Monet, <em>Water Lilies</em>
         </p>
       </div>
 
-      {/* ── Scene: draggable only when content overflows ── */}
-      <motion.div
-        drag={canDrag || undefined}
-        dragMomentum
-        dragElastic={0.06}
-        dragConstraints={dragConstraints}
-        dragTransition={{ power: 0.35, timeConstant: 280 }}
-        onDragStart={() => {
-          wasDragging.current = true;
-        }}
-        onDragEnd={() => {
-          setTimeout(() => {
-            wasDragging.current = false;
-          }, 60);
-        }}
-        style={{
-          width: dims.w,
-          height: dims.h,
-          position: "absolute",
-          left: 0,
-          top: 0,
-          cursor: canDrag ? "grab" : "default",
-        }}
-        whileDrag={{ cursor: "grabbing" }}
-      >
-        {/* ── SVG: orbit rings + spokes ── */}
-        <svg
-          style={{
-            position: "absolute",
-            width: dims.w,
-            height: dims.h,
-            top: 0,
-            left: 0,
-            zIndex: 1,
-            pointerEvents: "none",
-          }}
-        >
-          {/* Dashed elliptical orbit guides */}
-          {STRENGTH_ORDER.map((strength, ringIndex) => (
-            <ellipse
-              key={`ring-${strength}`}
-              cx={CCX}
-              cy={CCY}
-              rx={RING_X_FRAC[ringIndex] * dims.w}
-              ry={RING_Y_FRAC[ringIndex] * dims.h}
-              fill="none"
-              stroke={RING_STROKE[strength]}
-              strokeWidth={1}
-              strokeDasharray={RING_DASH[strength]}
-            />
-          ))}
+      {/* ── Painting nodes ── */}
+      {nodes.map((node, idx) => {
+        const { painting, x, y, strength, imageUrl } = node;
+        const size = node.size ?? (STRENGTH_SIZE[strength] ?? 68);
+        const isHov = hoveredId === painting.id;
+        const push = pushOffsets[painting.id] ?? { x: 0, y: 0 };
 
-          {/* Spokes: Monet circle edge → first hit on the painting’s AABB (radial
-              to the work). Uses measured size from onLoad. */}
-          {nodes.map(({ painting, x, y, strength, ringIndex, imageUrl }) => {
-            const angle = Math.atan2(y - CCY, x - CCX);
-            const x1 = CCX + Math.cos(angle) * MONET_R;
-            const y1 = CCY + Math.sin(angle) * MONET_R;
-            const size =
-              imageSizes[painting.id] ??
-              (imageUrl
-                ? { w: NODE_MAX_W[ringIndex], h: NODE_MAX_H[ringIndex] }
-                : {
-                    w: NODE_MAX_W[ringIndex] * 0.6,
-                    h: NODE_MAX_H[ringIndex],
-                  });
-            const ep = rayFromHubToImageBox(CCX, CCY, MONET_R, x, y, size.w, size.h);
-            return (
-              <line
-                key={painting.id + "-spoke"}
-                x1={x1}
-                y1={y1}
-                x2={ep.x}
-                y2={ep.y}
-                stroke={HUB_COLORS[strength]}
-                strokeWidth={HUB_WIDTHS[strength]}
-              />
-            );
-          })}
-        </svg>
-
-        {/* ── Monet center node ── */}
-        <div
-          style={{
-            position: "absolute",
-            left: CCX,
-            top: CCY,
-            transform: "translate(-50%, -50%)",
-            zIndex: 20,
-          }}
-        >
-          <div
-            style={{
-              width: MONET_R * 2,
-              height: MONET_R * 2,
-              borderRadius: "50%",
-              overflow: "hidden",
-              boxShadow:
-                "0 0 0 3px rgba(212,184,132,0.9), 0 0 0 7px rgba(212,184,132,0.22), 0 10px 32px rgba(0,0,0,0.25)",
-            }}
-          >
-            {centerMonet?.image_url ? (
-              <img
-                src={centerMonet.image_url}
-                alt="Monet, Water Lilies"
-                className="w-full h-full object-cover"
-                draggable={false}
-              />
-            ) : (
-              <div className="w-full h-full bg-warmgray flex items-center justify-center">
-                <span className="font-serif italic text-charcoal/60 text-xs text-center px-3">
-                  Water Lilies
-                </span>
-              </div>
-            )}
-          </div>
-          <p
-            className="font-serif italic text-charcoal/65 text-center mt-2"
-            style={{ fontSize: "0.68rem", width: 134, marginLeft: -7, lineHeight: 1.3 }}
-          >
-            Monet, <em>Water Lilies</em>
-          </p>
-        </div>
-
-        {/* ── Painting nodes ── */}
-        {nodes.map(({ painting, x, y, ringIndex, imageUrl, strength }, idx) => (
+        return (
           <motion.button
             key={painting.id}
             initial={{ opacity: 0, scale: 0.3 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{
-              delay: 0.15 + idx * 0.04,
-              duration: 0.55,
-              ease: [0.22, 1, 0.36, 1],
-            }}
+            animate={{ opacity: 1, scale: 1, x: push.x, y: push.y }}
+            transition={
+              // On first mount use stagger; on push changes use spring
+              hoveredId
+                ? { type: "spring", stiffness: 260, damping: 28 }
+                : {
+                    delay: 0.15 + idx * 0.04,
+                    duration: 0.55,
+                    ease: [0.22, 1, 0.36, 1],
+                  }
+            }
             style={{
               position: "absolute",
               left: x,
               top: y,
-              transform: "translate(-50%, -50%)",
-              zIndex: 20,
+              // FIX 2: use margin instead of transform for centering so
+              // Framer Motion's animate={{ x, y }} (push offset) doesn't
+              // compete with / overwrite the translate(-50%,-50%) centering.
+              marginLeft: -(size / 2),
+              marginTop: -(size / 2),
+              width: size,
+              height: size,
+              zIndex: isHov ? 30 : 20,
             }}
-            className="group"
-            onClick={() =>
-              handleSelectNode({ painting, x, y, strength, ringIndex, imageUrl })
-            }
+            onMouseEnter={() => setHoveredId(painting.id)}
+            onMouseLeave={() => setHoveredId(null)}
+            onClick={() => handleSelectNode(node)}
             aria-label={`${painting.title} by ${painting.artist}`}
           >
             <motion.div
-              whileHover={{ scale: 1.13 }}
-              transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-              style={{ display: "inline-block" }}
+              className="w-full h-full overflow-hidden"
+              animate={{
+                scale: isHov ? 2 : 1,
+              }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              style={{
+                borderRadius: "50%",
+                boxShadow: "0 4px 18px rgba(0,0,0,0.15)",
+              }}
             >
               {imageUrl ? (
                 <img
                   src={imageUrl}
                   alt={painting.title}
+                  className="w-full h-full object-cover"
                   draggable={false}
-                  onLoad={(e) => handleImageLoad(painting.id, ringIndex, e)}
-                  style={{
-                    display: "block",
-                    maxHeight: NODE_MAX_H[ringIndex],
-                    maxWidth: NODE_MAX_W[ringIndex],
-                    width: "auto",
-                    height: "auto",
-                    boxShadow: "0 4px 18px rgba(0,0,0,0.22)",
-                  }}
                 />
               ) : (
-                <div
-                  className="bg-warmgray flex items-center justify-center"
-                  style={{
-                    width: NODE_MAX_W[ringIndex] * 0.6,
-                    height: NODE_MAX_H[ringIndex],
-                    boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
-                  }}
-                >
+                <div className="w-full h-full bg-warmgray flex items-center justify-center p-1.5">
                   <span
-                    className="font-sans text-charcoal/50 text-center leading-tight px-1"
-                    style={{ fontSize: 8 }}
+                    className="font-sans text-charcoal/55 text-center leading-tight"
+                    style={{ fontSize: 7 }}
                   >
                     {painting.artist.split(" ").slice(-1)[0]}
                   </span>
@@ -483,52 +545,85 @@ export default function InfluenceGraph() {
               )}
             </motion.div>
 
-            {/* Hover label */}
-            <div
-              className="absolute left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none whitespace-nowrap"
-              style={{ bottom: -22, zIndex: 30 }}
-            >
-              <span
-                className="font-sans text-charcoal bg-white/95 px-2 py-0.5 rounded-full shadow-sm"
-                style={{ fontSize: "0.63rem" }}
+            {/* Artist name — only visible on hover */}
+            {isHov && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="absolute left-1/2 -translate-x-1/2 pointer-events-none whitespace-nowrap"
+                style={{ bottom: -24, zIndex: 31 }}
               >
-                {painting.artist}
-              </span>
-            </div>
+                <span
+                  className="font-sans text-charcoal bg-white/95 px-2 py-0.5 rounded-full shadow-sm"
+                  style={{ fontSize: "0.63rem" }}
+                >
+                  {painting.artist}
+                </span>
+              </motion.div>
+            )}
           </motion.button>
-        ))}
-      </motion.div>
+        );
+      })}
+      {/* ── SVG B: highlighted spoke rendered above all satellite paintings ── */}
+      {hoveredId && (() => {
+        const hovNode = nodes.find((n) => n.painting.id === hoveredId);
+        if (!hovNode) return null;
+        const push = pushOffsets[hovNode.painting.id] ?? { x: 0, y: 0 };
+        const ex = hovNode.x + push.x;
+        const ey = hovNode.y + push.y;
+        const ang2 = Math.atan2(ey - cy, ex - cx);
+        const lx1 = cx + Math.cos(ang2) * 200;
+        const ly1 = cy + Math.sin(ang2) * 200;
+        return (
+          <svg
+            className="absolute inset-0 pointer-events-none"
+            style={{ width: dims.w, height: dims.h, zIndex: 25 }}
+          >
+            <line
+              x1={lx1} y1={ly1} x2={ex} y2={ey}
+              stroke="black"
+              strokeWidth={1.5}
+              opacity={1}
+            />
+          </svg>
+        );
+      })()}
 
-      {/* ── Fixed legend ── */}
+      {/* ── Legend: size = strength ── */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.4, duration: 0.6 }}
-        className="fixed bottom-6 left-6 z-30 flex flex-col gap-2 pointer-events-none"
+        className="fixed bottom-6 left-6 z-10 flex flex-col gap-2 pointer-events-none"
       >
-        {STRENGTH_ORDER.map((s) => (
-          <div key={s} className="flex items-center gap-2.5">
-            <svg width="30" height="10" style={{ flexShrink: 0 }}>
-              <line
-                x1="0"
-                y1="5"
-                x2="30"
-                y2="5"
-                stroke={
-                  s === "direct"
-                    ? "rgba(212,184,132,1)"
-                    : s === "documented"
-                      ? "rgba(90,65,40,0.65)"
-                      : "rgba(45,45,45,0.4)"
-                }
-                strokeWidth={HUB_WIDTHS[s]}
+        {[
+          { label: "Artist stated", strength: "direct" },
+          { label: "Critical link", strength: "critical" },
+          { label: "Archivally documented", strength: "documented" },
+        ].map(({ label, strength }) => {
+          const sz = STRENGTH_SIZE[strength];
+          // Show a small square proportional to the thumbnail size
+          const dot = Math.round(sz * 0.17);
+          return (
+            <div key={label} className="flex items-center gap-2.5">
+              <div
+                style={{
+                  width: dot,
+                  height: dot,
+                  background: "rgba(45,45,45,0.4)",
+                  flexShrink: 0,
+                  borderRadius: 1,
+                }}
               />
-            </svg>
-            <span className="font-sans text-charcoal/52" style={{ fontSize: "0.63rem" }}>
-              {STRENGTH_LABELS[s]}
-            </span>
-          </div>
-        ))}
+              <span
+                className="font-sans text-charcoal/52"
+                style={{ fontSize: "0.63rem" }}
+              >
+                {label}
+              </span>
+            </div>
+          );
+        })}
       </motion.div>
 
       {/* ── Back navigation ── */}
@@ -566,140 +661,106 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
     };
   }, [onClose]);
 
-  const metaRows = [
-    { label: "Artist", value: painting.artist },
-    { label: "Date", value: painting.year },
-    { label: "Collection", value: painting.collection },
-  ].filter((r) => r.value);
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25 }}
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-stone"
     >
-      <div
-        className="absolute inset-0"
-        style={{ backgroundColor: "rgba(0,0,0,0.88)" }}
-        onClick={onClose}
-      />
+      <div className="absolute inset-0" onClick={onClose} />
 
       <motion.div
         initial={{ opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.97 }}
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-10 flex flex-col xl:flex-row items-center xl:items-end gap-6 xl:gap-10 max-w-[95vw] max-h-[90vh] overflow-y-auto xl:overflow-visible px-4 xl:px-6"
+        className="relative z-10 flex flex-col gap-8 max-w-[860px] w-full max-h-[90vh] overflow-y-auto px-10 py-12"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Side-by-side images */}
-        <div className="flex flex-row items-end gap-5 xl:gap-7 flex-shrink-0">
-          <div className="flex flex-col items-center gap-2">
-            <div className="flex items-end justify-center" style={{ height: "clamp(150px, 34vh, 310px)" }}>
-              {monetImageUrl ? (
-                <img
-                  src={monetImageUrl}
-                  alt={monetEntry?.title || "Monet, Water Lilies"}
-                  className="block max-h-full w-auto h-auto object-contain museum-frame-lightbox"
-                  style={{ maxWidth: "clamp(130px, 28vw, 280px)" }}
-                  draggable={false}
-                />
-              ) : (
-                <div className="museum-frame-lightbox bg-warmgray flex items-center justify-center" style={{ width: 180, height: "clamp(130px, 26vh, 240px)" }}>
-                  <span className="font-serif italic text-charcoal/50 text-xs text-center px-3">Monet, Water Lilies</span>
-                </div>
-              )}
-            </div>
-            <p className="font-serif italic text-white/55 text-center" style={{ fontSize: "clamp(0.6rem, 0.75vw, 0.72rem)", maxWidth: 200, lineHeight: 1.35 }}>
-              Monet, <em>{monetEntry?.title || "Water Lilies"}</em>
-              {monetEntry?.year && <span className="text-white/38">, {monetEntry.year}</span>}
-            </p>
-          </div>
-
-          <div className="self-stretch hidden md:block" style={{ width: 1, background: "rgba(255,255,255,0.15)", flexShrink: 0 }} />
-
-          <div className="flex flex-col items-center gap-2">
-            <div className="flex items-end justify-center" style={{ height: "clamp(150px, 34vh, 310px)" }}>
-              {imageUrl ? (
-                <img
-                  src={imageUrl}
-                  alt={painting.title}
-                  className="block max-h-full w-auto h-auto object-contain museum-frame-lightbox"
-                  style={{ maxWidth: "clamp(130px, 28vw, 280px)" }}
-                  draggable={false}
-                />
-              ) : (
-                <div className="museum-frame-lightbox bg-warmgray flex items-center justify-center" style={{ width: 180, height: "clamp(130px, 26vh, 240px)" }}>
-                  <span className="font-serif italic text-charcoal/50 text-xs text-center px-3">Image rights restricted</span>
-                </div>
-              )}
-            </div>
-            <p className="font-serif italic text-white/55 text-center" style={{ fontSize: "clamp(0.6rem, 0.75vw, 0.72rem)", maxWidth: 200, lineHeight: 1.35 }}>
-              {painting.artist}, <em>{painting.title}</em>
-              {painting.year && <span className="text-white/38">, {painting.year}</span>}
-            </p>
-          </div>
-        </div>
-
-        {/* Info */}
-        <div className="text-white flex flex-col gap-4 xl:max-w-xs xl:pb-3 w-full xl:w-auto">
-          <div>
-            <h3 className="font-serif italic text-white leading-snug" style={{ fontSize: "clamp(1rem, 1.6vw, 1.35rem)" }}>
-              {painting.title}
-            </h3>
-            <dl className="mt-3 space-y-1.5">
-              {metaRows.map((r) => (
-                <div key={r.label} className="flex gap-2">
-                  <dt className="font-sans text-neutral-400 uppercase tracking-wider text-xs whitespace-nowrap pt-0.5" style={{ minWidth: "5rem" }}>
-                    {r.label}
-                  </dt>
-                  <dd className="font-sans text-neutral-200" style={{ fontSize: "clamp(0.78rem, 0.95vw, 0.875rem)" }}>
-                    {r.value}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-
-          {painting.connection_claim && (
-            <div>
-              <p className="font-sans text-neutral-400 uppercase tracking-wider mb-1.5" style={{ fontSize: "0.62rem" }}>
-                Connection
-              </p>
-              <div className="overflow-y-auto pr-1" style={{ maxHeight: "clamp(80px, 17vh, 180px)", scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,0.18) transparent" }}>
-                <p className="font-sans text-neutral-300 leading-relaxed" style={{ fontSize: "clamp(0.73rem, 0.9vw, 0.82rem)", textWrap: "pretty" }}>
-                  {painting.connection_claim}
-                </p>
+        {/* Two images side by side */}
+        <div className="flex flex-row gap-8 w-full">
+          {/* Monet painting */}
+          <div className="flex flex-col gap-1.5" style={{ flex: 1 }}>
+            {monetImageUrl ? (
+              <img
+                src={monetImageUrl}
+                alt={monetEntry?.title || "Monet, Water Lilies"}
+                className="w-full h-auto object-contain"
+                style={{ maxHeight: "42vh" }}
+                draggable={false}
+              />
+            ) : (
+              <div className="w-full bg-warmgray flex items-center justify-center" style={{ height: "42vh" }}>
+                <span className="font-serif italic text-black/40 text-xs text-center px-3">Monet, Water Lilies</span>
               </div>
-            </div>
-          )}
+            )}
+            <p className="font-sans text-black text-xs mt-1">Claude Monet</p>
+            <p className="font-serif italic text-black text-xs">{monetEntry?.title || "Water Lilies"}</p>
+            <p className="font-sans text-black/55 text-xs">
+              {[monetEntry?.year, monetEntry?.collection].filter(Boolean).join(", ")}
+            </p>
+          </div>
 
-          {painting.citation_url && (
-            <a
-              href={painting.citation_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 font-sans text-cream/70 hover:text-cream transition-colors w-fit"
-              style={{ fontSize: "clamp(0.72rem, 0.88vw, 0.82rem)", borderBottom: "1px solid rgba(255,248,240,0.3)", paddingBottom: 1 }}
-              onMouseEnter={(e) => (e.currentTarget.style.borderBottomColor = "rgba(255,248,240,0.65)")}
-              onMouseLeave={(e) => (e.currentTarget.style.borderBottomColor = "rgba(255,248,240,0.3)")}
-              onClick={(e) => e.stopPropagation()}
-            >
-              Learn more
-              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M2 6h8M6 2l4 4-4 4" />
-              </svg>
-            </a>
-          )}
+          {/* Influenced painting */}
+          <div className="flex flex-col gap-1.5" style={{ flex: 1 }}>
+            {imageUrl ? (
+              <img
+                src={imageUrl}
+                alt={painting.title}
+                className="w-full h-auto object-contain"
+                style={{ maxHeight: "42vh" }}
+                draggable={false}
+              />
+            ) : (
+              <div className="w-full bg-warmgray flex items-center justify-center" style={{ height: "42vh" }}>
+                <span className="font-serif italic text-black/40 text-xs text-center px-3">Image rights restricted</span>
+              </div>
+            )}
+            <p className="font-sans text-black text-xs mt-1">{painting.artist}</p>
+            <p className="font-serif italic text-black text-xs">{painting.title}</p>
+            <p className="font-sans text-black/55 text-xs">
+              {[painting.year, painting.collection].filter(Boolean).join(", ")}
+            </p>
+          </div>
         </div>
+
+        {/* Combined artwork heading */}
+        <h3 className="font-serif text-black" style={{ fontSize: "clamp(0.9rem, 1.4vw, 1.2rem)" }}>
+          Monet, <em>{monetEntry?.title || "Water Lilies"}</em> &amp; {painting.artist}, <em>{painting.title}</em>
+        </h3>
+
+        {/* Connection text */}
+        {painting.connection_claim && (
+          <p className="font-sans text-black/70 leading-relaxed" style={{ fontSize: "clamp(0.78rem, 0.95vw, 0.875rem)" }}>
+            {painting.connection_claim}
+          </p>
+        )}
+
+        {/* Learn more */}
+        {painting.citation_url && (
+          <a
+            href={painting.citation_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 font-sans text-black/60 hover:text-black transition-colors w-fit"
+            style={{ fontSize: "0.82rem", borderBottom: "1px solid rgba(0,0,0,0.25)", paddingBottom: 1 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            Learn more
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M2 6h8M6 2l4 4-4 4" />
+            </svg>
+          </a>
+        )}
       </motion.div>
 
+      {/* Close button */}
       <button
         type="button"
         onClick={onClose}
-        className="absolute top-5 right-5 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+        className="absolute top-5 right-5 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/8 hover:bg-black/14 text-black transition-colors"
         aria-label="Close"
       >
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
