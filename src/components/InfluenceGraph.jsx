@@ -726,10 +726,10 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
           </div>
         </div>
 
-        {/* Connection text + learn more — padded, left-aligned */}
-        <div className="flex flex-col gap-6 px-10 pb-12">
+        {/* Connection text + learn more — centered, ~10-12 words per line */}
+        <div className="flex flex-col items-center gap-6 px-10 pb-12">
           {painting.connection_claim && (
-            <p className="font-serif italic text-charcoal/80 leading-relaxed" style={{ fontSize: "clamp(15px, 1.2vw, 20px)", textWrap: "pretty" }}>
+            <p className="font-serif italic text-charcoal/80 leading-relaxed text-center" style={{ fontSize: "clamp(15px, 1.2vw, 20px)", textWrap: "pretty", maxWidth: "55ch" }}>
               {painting.connection_claim}
             </p>
           )}
@@ -739,7 +739,7 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
               href={painting.citation_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 font-sans text-black/60 hover:text-black transition-colors w-fit"
+              className="inline-flex items-center gap-1.5 font-sans text-black/60 hover:text-black transition-colors"
               style={{ fontSize: "0.82rem", borderBottom: "1px solid rgba(0,0,0,0.25)", paddingBottom: 1 }}
               onClick={(e) => e.stopPropagation()}
             >
