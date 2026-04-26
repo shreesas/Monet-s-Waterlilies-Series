@@ -676,11 +676,11 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.97 }}
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-10 flex flex-col gap-8 max-w-[860px] w-full max-h-[90vh] overflow-y-auto px-10 py-12"
+        className="relative z-10 flex flex-col gap-8 w-full max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Two images side by side */}
-        <div className="flex flex-row gap-8 w-full">
+        {/* Two images side by side — full viewport width */}
+        <div className="flex flex-row gap-8 w-full px-10 pt-12">
           {/* Monet painting */}
           <div className="flex flex-col gap-1.5" style={{ flex: 1 }}>
             {monetImageUrl ? (
@@ -726,29 +726,30 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
           </div>
         </div>
 
-        {/* Connection text */}
-        {painting.connection_claim && (
-          <p className="font-serif italic text-charcoal/80 leading-relaxed" style={{ fontSize: "clamp(15px, 1.2vw, 20px)", textWrap: "pretty" }}>
-            {painting.connection_claim}
-          </p>
-        )}
+        {/* Connection text + learn more — padded, left-aligned */}
+        <div className="flex flex-col gap-6 px-10 pb-12">
+          {painting.connection_claim && (
+            <p className="font-serif italic text-charcoal/80 leading-relaxed" style={{ fontSize: "clamp(15px, 1.2vw, 20px)", textWrap: "pretty" }}>
+              {painting.connection_claim}
+            </p>
+          )}
 
-        {/* Learn more */}
-        {painting.citation_url && (
-          <a
-            href={painting.citation_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 font-sans text-black/60 hover:text-black transition-colors w-fit"
-            style={{ fontSize: "0.82rem", borderBottom: "1px solid rgba(0,0,0,0.25)", paddingBottom: 1 }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            Learn more
-            <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M2 6h8M6 2l4 4-4 4" />
-            </svg>
-          </a>
-        )}
+          {painting.citation_url && (
+            <a
+              href={painting.citation_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 font-sans text-black/60 hover:text-black transition-colors w-fit"
+              style={{ fontSize: "0.82rem", borderBottom: "1px solid rgba(0,0,0,0.25)", paddingBottom: 1 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              Learn more
+              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M2 6h8M6 2l4 4-4 4" />
+              </svg>
+            </a>
+          )}
+        </div>
       </motion.div>
 
       {/* Close button */}
