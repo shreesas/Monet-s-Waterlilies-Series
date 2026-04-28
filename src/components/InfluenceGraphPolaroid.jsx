@@ -91,11 +91,6 @@ export default function InfluenceGraphPolaroid() {
     [catalog]
   );
 
-  const bgMonet = useMemo(
-    () => catalog.find((c) => c.catalog_number === "W.1731") ?? null,
-    [catalog]
-  );
-
   const nodes = useMemo(() => {
     const sorted = [
       ...paintings.filter((p) => p.connection_strength === "direct"),
@@ -379,22 +374,6 @@ export default function InfluenceGraphPolaroid() {
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-stone">
 
-      {/* ── Background: W.1731 at 60% opacity ── */}
-      {bgMonet?.image_url && (
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            zIndex: 0,
-            backgroundImage: `url(${bgMonet.image_url})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            opacity: 0.5,
-            pointerEvents: "none",
-          }}
-        />
-      )}
-
       {/* ── SVG: connection lines ── */}
       <svg
         className="absolute inset-0 pointer-events-none"
@@ -427,11 +406,11 @@ export default function InfluenceGraphPolaroid() {
                 x={mx} y={my}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                fontSize="9"
+                fontSize="13"
                 fontFamily="sans-serif"
                 fill="rgba(0,0,0,0.85)"
                 stroke="white"
-                strokeWidth="3"
+                strokeWidth="4"
                 paintOrder="stroke"
                 opacity={lineOpacity}
                 style={{ transition: "opacity 0.3s", userSelect: "none" }}
