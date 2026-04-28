@@ -26,33 +26,39 @@ export default function ExploreDropdown({ currentPage }) {
         </span>
       </button>
 
+      {/* Transparent bridge: pt-2 fills the visual gap so the mouse never
+          leaves the parent hover zone while moving from button to items. */}
       <div
-        className="absolute top-full right-0 mt-2 w-52 rounded-2xl bg-charcoal shadow-[0_8px_32px_rgba(0,0,0,0.28)] overflow-hidden transition-all duration-200"
-        style={{
-          opacity: open ? 1 : 0,
-          transform: open ? "translateY(0)" : "translateY(-6px)",
-          pointerEvents: open ? "auto" : "none",
-        }}
+        className="absolute top-full right-0 w-52 pt-2"
+        style={{ pointerEvents: open ? "auto" : "none" }}
       >
-        {PAGES.map(({ label, href }) => {
-          const isCurrent = currentPage === href;
-          return (
-            <a
-              key={href}
-              href={href}
-              className={`block px-5 py-3 font-sans text-sm border-b border-white/10 last:border-0 transition-colors ${
-                isCurrent
-                  ? "text-cream/40 cursor-default pointer-events-none"
-                  : "text-cream hover:bg-white/10"
-              }`}
-            >
-              {isCurrent && (
-                <span className="mr-1.5 text-cream/40">•</span>
-              )}
-              {label}
-            </a>
-          );
-        })}
+        <div
+          className="rounded-2xl bg-charcoal shadow-[0_8px_32px_rgba(0,0,0,0.28)] overflow-hidden transition-all duration-200"
+          style={{
+            opacity: open ? 1 : 0,
+            transform: open ? "translateY(0)" : "translateY(-6px)",
+          }}
+        >
+          {PAGES.map(({ label, href }) => {
+            const isCurrent = currentPage === href;
+            return (
+              <a
+                key={href}
+                href={href}
+                className={`block px-5 py-3 font-sans text-sm border-b border-white/10 last:border-0 transition-colors ${
+                  isCurrent
+                    ? "text-cream/40 cursor-default pointer-events-none"
+                    : "text-cream hover:bg-white/10"
+                }`}
+              >
+                {isCurrent && (
+                  <span className="mr-1.5 text-cream/40">•</span>
+                )}
+                {label}
+              </a>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
