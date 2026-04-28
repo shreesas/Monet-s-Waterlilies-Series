@@ -53,12 +53,14 @@ export default function InfluenceGraphPolaroid() {
       .catch((err) => console.error("Failed to load influence data", err));
   }, []);
 
-  // Pick 10 random Monet paintings with images once the catalog loads
+  // Use specific Water Lilies paintings for the center rotation
   useEffect(() => {
     if (!catalog.length) return;
-    const withImg = catalog.filter((c) => c.image_url);
-    const shuffled = [...withImg].sort(() => Math.random() - 0.5);
-    setRotatingPaintings(shuffled.slice(0, 10));
+    const ids = ["W.1701", "W.1702", "W.1698", "W.1697", "W.1691", "W.1687", "W.1688"];
+    const picked = ids
+      .map((id) => catalog.find((c) => c.catalog_number === id))
+      .filter((c) => c?.image_url);
+    setRotatingPaintings(picked);
   }, [catalog]);
 
   // Advance the displayed painting every 10 s
