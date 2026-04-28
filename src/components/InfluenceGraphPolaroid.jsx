@@ -56,7 +56,7 @@ export default function InfluenceGraphPolaroid() {
   // Use specific Water Lilies paintings for the center rotation
   useEffect(() => {
     if (!catalog.length) return;
-    const ids = ["W.1701", "W.1702", "W.1698", "W.1697", "W.1691", "W.1687", "W.1688"];
+    const ids = ["W.1685", "W.1689", "W.1691", "W.1695", "W.1698", "W.1703", "W.1705", "W.1706"];
     const picked = ids
       .map((id) => catalog.find((c) => c.catalog_number === id))
       .filter((c) => c?.image_url);
