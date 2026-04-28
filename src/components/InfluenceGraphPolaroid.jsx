@@ -473,10 +473,10 @@ export default function InfluenceGraphPolaroid() {
           </AnimatePresence>
         </div>
         <p
-          className="font-serif italic text-charcoal/65 text-center mt-2"
-          style={{ fontSize: "0.68rem", width: 336, marginLeft: -8, lineHeight: 1.3 }}
+          className="font-serif text-charcoal/65 text-center mt-2"
+          style={{ fontSize: "1rem", width: 336, marginLeft: -8, lineHeight: 1.3 }}
         >
-          Monet, <em>Water Lilies</em>
+          Monet, Water Lilies
         </p>
       </div>
 
