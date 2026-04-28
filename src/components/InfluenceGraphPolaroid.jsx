@@ -698,6 +698,10 @@ export default function InfluenceGraphPolaroid() {
 }
 
 function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl, onClose }) {
+  const [monetPortrait, setMonetPortrait] = useState(false);
+  const [paintingPortrait, setPaintingPortrait] = useState(false);
+  const sideBySide = monetPortrait && paintingPortrait;
+
   useEffect(() => {
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKey);
@@ -727,47 +731,57 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
         onClick={(e) => e.stopPropagation()}
       >
         {/* Left column */}
-        <div className="flex flex-col justify-center gap-10 overflow-y-auto px-10 py-12" style={{ width: "60%" }}>
-          <div className="flex flex-col items-center gap-1.5">
-            {monetImageUrl ? (
-              <img
-                src={monetImageUrl}
-                alt={monetEntry?.title || "Monet, Water Lilies"}
-                className="w-full h-auto object-contain"
-                style={{ maxHeight: "36vh" }}
-                draggable={false}
-              />
-            ) : (
-              <div className="w-full bg-warmgray flex items-center justify-center" style={{ height: "36vh" }}>
-                <span className="font-serif italic text-black/40 text-xs text-center px-3">Monet, Water Lilies</span>
-              </div>
-            )}
-            <p className="font-sans text-black text-xs mt-1 text-center">Claude Monet</p>
-            <p className="font-serif italic text-black text-xs text-center">{monetEntry?.title || "Water Lilies"}</p>
-            <p className="font-sans text-black/55 text-xs text-center">
-              {[monetEntry?.year, monetEntry?.collection].filter(Boolean).join(", ")}
-            </p>
-          </div>
+        <div
+          className="flex flex-col justify-center overflow-y-auto px-10 py-12"
+          style={{ width: "60%", gap: sideBySide ? 0 : "2.5rem" }}
+        >
+          {/* Image pair — side by side if both portrait, else stacked */}
+          <div
+            className={sideBySide ? "flex flex-row items-end gap-6" : "flex flex-col gap-10"}
+          >
+            <div className={`flex flex-col items-center gap-1.5 ${sideBySide ? "flex-1 min-w-0" : ""}`}>
+              {monetImageUrl ? (
+                <img
+                  src={monetImageUrl}
+                  alt={monetEntry?.title || "Monet, Water Lilies"}
+                  className="w-full h-auto object-contain"
+                  style={{ maxHeight: sideBySide ? "60vh" : "36vh" }}
+                  draggable={false}
+                  onLoad={(e) => setMonetPortrait(e.currentTarget.naturalHeight > e.currentTarget.naturalWidth)}
+                />
+              ) : (
+                <div className="w-full bg-warmgray flex items-center justify-center" style={{ height: "36vh" }}>
+                  <span className="font-serif italic text-black/40 text-xs text-center px-3">Monet, Water Lilies</span>
+                </div>
+              )}
+              <p className="font-sans text-black text-xs mt-1 text-center">Claude Monet</p>
+              <p className="font-serif italic text-black text-xs text-center">{monetEntry?.title || "Water Lilies"}</p>
+              <p className="font-sans text-black/55 text-xs text-center">
+                {[monetEntry?.year, monetEntry?.collection].filter(Boolean).join(", ")}
+              </p>
+            </div>
 
-          <div className="flex flex-col items-center gap-1.5">
-            {imageUrl ? (
-              <img
-                src={imageUrl}
-                alt={painting.title}
-                className="w-full h-auto object-contain"
-                style={{ maxHeight: "36vh" }}
-                draggable={false}
-              />
-            ) : (
-              <div className="w-full bg-warmgray flex items-center justify-center" style={{ height: "36vh" }}>
-                <span className="font-serif italic text-black/40 text-xs text-center px-3">Image rights restricted</span>
-              </div>
-            )}
-            <p className="font-sans text-black text-xs mt-1 text-center">{painting.artist}</p>
-            <p className="font-serif italic text-black text-xs text-center">{painting.title}</p>
-            <p className="font-sans text-black/55 text-xs text-center">
-              {[painting.year, painting.collection].filter(Boolean).join(", ")}
-            </p>
+            <div className={`flex flex-col items-center gap-1.5 ${sideBySide ? "flex-1 min-w-0" : ""}`}>
+              {imageUrl ? (
+                <img
+                  src={imageUrl}
+                  alt={painting.title}
+                  className="w-full h-auto object-contain"
+                  style={{ maxHeight: sideBySide ? "60vh" : "36vh" }}
+                  draggable={false}
+                  onLoad={(e) => setPaintingPortrait(e.currentTarget.naturalHeight > e.currentTarget.naturalWidth)}
+                />
+              ) : (
+                <div className="w-full bg-warmgray flex items-center justify-center" style={{ height: "36vh" }}>
+                  <span className="font-serif italic text-black/40 text-xs text-center px-3">Image rights restricted</span>
+                </div>
+              )}
+              <p className="font-sans text-black text-xs mt-1 text-center">{painting.artist}</p>
+              <p className="font-serif italic text-black text-xs text-center">{painting.title}</p>
+              <p className="font-sans text-black/55 text-xs text-center">
+                {[painting.year, painting.collection].filter(Boolean).join(", ")}
+              </p>
+            </div>
           </div>
         </div>
 
