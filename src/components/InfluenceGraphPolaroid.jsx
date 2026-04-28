@@ -389,7 +389,7 @@ export default function InfluenceGraphPolaroid() {
             backgroundImage: `url(${bgMonet.image_url})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
-            opacity: 0.6,
+            opacity: 0.5,
             pointerEvents: "none",
           }}
         />
