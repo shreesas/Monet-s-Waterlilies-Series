@@ -16,10 +16,10 @@ export default function ExploreDropdown({ currentPage }) {
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
     >
-      <button className="rounded-full bg-charcoal text-cream font-sans text-sm px-5 py-2.5 shadow-[0_4px_16px_rgba(0,0,0,0.18)] flex items-center gap-2 select-none cursor-default">
+      <button className="rounded-full border border-black/70 bg-transparent text-black font-sans text-sm px-5 py-2.5 shadow-[0_2px_8px_rgba(0,0,0,0.10)] flex items-center gap-2 select-none cursor-default backdrop-blur-sm">
         Explore
         <span
-          className="transition-transform duration-200 inline-block"
+          className="transition-transform duration-200 inline-block text-base leading-none"
           style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
         >
           ▾
@@ -33,10 +33,14 @@ export default function ExploreDropdown({ currentPage }) {
         style={{ pointerEvents: open ? "auto" : "none" }}
       >
         <div
-          className="rounded-2xl bg-charcoal shadow-[0_8px_32px_rgba(0,0,0,0.28)] overflow-hidden transition-all duration-200"
+          className="rounded-2xl border border-black/15 overflow-hidden transition-all duration-200"
           style={{
             opacity: open ? 1 : 0,
             transform: open ? "translateY(0)" : "translateY(-6px)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
+            backgroundColor: "rgba(255,255,255,0.55)",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
           }}
         >
           {PAGES.map(({ label, href }) => {
@@ -45,14 +49,14 @@ export default function ExploreDropdown({ currentPage }) {
               <a
                 key={href}
                 href={href}
-                className={`block px-5 py-3 font-sans text-sm border-b border-white/10 last:border-0 transition-colors ${
+                className={`block px-5 py-3 font-sans text-sm border-b border-black/8 last:border-0 transition-colors ${
                   isCurrent
-                    ? "text-cream/40 cursor-default pointer-events-none"
-                    : "text-cream hover:bg-white/10"
+                    ? "text-black/35 cursor-default pointer-events-none"
+                    : "text-black hover:bg-black/6"
                 }`}
               >
                 {isCurrent && (
-                  <span className="mr-1.5 text-cream/40">•</span>
+                  <span className="mr-1.5 text-black/30">•</span>
                 )}
                 {label}
               </a>
