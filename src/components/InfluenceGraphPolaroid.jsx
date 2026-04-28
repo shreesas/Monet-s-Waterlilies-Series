@@ -17,6 +17,7 @@ function resolveImageUrl(url) {
 }
 
 const STRENGTH_SIZE = { direct: 153, critical: 116, documented: 92 };
+const STRENGTH_LABEL = { direct: "Artist stated", critical: "Critical link", documented: "Archivally documented" };
 const POLAROID_BORDER = 8;  // white border on left / right / top
 const CAPTION_H = 44;       // white caption strip below the image
 
@@ -387,18 +388,37 @@ export default function InfluenceGraphPolaroid() {
           const ang = Math.atan2(ey - cy, ex - cx);
           const x1 = cx + Math.cos(ang) * 160;
           const y1 = cy + Math.sin(ang) * 160;
+          const mx = x1 + (ex - x1) * 0.42;
+          const my = y1 + (ey - y1) * 0.42;
+          let deg = Math.atan2(ey - y1, ex - x1) * (180 / Math.PI);
+          if (deg > 90 || deg < -90) deg += 180;
+          const lineOpacity = anyHov ? (isHov ? 1 : 0.25) : 0;
           return (
-            <line
-              key={painting.id + "-line"}
-              x1={x1}
-              y1={y1}
-              x2={ex}
-              y2={ey}
-              stroke="black"
-              strokeWidth={isHov ? 1.5 : 1}
-              opacity={anyHov ? (isHov ? 1 : 0.25) : 0}
-              style={{ transition: "opacity 0.3s, stroke-width 0.2s" }}
-            />
+            <g key={painting.id + "-line"}>
+              <line
+                x1={x1} y1={y1} x2={ex} y2={ey}
+                stroke="black"
+                strokeWidth={isHov ? 1.5 : 1}
+                opacity={lineOpacity}
+                style={{ transition: "opacity 0.3s, stroke-width 0.2s" }}
+              />
+              <text
+                x={mx} y={my}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fontSize="9"
+                fontFamily="sans-serif"
+                fill="rgba(0,0,0,0.85)"
+                stroke="white"
+                strokeWidth="3"
+                paintOrder="stroke"
+                opacity={lineOpacity}
+                style={{ transition: "opacity 0.3s", userSelect: "none" }}
+                transform={`rotate(${deg}, ${mx}, ${my})`}
+              >
+                {STRENGTH_LABEL[painting.connection_strength] ?? painting.connection_strength}
+              </text>
+            </g>
           );
         })}
       </svg>
@@ -636,6 +656,10 @@ export default function InfluenceGraphPolaroid() {
         const ang2 = Math.atan2(ey - cy, ex - cx);
         const lx1 = cx + Math.cos(ang2) * 160;
         const ly1 = cy + Math.sin(ang2) * 160;
+        const bmx = lx1 + (ex - lx1) * 0.42;
+        const bmy = ly1 + (ey - ly1) * 0.42;
+        let bdeg = Math.atan2(ey - ly1, ex - lx1) * (180 / Math.PI);
+        if (bdeg > 90 || bdeg < -90) bdeg += 180;
         return (
           <svg
             className="absolute inset-0 pointer-events-none"
@@ -647,45 +671,24 @@ export default function InfluenceGraphPolaroid() {
               strokeWidth={1.5}
               opacity={1}
             />
+            <text
+              x={bmx} y={bmy}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fontSize="9"
+              fontFamily="sans-serif"
+              fill="rgba(0,0,0,0.85)"
+              stroke="white"
+              strokeWidth="3"
+              paintOrder="stroke"
+              style={{ userSelect: "none" }}
+              transform={`rotate(${bdeg}, ${bmx}, ${bmy})`}
+            >
+              {STRENGTH_LABEL[hovNode.painting.connection_strength] ?? hovNode.painting.connection_strength}
+            </text>
           </svg>
         );
       })()}
-
-      {/* ── Legend ── */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.4, duration: 0.6 }}
-        className="fixed bottom-6 left-6 z-10 flex flex-col gap-2 pointer-events-none"
-      >
-        {[
-          { label: "Artist stated", strength: "direct" },
-          { label: "Critical link", strength: "critical" },
-          { label: "Archivally documented", strength: "documented" },
-        ].map(({ label, strength }) => {
-          const sz = STRENGTH_SIZE[strength];
-          const dot = Math.round(sz * 0.17);
-          return (
-            <div key={label} className="flex items-center gap-2.5">
-              <div
-                style={{
-                  width: dot,
-                  height: dot,
-                  background: "rgba(45,45,45,0.4)",
-                  flexShrink: 0,
-                  borderRadius: 1,
-                }}
-              />
-              <span
-                className="font-sans text-charcoal/52"
-                style={{ fontSize: "0.63rem" }}
-              >
-                {label}
-              </span>
-            </div>
-          );
-        })}
-      </motion.div>
 
       {/* ── Back navigation ── */}
       <a
