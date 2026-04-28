@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 // eslint-disable-next-line no-unused-vars -- named imports used in JSX
 import { motion, AnimatePresence } from "framer-motion";
+import ExploreDropdown from "./ExploreDropdown";
 
 const assetModules = import.meta.glob(
   ["../assets/*.jpg", "../assets/*.jpeg", "../assets/*.png", "../assets/*.webp"],
@@ -626,13 +627,7 @@ export default function InfluenceGraph() {
         })}
       </motion.div>
 
-      {/* ── Back navigation ── */}
-      <a
-        href="#/east-meets-west"
-        className="fixed bottom-6 right-6 z-30 rounded-full bg-charcoal text-cream font-sans text-sm px-5 py-2.5 shadow-[0_4px_16px_rgba(0,0,0,0.18)] hover:bg-charcoal/85 transition-colors"
-      >
-        ← East Meets West
-      </a>
+      <ExploreDropdown currentPage="#/water-lilies-influence" />
 
       {/* ── Detail overlay ── */}
       <AnimatePresence>

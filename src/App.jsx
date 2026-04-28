@@ -6,6 +6,7 @@ import InfluenceGraph from "./components/InfluenceGraph";
 import InfluenceGraphPolaroid from "./components/InfluenceGraphPolaroid";
 import LilyMorph from "./components/LilyMorph";
 import HomeIntro from "./components/HomeIntro";
+import ExploreDropdown from "./components/ExploreDropdown";
 
 // Module-level flag: true until the home intro is dismissed once per
 // page load. Resets to true on every full reload; survives within-tab
@@ -50,12 +51,7 @@ function ScreenOne() {
             <LilyMorph />
           </main>
 
-          <a
-            href="#/east-meets-west"
-            className="fixed bottom-6 right-6 z-30 rounded-full bg-charcoal text-cream font-sans text-sm px-5 py-2.5 shadow-[0_4px_16px_rgba(0,0,0,0.18)] hover:bg-charcoal/85 transition-colors"
-          >
-            East Meets West &rarr;
-          </a>
+          <ExploreDropdown currentPage="#/" />
         </>
       )}
 
@@ -74,22 +70,7 @@ export default function App() {
     return (
       <>
         <EastMeetsWest />
-        {/* Navigation to Screen 3 — sits above EastMeetsWest but below its
-            z-50 lightbox so the button never fights an open overlay. */}
-        <div className="fixed bottom-6 right-6 z-40 flex gap-3">
-          <a
-            href="#/water-lilies-influence"
-            className="rounded-full bg-charcoal text-cream font-sans text-sm px-5 py-2.5 shadow-[0_4px_16px_rgba(0,0,0,0.18)] hover:bg-charcoal/85 transition-colors"
-          >
-            Influence Map V1 &rarr;
-          </a>
-          <a
-            href="#/water-lilies-influence-polaroid"
-            className="rounded-full bg-charcoal text-cream font-sans text-sm px-5 py-2.5 shadow-[0_4px_16px_rgba(0,0,0,0.18)] hover:bg-charcoal/85 transition-colors"
-          >
-            Influence Map V2 &rarr;
-          </a>
-        </div>
+        <ExploreDropdown currentPage="#/east-meets-west" />
       </>
     );
   return <ScreenOne />;
