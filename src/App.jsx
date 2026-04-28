@@ -76,12 +76,20 @@ export default function App() {
         <EastMeetsWest />
         {/* Navigation to Screen 3 — sits above EastMeetsWest but below its
             z-50 lightbox so the button never fights an open overlay. */}
-        <a
-          href="#/water-lilies-influence"
-          className="fixed bottom-6 right-6 z-40 rounded-full bg-charcoal text-cream font-sans text-sm px-5 py-2.5 shadow-[0_4px_16px_rgba(0,0,0,0.18)] hover:bg-charcoal/85 transition-colors"
-        >
-          Influence Map &rarr;
-        </a>
+        <div className="fixed bottom-6 right-6 z-40 flex gap-3">
+          <a
+            href="#/water-lilies-influence"
+            className="rounded-full bg-charcoal text-cream font-sans text-sm px-5 py-2.5 shadow-[0_4px_16px_rgba(0,0,0,0.18)] hover:bg-charcoal/85 transition-colors"
+          >
+            Influence Map V1 &rarr;
+          </a>
+          <a
+            href="#/water-lilies-influence-polaroid"
+            className="rounded-full bg-charcoal text-cream font-sans text-sm px-5 py-2.5 shadow-[0_4px_16px_rgba(0,0,0,0.18)] hover:bg-charcoal/85 transition-colors"
+          >
+            Influence Map V2 &rarr;
+          </a>
+        </div>
       </>
     );
   return <ScreenOne />;
