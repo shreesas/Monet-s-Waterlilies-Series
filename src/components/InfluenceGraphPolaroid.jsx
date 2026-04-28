@@ -698,9 +698,11 @@ export default function InfluenceGraphPolaroid() {
 }
 
 function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl, onClose }) {
-  const [monetPortrait, setMonetPortrait] = useState(false);
-  const [paintingPortrait, setPaintingPortrait] = useState(false);
-  const sideBySide = monetPortrait && paintingPortrait;
+  const [monetAspect, setMonetAspect] = useState(null);
+  const [paintingAspect, setPaintingAspect] = useState(null);
+  // Side by side if neither image is very wide (aspect ratio h/w >= 0.6)
+  const sideBySide = monetAspect !== null && paintingAspect !== null &&
+    monetAspect >= 0.6 && paintingAspect >= 0.6;
 
   useEffect(() => {
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
@@ -747,7 +749,7 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
                   className="w-full h-auto object-contain"
                   style={{ maxHeight: sideBySide ? "60vh" : "36vh" }}
                   draggable={false}
-                  onLoad={(e) => setMonetPortrait(e.currentTarget.naturalHeight > e.currentTarget.naturalWidth)}
+                  onLoad={(e) => setMonetAspect(e.currentTarget.naturalHeight / (e.currentTarget.naturalWidth || 1))}
                 />
               ) : (
                 <div className="w-full bg-warmgray flex items-center justify-center" style={{ height: "36vh" }}>
@@ -769,7 +771,7 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
                   className="w-full h-auto object-contain"
                   style={{ maxHeight: sideBySide ? "60vh" : "36vh" }}
                   draggable={false}
-                  onLoad={(e) => setPaintingPortrait(e.currentTarget.naturalHeight > e.currentTarget.naturalWidth)}
+                  onLoad={(e) => setPaintingAspect(e.currentTarget.naturalHeight / (e.currentTarget.naturalWidth || 1))}
                 />
               ) : (
                 <div className="w-full bg-warmgray flex items-center justify-center" style={{ height: "36vh" }}>
