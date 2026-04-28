@@ -394,31 +394,14 @@ export default function InfluenceGraphPolaroid() {
           if (deg > 90 || deg < -90) deg += 180;
           const lineOpacity = anyHov ? (isHov ? 1 : 0.25) : 0;
           return (
-            <g key={painting.id + "-line"}>
-              <line
-                x1={x1} y1={y1} x2={ex} y2={ey}
-                stroke="black"
-                strokeWidth={isHov ? 1.5 : 1}
-                opacity={lineOpacity}
-                style={{ transition: "opacity 0.3s, stroke-width 0.2s" }}
-              />
-              <text
-                x={mx} y={my}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fontSize="13"
-                fontFamily="sans-serif"
-                fill="rgba(0,0,0,0.85)"
-                stroke="white"
-                strokeWidth="4"
-                paintOrder="stroke"
-                opacity={isHov ? 1 : 0}
-                style={{ transition: "opacity 0.3s", userSelect: "none" }}
-                transform={`rotate(${deg}, ${mx}, ${my})`}
-              >
-                {STRENGTH_LABEL[painting.connection_strength] ?? painting.connection_strength}
-              </text>
-            </g>
+            <line
+              key={painting.id + "-line"}
+              x1={x1} y1={y1} x2={ex} y2={ey}
+              stroke="black"
+              strokeWidth={isHov ? 1.5 : 1}
+              opacity={lineOpacity}
+              style={{ transition: "opacity 0.3s, stroke-width 0.2s" }}
+            />
           );
         })}
       </svg>
