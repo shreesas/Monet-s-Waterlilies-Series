@@ -662,7 +662,7 @@ export default function InfluenceGraphPolaroid() {
               fontSize="9"
               fontFamily="sans-serif"
               fill="rgba(0,0,0,0.85)"
-              stroke="white"
+              stroke="#F5F0EB"
               strokeWidth="3"
               paintOrder="stroke"
               style={{ userSelect: "none" }}
