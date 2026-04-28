@@ -12,7 +12,7 @@ export default function ExploreDropdown({ currentPage }) {
 
   return (
     <div
-      className="fixed top-6 right-6 z-[60]"
+      className="fixed top-6 right-6 z-40"
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
     >
