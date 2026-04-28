@@ -38,6 +38,8 @@ export default function InfluenceGraphPolaroid() {
   const [selected, setSelected] = useState(null);
   const [hoveredId, setHoveredId] = useState(null);
   const [dims, setDims] = useState({ w: window.innerWidth, h: window.innerHeight });
+  const [rotatingPaintings, setRotatingPaintings] = useState([]);
+  const [rotateIdx, setRotateIdx] = useState(0);
 
   useEffect(() => {
     Promise.all([
@@ -50,6 +52,24 @@ export default function InfluenceGraphPolaroid() {
       })
       .catch((err) => console.error("Failed to load influence data", err));
   }, []);
+
+  // Pick 10 random Monet paintings with images once the catalog loads
+  useEffect(() => {
+    if (!catalog.length) return;
+    const withImg = catalog.filter((c) => c.image_url);
+    const shuffled = [...withImg].sort(() => Math.random() - 0.5);
+    setRotatingPaintings(shuffled.slice(0, 10));
+  }, [catalog]);
+
+  // Advance the displayed painting every 10 s
+  useEffect(() => {
+    if (!rotatingPaintings.length) return;
+    const timer = setInterval(
+      () => setRotateIdx((prev) => (prev + 1) % rotatingPaintings.length),
+      10000
+    );
+    return () => clearInterval(timer);
+  }, [rotatingPaintings]);
 
   useEffect(() => {
     const onResize = () => setDims({ w: window.innerWidth, h: window.innerHeight });
@@ -76,7 +96,7 @@ export default function InfluenceGraphPolaroid() {
     ];
     if (!sorted.length) return [];
 
-    const CENTER_R = 200;
+    const CENTER_R = 160;
     const CENTER_HALO = 100;
     const BUFFER = 10;
     const ORBIT_RADIAL_JITTER = 40;
@@ -266,7 +286,7 @@ export default function InfluenceGraphPolaroid() {
 
     const hov = pts.find((p) => p.isHov);
     const hovR = hov.r * HOVER_SCALE;
-    const MONET_R = 300;
+    const MONET_R = 260;
 
     for (let iter = 0; iter < 30; iter++) {
       let moved = false;
@@ -363,8 +383,8 @@ export default function InfluenceGraphPolaroid() {
           const ex = x + push.x;
           const ey = y + push.y;
           const ang = Math.atan2(ey - cy, ex - cx);
-          const x1 = cx + Math.cos(ang) * 200;
-          const y1 = cy + Math.sin(ang) * 200;
+          const x1 = cx + Math.cos(ang) * 160;
+          const y1 = cy + Math.sin(ang) * 160;
           return (
             <line
               key={painting.id + "-line"}
@@ -396,7 +416,7 @@ export default function InfluenceGraphPolaroid() {
         }}
       />
 
-      {/* ── Center node: Monet Water Lilies (circle — unchanged) ── */}
+      {/* ── Center node: rotating Monet paintings with cross-dissolve ── */}
       <div
         style={{
           position: "absolute",
@@ -408,31 +428,47 @@ export default function InfluenceGraphPolaroid() {
       >
         <div
           style={{
-            width: 400,
-            height: 400,
+            width: 320,
+            height: 320,
             borderRadius: "50%",
             overflow: "hidden",
             boxShadow: "0 8px 32px rgba(0,0,0,0.28)",
+            position: "relative",
+            background: "#d9d4cc",
           }}
         >
-          {centerMonet?.image_url ? (
-            <img
-              src={centerMonet.image_url}
-              alt="Monet, Water Lilies"
-              className="w-full h-full object-cover"
-              draggable={false}
-            />
-          ) : (
-            <div className="w-full h-full bg-warmgray flex items-center justify-center">
-              <span className="font-serif italic text-charcoal/60 text-xs text-center px-3">
-                Water Lilies
-              </span>
-            </div>
-          )}
+          <AnimatePresence mode="sync">
+            {rotatingPaintings.length > 0 ? (
+              <motion.img
+                key={rotateIdx}
+                src={rotatingPaintings[rotateIdx].image_url}
+                alt={rotatingPaintings[rotateIdx].title || "Monet, Water Lilies"}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 2.5, ease: "easeInOut" }}
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                }}
+                draggable={false}
+              />
+            ) : centerMonet?.image_url ? (
+              <img
+                src={centerMonet.image_url}
+                alt="Monet, Water Lilies"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                draggable={false}
+              />
+            ) : null}
+          </AnimatePresence>
         </div>
         <p
           className="font-serif italic text-charcoal/65 text-center mt-2"
-          style={{ fontSize: "0.68rem", width: 420, marginLeft: -10, lineHeight: 1.3 }}
+          style={{ fontSize: "0.68rem", width: 336, marginLeft: -8, lineHeight: 1.3 }}
         >
           Monet, <em>Water Lilies</em>
         </p>
@@ -596,8 +632,8 @@ export default function InfluenceGraphPolaroid() {
         const ex = hovNode.x + push.x;
         const ey = hovNode.y + push.y;
         const ang2 = Math.atan2(ey - cy, ex - cx);
-        const lx1 = cx + Math.cos(ang2) * 200;
-        const ly1 = cy + Math.sin(ang2) * 200;
+        const lx1 = cx + Math.cos(ang2) * 160;
+        const ly1 = cy + Math.sin(ang2) * 160;
         return (
           <svg
             className="absolute inset-0 pointer-events-none"
