@@ -727,7 +727,7 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
         </div>
 
         {/* Vertical divider */}
-        <div className="self-stretch" style={{ width: 1, background: "rgba(0,0,0,0.15)", flexShrink: 0 }} />
+        <div className="self-stretch" style={{ width: 1, background: "rgba(0,0,0,0.08)", flexShrink: 0 }} />
 
         {/* Right column — 40%: description + learn more, vertically centered, left-aligned */}
         <div className="flex flex-col justify-center gap-6 px-10 py-12 overflow-y-auto" style={{ width: "40%" }}>
