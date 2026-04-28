@@ -17,7 +17,7 @@ function resolveImageUrl(url) {
 }
 
 const STRENGTH_SIZE = { direct: 153, critical: 116, documented: 92 };
-const STRENGTH_LABEL = { direct: "Artist stated", critical: "Critical link", documented: "Archivally documented" };
+const STRENGTH_LABEL = { direct: "Artist stated", critical: "Critic-attributed", documented: "Archival" };
 const POLAROID_BORDER = 8;  // white border on left / right / top
 const CAPTION_H = 44;       // white caption strip below the image
 
