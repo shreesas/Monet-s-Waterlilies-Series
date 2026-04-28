@@ -412,7 +412,7 @@ export default function InfluenceGraphPolaroid() {
                 stroke="white"
                 strokeWidth="4"
                 paintOrder="stroke"
-                opacity={lineOpacity}
+                opacity={isHov ? 1 : 0}
                 style={{ transition: "opacity 0.3s", userSelect: "none" }}
                 transform={`rotate(${deg}, ${mx}, ${my})`}
               >
