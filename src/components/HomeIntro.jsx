@@ -19,7 +19,9 @@ const SCREEN_FADE_S  = 1.8;  // painting cross-dissolve duration
 const TEXT_DELAY_S   = 1.2;  // text starts this many seconds after painting
 const TEXT_DURATION_S = 1.5; // text fade-in duration
 // Lock advance() for this long so clicks during the dissolve don't skip.
-const ADVANCE_LOCK_MS = Math.round(SCREEN_FADE_S * 1000);
+// Keep a short click guard against accidental double-advance, but avoid
+// making the final CTA feel unresponsive during long cross-dissolves.
+const ADVANCE_LOCK_MS = 450;
 
 const SCREENS = [
   {
@@ -86,8 +88,10 @@ const SCREENS = [
   },
 ];
 
-export default function HomeIntro({ onComplete }) {
-  const [index, setIndex] = useState(0);
+export default function HomeIntro({ onComplete, startIndex = 0 }) {
+  const [index, setIndex] = useState(() =>
+    Math.max(0, Math.min(startIndex, SCREENS.length - 1))
+  );
   const [transitioning, setTransitioning] = useState(false);
 
   // Preload both images so the dissolve doesn't stall on the network.
@@ -99,6 +103,12 @@ export default function HomeIntro({ onComplete }) {
   }, []);
 
   function advance() {
+    // If we've already reached the last intro screen, always allow immediate
+    // exit even while a fade is still finishing.
+    if (index === SCREENS.length - 1) {
+      onComplete();
+      return;
+    }
     if (transitioning) return;
     if (index < SCREENS.length - 1) {
       setTransitioning(true);
@@ -192,7 +202,7 @@ export default function HomeIntro({ onComplete }) {
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); advance(); }}
-                  className="mt-10 rounded-full border-2 border-black/70 bg-transparent text-black/85 font-serif font-bold text-sm tracking-wide px-8 py-3 hover:bg-black hover:text-white hover:border-black transition-colors duration-300"
+                  className="mt-10 rounded-full border-2 border-black/70 bg-transparent text-black/85 font-serif font-bold text-sm tracking-wide px-8 py-3 hover:bg-black hover:text-white hover:border-black transition-colors duration-150"
                 >
                   {i === SCREENS.length - 1 ? "Begin" : "Continue"}
                 </button>

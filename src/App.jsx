@@ -7,11 +7,12 @@ import LilyMorph from "./components/LilyMorph";
 import HomeIntro from "./components/HomeIntro";
 import ExploreDropdown from "./components/ExploreDropdown";
 
-// Module-level flag: true until the home intro is dismissed once per
-// page load. Resets to true on every full reload; survives within-tab
-// hash navigation so going to East Meets West and back doesn't replay
-// the intro in the same visit.
-let homeIntroDismissed = false;
+// Module-level flag: true once the user has seen the very first intro
+// screen (the "A garden. A pond. 30 years." splash). On the first page
+// load this is false so the full intro plays. On every subsequent visit
+// to The Journey within the same JS session we skip directly to the
+// second intro screen ("Monet's obsession with water lilies").
+let firstIntroScreenSeen = false;
 
 // Tiny hash router: '#/ukiyo-e-influence' renders Screen 2; everything else
 // falls back to the original Screen 1.
@@ -28,13 +29,19 @@ function useHashRoute() {
 }
 
 function ScreenOne() {
-  // Show the intro on every page load; once dismissed in this JS session
-  // (e.g. user navigates away and comes back via the hash router) don't
-  // replay it.
-  const [showIntro, setShowIntro] = useState(() => !homeIntroDismissed);
+  // Always replay the home intro whenever the user navigates back to
+  // "The Journey" so the entry experience is consistent from the dropdown,
+  // but skip past the first splash on return visits.
+  const [showIntro, setShowIntro] = useState(true);
+  const [introStartIndex] = useState(() => (firstIntroScreenSeen ? 1 : 0));
+
+  // Mark the very first splash as seen the moment the home intro mounts
+  // for the first time, so subsequent navigations start at screen 2.
+  useEffect(() => {
+    firstIntroScreenSeen = true;
+  }, []);
 
   const handleIntroComplete = () => {
-    homeIntroDismissed = true;
     setShowIntro(false);
   };
 
@@ -55,7 +62,12 @@ function ScreenOne() {
       )}
 
       <AnimatePresence>
-        {showIntro && <HomeIntro onComplete={handleIntroComplete} />}
+        {showIntro && (
+          <HomeIntro
+            onComplete={handleIntroComplete}
+            startIndex={introStartIndex}
+          />
+        )}
       </AnimatePresence>
     </div>
   );
@@ -64,12 +76,6 @@ function ScreenOne() {
 export default function App() {
   const hash = useHashRoute();
   if (hash === "#/abstract-legacy") return <InfluenceGraphPolaroid />;
-  if (hash === "#/ukiyo-e-influence")
-    return (
-      <>
-        <EastMeetsWest />
-        <ExploreDropdown currentPage="#/ukiyo-e-influence" />
-      </>
-    );
+  if (hash === "#/ukiyo-e-influence") return <EastMeetsWest />;
   return <ScreenOne />;
 }
