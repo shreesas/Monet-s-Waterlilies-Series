@@ -909,8 +909,8 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
             wrap naturally with a comfortable measure. */}
         {quotes.length > 0 && (
           <div className="mt-16 pt-8 border-t border-charcoal/10">
-            <div style={{ maxWidth: "70ch", paddingRight: "8rem" }}>
-              <QuotesList quotes={quotes} editing={editing} onDelete={removeQuote} />
+            <div className="mx-auto text-center" style={{ maxWidth: "70ch" }}>
+              <QuotesList quotes={quotes} editing={editing} onDelete={removeQuote} centered />
             </div>
           </div>
         )}
@@ -918,7 +918,7 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
 
       {/* Bottom-right control cluster: animated prompt slides in to the
           left of the pencil FAB so both share the same baseline. */}
-      <div className="absolute bottom-6 right-6 z-30 flex items-end gap-3 pointer-events-none">
+      <div className="absolute bottom-6 right-6 z-30 flex items-center gap-3 pointer-events-none">
         <AnimatePresence>
           {editing && (
             <motion.div
@@ -1033,14 +1033,14 @@ function useQuotes(paintingId) {
 // marks. Sized to match the connection-claim description text so the
 // reader's response feels native to the page typography. When `editing`
 // is true, a small delete button appears beside each quote.
-function QuotesList({ quotes, editing = false, onDelete }) {
+function QuotesList({ quotes, editing = false, onDelete, centered = false }) {
   if (!quotes.length) return null;
   return (
     <ul className="flex flex-col gap-4">
       {quotes.map((q, i) => (
         <li
           key={`${q.ts}-${i}`}
-          className="relative flex items-start gap-2"
+          className={`relative flex items-center gap-2 ${centered ? "justify-center" : ""}`}
         >
           <p
             style={{
@@ -1050,7 +1050,8 @@ function QuotesList({ quotes, editing = false, onDelete }) {
               lineHeight: 1.25,
               color: "#111",
               textWrap: "pretty",
-              flex: 1,
+              textAlign: centered ? "center" : "left",
+              flex: centered ? "0 1 auto" : 1,
             }}
           >
             &ldquo;{q.text}&rdquo;
@@ -1063,7 +1064,7 @@ function QuotesList({ quotes, editing = false, onDelete }) {
                 onDelete(q.ts);
               }}
               aria-label="Remove quote"
-              className="flex-shrink-0 mt-1 w-6 h-6 flex items-center justify-center rounded-full bg-charcoal/10 hover:bg-charcoal/25 text-charcoal/70 hover:text-charcoal transition-colors"
+              className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-charcoal/10 hover:bg-charcoal/25 text-charcoal/70 hover:text-charcoal transition-colors"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M18 6L6 18M6 6l12 12" />
