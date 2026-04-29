@@ -741,9 +741,9 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
         {sideBySide ? (
           /* ── Both paintings side by side, description below ── */
           <>
-            <div className="flex flex-row gap-8 items-start mb-8">
-              {/* Each column: flex-1 centering wrapper + inline-flex image+caption block
-                  so captions align with the image's actual left edge, not the container */}
+            <div className="flex flex-row gap-8 items-start">
+              {/* Left column: painting + captions + description (inside the inline-flex block
+                  so description starts exactly at the painting's left edge) */}
               <div className="flex-1 min-w-0 flex justify-center">
                 <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "flex-start", maxWidth: "100%" }}>
                   {monetImageUrl ? (
@@ -757,8 +757,28 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
                   <p className="font-sans text-charcoal font-medium mt-2" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>Claude Monet</p>
                   <p className="font-serif italic text-charcoal" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>{monetEntry?.title || "Water Lilies"}</p>
                   <p className="font-sans text-charcoal/55" style={{ fontSize: "clamp(11px, 0.85vw, 13px)" }}>{[monetEntry?.year, monetEntry?.collection].filter(Boolean).join(", ")}</p>
+
+                  {/* Description anchored to left painting edge, ~10-12 words per line */}
+                  <div className="flex flex-col gap-3 mt-8" style={{ maxWidth: "55ch" }}>
+                    {painting.connection_claim && (
+                      <p className="font-serif italic text-charcoal/80 leading-relaxed text-left" style={{ fontSize: "clamp(14px, 1.1vw, 18px)", textWrap: "pretty" }}>
+                        {painting.connection_claim}
+                      </p>
+                    )}
+                    {painting.citation_url && (
+                      <a href={painting.citation_url} target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 font-sans text-black/60 hover:text-black transition-colors w-fit"
+                        style={{ fontSize: "0.82rem", borderBottom: "1px solid rgba(0,0,0,0.25)", paddingBottom: 1 }}
+                        onClick={(e) => e.stopPropagation()}>
+                        Learn more
+                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 6h8M6 2l4 4-4 4" /></svg>
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
+
+              {/* Right column: painting + captions only */}
               <div className="flex-1 min-w-0 flex justify-center">
                 <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "flex-start", maxWidth: "100%" }}>
                   {imageUrl ? (
@@ -775,22 +795,6 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
                   <p className="font-sans text-charcoal/55" style={{ fontSize: "clamp(11px, 0.85vw, 13px)" }}>{[painting.year, painting.collection].filter(Boolean).join(", ")}</p>
                 </div>
               </div>
-            </div>
-            <div className="flex flex-col gap-4">
-              {painting.connection_claim && (
-                <p className="font-serif italic text-charcoal/80 leading-relaxed text-left" style={{ fontSize: "clamp(14px, 1.1vw, 18px)", textWrap: "pretty" }}>
-                  {painting.connection_claim}
-                </p>
-              )}
-              {painting.citation_url && (
-                <a href={painting.citation_url} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 font-sans text-black/60 hover:text-black transition-colors w-fit"
-                  style={{ fontSize: "0.82rem", borderBottom: "1px solid rgba(0,0,0,0.25)", paddingBottom: 1 }}
-                  onClick={(e) => e.stopPropagation()}>
-                  Learn more
-                  <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 6h8M6 2l4 4-4 4" /></svg>
-                </a>
-              )}
             </div>
           </>
         ) : shouldWrap ? (
