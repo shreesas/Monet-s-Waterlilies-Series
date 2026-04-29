@@ -1125,7 +1125,7 @@ function QuotePill({ onSubmit, autoFocus = false }) {
         fontSize: "clamp(14px, 1.05vw, 17px)",
         lineHeight: 1.4,
         padding: "18px 32px",
-        borderRadius: 999,
+        borderRadius: 10,
         boxShadow: "0 8px 28px rgba(0,0,0,0.10)",
         maxHeight: "55vh",
         overflowY: "auto",
