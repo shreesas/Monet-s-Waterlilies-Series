@@ -662,11 +662,11 @@ export default function InfluenceGraphPolaroid() {
               x={bmx} y={bmy}
               textAnchor="middle"
               dominantBaseline="middle"
-              fontSize="9"
+              fontSize="13"
               fontFamily="sans-serif"
               fill="rgba(0,0,0,0.85)"
               stroke="#F5F0EB"
-              strokeWidth="3"
+              strokeWidth="4"
               paintOrder="stroke"
               style={{ userSelect: "none" }}
               transform={`rotate(${bdeg}, ${bmx}, ${bmy})`}
