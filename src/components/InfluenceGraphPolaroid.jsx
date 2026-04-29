@@ -913,48 +913,47 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
         )}
       </motion.div>
 
-      {/* Animated quote prompt — slides up above the FAB when editing
-          is active, otherwise the pencil icon is the only chrome. */}
-      <AnimatePresence>
-        {editing && (
-          <motion.div
-            key="quote-prompt"
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 16 }}
-            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute inset-x-0 bottom-28 z-20 flex justify-center px-6 pointer-events-none"
-          >
-            <div className="pointer-events-auto w-full max-w-3xl">
+      {/* Bottom-right control cluster: animated prompt slides in to the
+          left of the pencil FAB so both share the same baseline. */}
+      <div className="absolute bottom-6 right-6 z-30 flex items-end gap-3 pointer-events-none">
+        <AnimatePresence>
+          {editing && (
+            <motion.div
+              key="quote-prompt"
+              initial={{ opacity: 0, x: 24 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 24 }}
+              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              className="pointer-events-auto"
+              style={{ width: "min(60vw, 520px)" }}
+            >
               <QuotePill onSubmit={addQuote} autoFocus />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      {/* Pencil / close FAB — bottom right. Toggles the prompt panel and
-          arms the per-quote delete buttons in QuotesList. */}
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          setEditing((v) => !v);
-        }}
-        aria-label={editing ? "Close prompt" : "Add a response"}
-        aria-pressed={editing}
-        className="absolute bottom-6 right-6 z-30 w-14 h-14 flex items-center justify-center rounded-full bg-charcoal text-white shadow-[0_8px_28px_rgba(0,0,0,0.18)] hover:bg-charcoal/85 transition-colors"
-      >
-        {editing ? (
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 6L6 18M6 6l12 12" />
-          </svg>
-        ) : (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 20h9" />
-            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-          </svg>
-        )}
-      </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setEditing((v) => !v);
+          }}
+          aria-label={editing ? "Close prompt" : "Add a response"}
+          aria-pressed={editing}
+          className="pointer-events-auto w-14 h-14 flex items-center justify-center rounded-full bg-charcoal text-white shadow-[0_8px_28px_rgba(0,0,0,0.18)] hover:bg-charcoal/85 transition-colors flex-shrink-0"
+        >
+          {editing ? (
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          ) : (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+            </svg>
+          )}
+        </button>
+      </div>
 
       <button
         type="button"
