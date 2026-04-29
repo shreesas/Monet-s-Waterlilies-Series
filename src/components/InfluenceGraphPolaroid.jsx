@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 // eslint-disable-next-line no-unused-vars -- named imports used in JSX
 import { motion, AnimatePresence } from "framer-motion";
 import ExploreDropdown from "./ExploreDropdown";
@@ -711,7 +711,8 @@ const LAYOUT_OVERRIDES = {
 
 function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl, onClose }) {
   const [paintingAspect, setPaintingAspect] = useState(null);
-  const { quotes, addQuote } = useQuotes(painting.id);
+  const { quotes, addQuote, removeQuote } = useQuotes(painting.id);
+  const [editing, setEditing] = useState(false);
 
   const overrideWrap = LAYOUT_OVERRIDES.wrap.has(painting.id);
   const overrideSide = LAYOUT_OVERRIDES.sideBySide.has(painting.id);
@@ -769,7 +770,7 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
 
                   {/* Description anchored to left painting edge, ~10-12 words per line */}
                   <div className="flex flex-col gap-3 mt-8" style={{ maxWidth: "55ch" }}>
-                    <QuotesList quotes={quotes} />
+                    <QuotesList quotes={quotes} editing={editing} onDelete={removeQuote} />
                     {painting.connection_claim && (
                       <p className="font-serif italic text-charcoal/80 leading-relaxed text-left" style={{ fontSize: "clamp(14px, 1.1vw, 18px)", textWrap: "pretty" }}>
                         {painting.connection_claim}
@@ -841,7 +842,7 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
               </div>
               {quotes.length > 0 && (
                 <div className="mb-5">
-                  <QuotesList quotes={quotes} />
+                  <QuotesList quotes={quotes} editing={editing} onDelete={removeQuote} />
                 </div>
               )}
               {painting.connection_claim && (
@@ -892,7 +893,7 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
               <p className="font-sans text-charcoal/55 text-left" style={{ fontSize: "clamp(11px, 0.85vw, 13px)" }}>{[painting.year, painting.collection].filter(Boolean).join(", ")}</p>
             </div>
             <div className="flex flex-col gap-4">
-              <QuotesList quotes={quotes} />
+              <QuotesList quotes={quotes} editing={editing} onDelete={removeQuote} />
               {painting.connection_claim && (
                 <p className="font-serif italic text-charcoal/80 leading-relaxed text-left" style={{ fontSize: "clamp(14px, 1.1vw, 18px)", textWrap: "pretty" }}>
                   {painting.connection_claim}
@@ -912,13 +913,48 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
         )}
       </motion.div>
 
-      {/* Sticky pill input — fixed to the bottom of the overlay viewport so
-          the prompt is always reachable regardless of scroll position. */}
-      <div className="absolute inset-x-0 bottom-6 z-20 flex justify-center px-6 pointer-events-none">
-        <div className="pointer-events-auto w-full max-w-3xl">
-          <QuotePill onSubmit={addQuote} />
-        </div>
-      </div>
+      {/* Animated quote prompt — slides up above the FAB when editing
+          is active, otherwise the pencil icon is the only chrome. */}
+      <AnimatePresence>
+        {editing && (
+          <motion.div
+            key="quote-prompt"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 16 }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute inset-x-0 bottom-28 z-20 flex justify-center px-6 pointer-events-none"
+          >
+            <div className="pointer-events-auto w-full max-w-3xl">
+              <QuotePill onSubmit={addQuote} autoFocus />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Pencil / close FAB — bottom right. Toggles the prompt panel and
+          arms the per-quote delete buttons in QuotesList. */}
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          setEditing((v) => !v);
+        }}
+        aria-label={editing ? "Close prompt" : "Add a response"}
+        aria-pressed={editing}
+        className="absolute bottom-6 right-6 z-30 w-14 h-14 flex items-center justify-center rounded-full bg-charcoal text-white shadow-[0_8px_28px_rgba(0,0,0,0.18)] hover:bg-charcoal/85 transition-colors"
+      >
+        {editing ? (
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        ) : (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+          </svg>
+        )}
+      </button>
 
       <button
         type="button"
@@ -935,8 +971,9 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
 }
 
 // Reader-submitted quotes for a single painting, persisted to localStorage.
-// Returns the current quotes array and an `addQuote(text)` writer so that
-// the sticky pill input and the inline quotes list stay in sync.
+// Returns the current quotes array along with `addQuote(text)` and
+// `removeQuote(ts)` writers so the sticky pill input, the inline quotes
+// list, and the editing controls stay in sync.
 function useQuotes(paintingId) {
   const STORAGE_KEY = `monet:quotes:${paintingId}`;
   const [quotes, setQuotes] = useState(() => {
@@ -952,35 +989,57 @@ function useQuotes(paintingId) {
     }
   });
 
+  const persist = useCallback(
+    (next) => {
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      } catch {
+        /* private mode / quota — ignore */
+      }
+    },
+    [STORAGE_KEY]
+  );
+
   const addQuote = useCallback(
     (rawText) => {
       const text = (rawText || "").trim();
       if (!text) return;
       setQuotes((prev) => {
         const next = [...prev, { text, ts: Date.now() }];
-        try {
-          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-        } catch {
-          /* private mode / quota — ignore */
-        }
+        persist(next);
         return next;
       });
     },
-    [STORAGE_KEY]
+    [persist]
   );
 
-  return { quotes, addQuote };
+  const removeQuote = useCallback(
+    (ts) => {
+      setQuotes((prev) => {
+        const next = prev.filter((q) => q.ts !== ts);
+        persist(next);
+        return next;
+      });
+    },
+    [persist]
+  );
+
+  return { quotes, addQuote, removeQuote };
 }
 
 // Renders submitted quotes as Inter-bold pull quotes with curly quotation
 // marks. Sized to match the connection-claim description text so the
-// reader's response feels native to the page typography.
-function QuotesList({ quotes }) {
+// reader's response feels native to the page typography. When `editing`
+// is true, a small delete button appears beside each quote.
+function QuotesList({ quotes, editing = false, onDelete }) {
   if (!quotes.length) return null;
   return (
     <ul className="flex flex-col gap-4">
       {quotes.map((q, i) => (
-        <li key={`${q.ts}-${i}`}>
+        <li
+          key={`${q.ts}-${i}`}
+          className="relative flex items-start gap-2"
+        >
           <p
             style={{
               fontFamily: "'Inter', system-ui, sans-serif",
@@ -989,10 +1048,26 @@ function QuotesList({ quotes }) {
               lineHeight: 1.35,
               color: "#111",
               textWrap: "pretty",
+              flex: 1,
             }}
           >
             &ldquo;{q.text}&rdquo;
           </p>
+          {editing && onDelete && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(q.ts);
+              }}
+              aria-label="Remove quote"
+              className="flex-shrink-0 mt-1 w-6 h-6 flex items-center justify-center rounded-full bg-charcoal/10 hover:bg-charcoal/25 text-charcoal/70 hover:text-charcoal transition-colors"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </li>
       ))}
     </ul>
@@ -1000,9 +1075,24 @@ function QuotesList({ quotes }) {
 }
 
 // Large pill-shaped prompt anchored to the bottom of the overlay viewport.
-// Pressing Enter submits via the `onSubmit` callback and clears the field.
-function QuotePill({ onSubmit }) {
+// Uses a wrapping textarea that auto-grows with content. Press Enter to
+// submit (Shift+Enter inserts a newline); empty submissions are ignored.
+function QuotePill({ onSubmit, autoFocus = false }) {
   const [text, setText] = useState("");
+  const ref = useRef(null);
+
+  // Auto-grow: reset to 'auto' first so the textarea can also shrink when
+  // characters are deleted, then snap to scrollHeight.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [text]);
+
+  useEffect(() => {
+    if (autoFocus && ref.current) ref.current.focus();
+  }, [autoFocus]);
 
   const submit = () => {
     const t = text.trim();
@@ -1012,24 +1102,30 @@ function QuotePill({ onSubmit }) {
   };
 
   return (
-    <input
-      type="text"
+    <textarea
+      ref={ref}
       value={text}
+      rows={1}
       placeholder="What commonalities do you see between Monet's work and this piece?"
       onChange={(e) => setText(e.target.value)}
       onKeyDown={(e) => {
-        if (e.key === "Enter") {
+        if (e.key === "Enter" && !e.shiftKey) {
           e.preventDefault();
           submit();
         }
       }}
       onClick={(e) => e.stopPropagation()}
-      className="w-full rounded-full bg-white border border-charcoal/70 text-charcoal placeholder-charcoal/40 focus:outline-none focus:border-charcoal transition-colors"
+      className="w-full bg-white border border-charcoal/70 text-charcoal placeholder-charcoal/40 focus:outline-none focus:border-charcoal transition-colors resize-none"
       style={{
         fontFamily: "'Inter', system-ui, sans-serif",
-        fontSize: "clamp(14px, 1.05vw, 17px)",
-        padding: "18px 32px",
+        fontWeight: 400,
+        fontSize: "clamp(28px, 2.1vw, 34px)",
+        lineHeight: 1.3,
+        padding: "22px 36px",
+        borderRadius: 36,
         boxShadow: "0 8px 28px rgba(0,0,0,0.10)",
+        maxHeight: "55vh",
+        overflowY: "auto",
       }}
     />
   );
