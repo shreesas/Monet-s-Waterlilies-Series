@@ -677,7 +677,7 @@ export default function InfluenceGraphPolaroid() {
         );
       })()}
 
-      <ExploreDropdown currentPage="#/abstract-legacy" />
+      {!selected && <ExploreDropdown currentPage="#/abstract-legacy" />}
 
       {/* ── Detail overlay ── */}
       <AnimatePresence>
@@ -711,6 +711,7 @@ const LAYOUT_OVERRIDES = {
 
 function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl, onClose }) {
   const [paintingAspect, setPaintingAspect] = useState(null);
+  const { quotes, addQuote } = useQuotes(painting.id);
 
   const overrideWrap = LAYOUT_OVERRIDES.wrap.has(painting.id);
   const overrideSide = LAYOUT_OVERRIDES.sideBySide.has(painting.id);
@@ -744,6 +745,7 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
         exit={{ opacity: 0, scale: 0.97 }}
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
         className="relative z-10 w-full h-screen overflow-y-auto px-16 py-12"
+        style={{ paddingBottom: "8rem" }}
         onClick={(e) => e.stopPropagation()}
       >
         {sideBySide ? (
@@ -767,6 +769,7 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
 
                   {/* Description anchored to left painting edge, ~10-12 words per line */}
                   <div className="flex flex-col gap-3 mt-8" style={{ maxWidth: "55ch" }}>
+                    <QuotesList quotes={quotes} />
                     {painting.connection_claim && (
                       <p className="font-serif italic text-charcoal/80 leading-relaxed text-left" style={{ fontSize: "clamp(14px, 1.1vw, 18px)", textWrap: "pretty" }}>
                         {painting.connection_claim}
@@ -836,6 +839,11 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
                 <p className="font-serif italic text-charcoal text-left w-full" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>{painting.title}</p>
                 <p className="font-sans text-charcoal/55 text-left w-full" style={{ fontSize: "clamp(11px, 0.85vw, 13px)" }}>{[painting.year, painting.collection].filter(Boolean).join(", ")}</p>
               </div>
+              {quotes.length > 0 && (
+                <div className="mb-5">
+                  <QuotesList quotes={quotes} />
+                </div>
+              )}
               {painting.connection_claim && (
                 <p className="font-serif italic text-charcoal/80 leading-relaxed text-left mb-5" style={{ fontSize: "clamp(14px, 1.1vw, 18px)", textWrap: "pretty" }}>
                   {painting.connection_claim}
@@ -884,6 +892,7 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
               <p className="font-sans text-charcoal/55 text-left" style={{ fontSize: "clamp(11px, 0.85vw, 13px)" }}>{[painting.year, painting.collection].filter(Boolean).join(", ")}</p>
             </div>
             <div className="flex flex-col gap-4">
+              <QuotesList quotes={quotes} />
               {painting.connection_claim && (
                 <p className="font-serif italic text-charcoal/80 leading-relaxed text-left" style={{ fontSize: "clamp(14px, 1.1vw, 18px)", textWrap: "pretty" }}>
                   {painting.connection_claim}
@@ -903,6 +912,14 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
         )}
       </motion.div>
 
+      {/* Sticky pill input — fixed to the bottom of the overlay viewport so
+          the prompt is always reachable regardless of scroll position. */}
+      <div className="absolute inset-x-0 bottom-6 z-20 flex justify-center px-6 pointer-events-none">
+        <div className="pointer-events-auto w-full max-w-3xl">
+          <QuotePill onSubmit={addQuote} />
+        </div>
+      </div>
+
       <button
         type="button"
         onClick={onClose}
@@ -914,5 +931,106 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
         </svg>
       </button>
     </motion.div>
+  );
+}
+
+// Reader-submitted quotes for a single painting, persisted to localStorage.
+// Returns the current quotes array and an `addQuote(text)` writer so that
+// the sticky pill input and the inline quotes list stay in sync.
+function useQuotes(paintingId) {
+  const STORAGE_KEY = `monet:quotes:${paintingId}`;
+  const [quotes, setQuotes] = useState(() => {
+    try {
+      const raw =
+        typeof window !== "undefined"
+          ? window.localStorage.getItem(STORAGE_KEY)
+          : null;
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const addQuote = useCallback(
+    (rawText) => {
+      const text = (rawText || "").trim();
+      if (!text) return;
+      setQuotes((prev) => {
+        const next = [...prev, { text, ts: Date.now() }];
+        try {
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        } catch {
+          /* private mode / quota — ignore */
+        }
+        return next;
+      });
+    },
+    [STORAGE_KEY]
+  );
+
+  return { quotes, addQuote };
+}
+
+// Renders submitted quotes as Inter-bold pull quotes with curly quotation
+// marks. Sized to match the connection-claim description text so the
+// reader's response feels native to the page typography.
+function QuotesList({ quotes }) {
+  if (!quotes.length) return null;
+  return (
+    <ul className="flex flex-col gap-4">
+      {quotes.map((q, i) => (
+        <li key={`${q.ts}-${i}`}>
+          <p
+            style={{
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontWeight: 700,
+              fontSize: "clamp(14px, 1.1vw, 18px)",
+              lineHeight: 1.35,
+              color: "#111",
+              textWrap: "pretty",
+            }}
+          >
+            &ldquo;{q.text}&rdquo;
+          </p>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+// Large pill-shaped prompt anchored to the bottom of the overlay viewport.
+// Pressing Enter submits via the `onSubmit` callback and clears the field.
+function QuotePill({ onSubmit }) {
+  const [text, setText] = useState("");
+
+  const submit = () => {
+    const t = text.trim();
+    if (!t) return;
+    onSubmit(t);
+    setText("");
+  };
+
+  return (
+    <input
+      type="text"
+      value={text}
+      placeholder="What commonalities do you see between Monet's work and this piece?"
+      onChange={(e) => setText(e.target.value)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          submit();
+        }
+      }}
+      onClick={(e) => e.stopPropagation()}
+      className="w-full rounded-full bg-white border border-charcoal/70 text-charcoal placeholder-charcoal/40 focus:outline-none focus:border-charcoal transition-colors"
+      style={{
+        fontFamily: "'Inter', system-ui, sans-serif",
+        fontSize: "clamp(14px, 1.05vw, 17px)",
+        padding: "18px 32px",
+        boxShadow: "0 8px 28px rgba(0,0,0,0.10)",
+      }}
+    />
   );
 }
