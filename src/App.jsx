@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 // eslint-disable-next-line no-unused-vars -- `AnimatePresence` is used in JSX; project eslint lacks jsx-uses-vars
 import { AnimatePresence } from "framer-motion";
 import EastMeetsWest from "./components/EastMeetsWest";
-import InfluenceGraph from "./components/InfluenceGraph";
 import InfluenceGraphPolaroid from "./components/InfluenceGraphPolaroid";
 import LilyMorph from "./components/LilyMorph";
 import HomeIntro from "./components/HomeIntro";
@@ -64,7 +63,6 @@ function ScreenOne() {
 
 export default function App() {
   const hash = useHashRoute();
-  if (hash === "#/water-lilies-influence") return <InfluenceGraph />;
   if (hash === "#/water-lilies-influence-polaroid") return <InfluenceGraphPolaroid />;
   if (hash === "#/east-meets-west")
     return (
