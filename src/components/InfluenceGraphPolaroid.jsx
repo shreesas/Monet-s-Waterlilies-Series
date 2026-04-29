@@ -693,12 +693,6 @@ export default function InfluenceGraphPolaroid() {
 }
 
 function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl, onClose }) {
-  const [monetAspect, setMonetAspect] = useState(null);
-  const [paintingAspect, setPaintingAspect] = useState(null);
-  // Side by side if neither image is very wide (aspect ratio h/w >= 0.6)
-  const sideBySide = monetAspect !== null && paintingAspect !== null &&
-    monetAspect >= 0.6 && paintingAspect >= 0.6;
-
   useEffect(() => {
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKey);
@@ -724,45 +718,44 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.97 }}
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-10 flex flex-col w-full h-screen overflow-y-auto px-16 py-12"
+        className="relative z-10 w-full h-screen overflow-y-auto px-16 py-12"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Paintings — side by side if both near-portrait, else stacked */}
-        <div className={sideBySide ? "flex flex-row items-end gap-8" : "flex flex-col gap-10"}>
-          <div className={`flex flex-col items-center gap-1.5 ${sideBySide ? "flex-1 min-w-0" : ""}`}>
-            {monetImageUrl ? (
-              <img
-                src={monetImageUrl}
-                alt={monetEntry?.title || "Monet, Water Lilies"}
-                className="w-full h-auto object-contain"
-                style={{ maxHeight: sideBySide ? "52vh" : "36vh" }}
-                draggable={false}
-                onLoad={(e) => setMonetAspect(e.currentTarget.naturalHeight / (e.currentTarget.naturalWidth || 1))}
-              />
-            ) : (
-              <div className="w-full bg-warmgray flex items-center justify-center" style={{ height: "36vh" }}>
-                <span className="font-serif italic text-black/40 text-xs text-center px-3">Monet, Water Lilies</span>
-              </div>
-            )}
-            <p className="font-sans text-black text-xs mt-1 text-center">Claude Monet</p>
-            <p className="font-serif italic text-black text-xs text-center">{monetEntry?.title || "Water Lilies"}</p>
-            <p className="font-sans text-black/55 text-xs text-center">
-              {[monetEntry?.year, monetEntry?.collection].filter(Boolean).join(", ")}
-            </p>
-          </div>
+        {/* Monet painting — full width at top */}
+        <div className="flex flex-col items-center gap-1.5 mb-10">
+          {monetImageUrl ? (
+            <img
+              src={monetImageUrl}
+              alt={monetEntry?.title || "Monet, Water Lilies"}
+              className="w-full h-auto object-contain"
+              style={{ maxHeight: "34vh" }}
+              draggable={false}
+            />
+          ) : (
+            <div className="w-full bg-warmgray flex items-center justify-center" style={{ height: "28vh" }}>
+              <span className="font-serif italic text-black/40 text-xs text-center px-3">Monet, Water Lilies</span>
+            </div>
+          )}
+          <p className="font-sans text-black text-xs mt-1 text-center">Claude Monet</p>
+          <p className="font-serif italic text-black text-xs text-center">{monetEntry?.title || "Water Lilies"}</p>
+          <p className="font-sans text-black/55 text-xs text-center">
+            {[monetEntry?.year, monetEntry?.collection].filter(Boolean).join(", ")}
+          </p>
+        </div>
 
-          <div className={`flex flex-col items-center gap-1.5 ${sideBySide ? "flex-1 min-w-0" : ""}`}>
+        {/* Influenced painting floated left — description text wraps around it */}
+        <div style={{ overflow: "hidden" }}>
+          <div style={{ float: "left", marginRight: "2.5rem", marginBottom: "0.5rem", maxWidth: "44%" }}>
             {imageUrl ? (
               <img
                 src={imageUrl}
                 alt={painting.title}
-                className="w-full h-auto object-contain"
-                style={{ maxHeight: sideBySide ? "52vh" : "36vh" }}
+                className="h-auto object-contain"
+                style={{ maxHeight: "46vh", width: "100%" }}
                 draggable={false}
-                onLoad={(e) => setPaintingAspect(e.currentTarget.naturalHeight / (e.currentTarget.naturalWidth || 1))}
               />
             ) : (
-              <div className="w-full bg-warmgray flex items-center justify-center" style={{ height: "36vh" }}>
+              <div className="bg-warmgray flex items-center justify-center" style={{ height: "36vh", width: "100%" }}>
                 <span className="font-serif italic text-black/40 text-xs text-center px-3">Image rights restricted</span>
               </div>
             )}
@@ -772,12 +765,10 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
               {[painting.year, painting.collection].filter(Boolean).join(", ")}
             </p>
           </div>
-        </div>
 
-        {/* Description below paintings — left aligned */}
-        <div className="flex flex-col gap-4 mt-10">
+          {/* Description + learn more flows around the float */}
           {painting.connection_claim && (
-            <p className="font-serif italic text-charcoal/80 leading-relaxed text-left" style={{ fontSize: "clamp(14px, 1.1vw, 18px)", textWrap: "pretty", maxWidth: "80ch" }}>
+            <p className="font-serif italic text-charcoal/80 leading-relaxed text-left mb-5" style={{ fontSize: "clamp(14px, 1.1vw, 18px)", textWrap: "pretty" }}>
               {painting.connection_claim}
             </p>
           )}
@@ -786,7 +777,7 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
               href={painting.citation_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 font-sans text-black/60 hover:text-black transition-colors w-fit"
+              className="inline-flex items-center gap-1.5 font-sans text-black/60 hover:text-black transition-colors"
               style={{ fontSize: "0.82rem", borderBottom: "1px solid rgba(0,0,0,0.25)", paddingBottom: 1 }}
               onClick={(e) => e.stopPropagation()}
             >
