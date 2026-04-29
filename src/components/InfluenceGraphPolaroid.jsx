@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 // eslint-disable-next-line no-unused-vars -- named imports used in JSX
 import { motion, AnimatePresence } from "framer-motion";
 import ExploreDropdown from "./ExploreDropdown";
+import InfluenceGraphPolaroidIntro from "./InfluenceGraphPolaroidIntro";
 
 const assetModules = import.meta.glob(
   ["../assets/*.jpg", "../assets/*.jpeg", "../assets/*.png", "../assets/*.webp"],
@@ -35,6 +36,7 @@ function findConnectedMonet(painting, catalog) {
 }
 
 export default function InfluenceGraphPolaroid() {
+  const [showIntro, setShowIntro] = useState(true);
   const [paintings, setPaintings] = useState([]);
   const [catalog, setCatalog] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -374,6 +376,11 @@ export default function InfluenceGraphPolaroid() {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-stone">
+      <AnimatePresence>
+        {showIntro && <InfluenceGraphPolaroidIntro onDismiss={() => setShowIntro(false)} />}
+      </AnimatePresence>
+
+      {showIntro ? null : (<>
 
       {/* ── SVG: connection lines ── */}
       <svg
@@ -684,6 +691,7 @@ export default function InfluenceGraphPolaroid() {
           />
         )}
       </AnimatePresence>
+      </>)}
     </div>
   );
 }
