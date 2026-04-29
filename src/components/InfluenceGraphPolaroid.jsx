@@ -741,16 +741,15 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
         {sideBySide ? (
           /* ── Both paintings side by side, description below ── */
           <>
-            <div className="flex flex-row gap-8 items-start">
-              {/* Left column: painting + captions + description (inside the inline-flex block
-                  so description starts exactly at the painting's left edge) */}
-              <div className="flex-1 min-w-0 flex justify-center">
-                <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "flex-start", maxWidth: "100%" }}>
+            <div className="flex flex-row gap-6 items-start justify-center">
+              {/* Left column: painting + captions + description */}
+              <div className="flex-none">
+                <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "flex-start", maxWidth: "40vw" }}>
                   {monetImageUrl ? (
                     <img src={monetImageUrl} alt={monetEntry?.title || "Monet, Water Lilies"}
-                      style={{ maxHeight: "48vh", maxWidth: "100%", display: "block", objectFit: "contain" }} draggable={false} />
+                      style={{ maxHeight: "48vh", maxWidth: "40vw", display: "block", objectFit: "contain" }} draggable={false} />
                   ) : (
-                    <div className="bg-warmgray flex items-center justify-center" style={{ height: "48vh", width: "40vw" }}>
+                    <div className="bg-warmgray flex items-center justify-center" style={{ height: "48vh", width: "36vw" }}>
                       <span className="font-serif italic text-black/40 text-xs text-center px-3">Monet, Water Lilies</span>
                     </div>
                   )}
@@ -779,14 +778,14 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
               </div>
 
               {/* Right column: painting + captions only */}
-              <div className="flex-1 min-w-0 flex justify-center">
-                <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "flex-start", maxWidth: "100%" }}>
+              <div className="flex-none">
+                <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "flex-start", maxWidth: "40vw" }}>
                   {imageUrl ? (
                     <img src={imageUrl} alt={painting.title}
-                      style={{ maxHeight: "48vh", maxWidth: "100%", display: "block", objectFit: "contain" }} draggable={false}
+                      style={{ maxHeight: "48vh", maxWidth: "40vw", display: "block", objectFit: "contain" }} draggable={false}
                       onLoad={(e) => setPaintingAspect(e.currentTarget.naturalHeight / (e.currentTarget.naturalWidth || 1))} />
                   ) : (
-                    <div className="bg-warmgray flex items-center justify-center" style={{ height: "48vh", width: "40vw" }}>
+                    <div className="bg-warmgray flex items-center justify-center" style={{ height: "48vh", width: "36vw" }}>
                       <span className="font-serif italic text-black/40 text-xs text-center px-3">Image rights restricted</span>
                     </div>
                   )}
