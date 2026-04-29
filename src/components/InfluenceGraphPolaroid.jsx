@@ -770,7 +770,6 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
 
                   {/* Description anchored to left painting edge, ~10-12 words per line */}
                   <div className="flex flex-col gap-3 mt-8" style={{ maxWidth: "55ch" }}>
-                    <QuotesList quotes={quotes} editing={editing} onDelete={removeQuote} />
                     {painting.connection_claim && (
                       <p className="font-serif italic text-charcoal/80 leading-relaxed text-left" style={{ fontSize: "clamp(14px, 1.1vw, 18px)", textWrap: "pretty" }}>
                         {painting.connection_claim}
@@ -840,11 +839,6 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
                 <p className="font-serif italic text-charcoal text-left w-full" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>{painting.title}</p>
                 <p className="font-sans text-charcoal/55 text-left w-full" style={{ fontSize: "clamp(11px, 0.85vw, 13px)" }}>{[painting.year, painting.collection].filter(Boolean).join(", ")}</p>
               </div>
-              {quotes.length > 0 && (
-                <div className="mb-5">
-                  <QuotesList quotes={quotes} editing={editing} onDelete={removeQuote} />
-                </div>
-              )}
               {painting.connection_claim && (
                 <p className="font-serif italic text-charcoal/80 leading-relaxed text-left mb-5" style={{ fontSize: "clamp(14px, 1.1vw, 18px)", textWrap: "pretty" }}>
                   {painting.connection_claim}
@@ -893,7 +887,6 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
               <p className="font-sans text-charcoal/55 text-left" style={{ fontSize: "clamp(11px, 0.85vw, 13px)" }}>{[painting.year, painting.collection].filter(Boolean).join(", ")}</p>
             </div>
             <div className="flex flex-col gap-4">
-              <QuotesList quotes={quotes} editing={editing} onDelete={removeQuote} />
               {painting.connection_claim && (
                 <p className="font-serif italic text-charcoal/80 leading-relaxed text-left" style={{ fontSize: "clamp(14px, 1.1vw, 18px)", textWrap: "pretty" }}>
                   {painting.connection_claim}
@@ -910,6 +903,16 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
               )}
             </div>
           </>
+        )}
+
+        {/* Reader quotes — pinned to the bottom of the scroll content,
+            wrap naturally with a comfortable measure. */}
+        {quotes.length > 0 && (
+          <div className="mt-16 pt-8 border-t border-charcoal/10">
+            <div style={{ maxWidth: "70ch", paddingRight: "8rem" }}>
+              <QuotesList quotes={quotes} editing={editing} onDelete={removeQuote} />
+            </div>
+          </div>
         )}
       </motion.div>
 
