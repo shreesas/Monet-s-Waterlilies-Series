@@ -742,36 +742,38 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
           /* ── Both paintings side by side, description below ── */
           <>
             <div className="flex flex-row gap-8 items-start mb-8">
-              <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
-                {monetImageUrl ? (
-                  <div style={{ height: "48vh", width: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {/* Each column: flex-1 centering wrapper + inline-flex image+caption block
+                  so captions align with the image's actual left edge, not the container */}
+              <div className="flex-1 min-w-0 flex justify-center">
+                <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "flex-start", maxWidth: "100%" }}>
+                  {monetImageUrl ? (
                     <img src={monetImageUrl} alt={monetEntry?.title || "Monet, Water Lilies"}
-                      style={{ maxHeight: "100%", maxWidth: "100%", objectFit: "contain" }} draggable={false} />
-                  </div>
-                ) : (
-                  <div className="w-full bg-warmgray flex items-center justify-center" style={{ height: "48vh" }}>
-                    <span className="font-serif italic text-black/40 text-xs text-center px-3">Monet, Water Lilies</span>
-                  </div>
-                )}
-                <p className="font-sans text-charcoal font-medium mt-2 text-left w-full" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>Claude Monet</p>
-                <p className="font-serif italic text-charcoal text-left w-full" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>{monetEntry?.title || "Water Lilies"}</p>
-                <p className="font-sans text-charcoal/55 text-left w-full" style={{ fontSize: "clamp(11px, 0.85vw, 13px)" }}>{[monetEntry?.year, monetEntry?.collection].filter(Boolean).join(", ")}</p>
+                      style={{ maxHeight: "48vh", maxWidth: "100%", display: "block", objectFit: "contain" }} draggable={false} />
+                  ) : (
+                    <div className="bg-warmgray flex items-center justify-center" style={{ height: "48vh", width: "40vw" }}>
+                      <span className="font-serif italic text-black/40 text-xs text-center px-3">Monet, Water Lilies</span>
+                    </div>
+                  )}
+                  <p className="font-sans text-charcoal font-medium mt-2" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>Claude Monet</p>
+                  <p className="font-serif italic text-charcoal" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>{monetEntry?.title || "Water Lilies"}</p>
+                  <p className="font-sans text-charcoal/55" style={{ fontSize: "clamp(11px, 0.85vw, 13px)" }}>{[monetEntry?.year, monetEntry?.collection].filter(Boolean).join(", ")}</p>
+                </div>
               </div>
-              <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
-                {imageUrl ? (
-                  <div style={{ height: "48vh", width: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div className="flex-1 min-w-0 flex justify-center">
+                <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "flex-start", maxWidth: "100%" }}>
+                  {imageUrl ? (
                     <img src={imageUrl} alt={painting.title}
-                      style={{ maxHeight: "100%", maxWidth: "100%", objectFit: "contain" }} draggable={false}
+                      style={{ maxHeight: "48vh", maxWidth: "100%", display: "block", objectFit: "contain" }} draggable={false}
                       onLoad={(e) => setPaintingAspect(e.currentTarget.naturalHeight / (e.currentTarget.naturalWidth || 1))} />
-                  </div>
-                ) : (
-                  <div className="w-full bg-warmgray flex items-center justify-center" style={{ height: "48vh" }}>
-                    <span className="font-serif italic text-black/40 text-xs text-center px-3">Image rights restricted</span>
-                  </div>
-                )}
-                <p className="font-sans text-charcoal font-medium mt-2 text-left w-full" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>{painting.artist}</p>
-                <p className="font-serif italic text-charcoal text-left w-full" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>{painting.title}</p>
-                <p className="font-sans text-charcoal/55 text-left w-full" style={{ fontSize: "clamp(11px, 0.85vw, 13px)" }}>{[painting.year, painting.collection].filter(Boolean).join(", ")}</p>
+                  ) : (
+                    <div className="bg-warmgray flex items-center justify-center" style={{ height: "48vh", width: "40vw" }}>
+                      <span className="font-serif italic text-black/40 text-xs text-center px-3">Image rights restricted</span>
+                    </div>
+                  )}
+                  <p className="font-sans text-charcoal font-medium mt-2" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>{painting.artist}</p>
+                  <p className="font-serif italic text-charcoal" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>{painting.title}</p>
+                  <p className="font-sans text-charcoal/55" style={{ fontSize: "clamp(11px, 0.85vw, 13px)" }}>{[painting.year, painting.collection].filter(Boolean).join(", ")}</p>
+                </div>
               </div>
             </div>
             <div className="flex flex-col gap-4">
