@@ -3,15 +3,14 @@
     "schema_version": "1.2",
     "description": "Paintings influenced by, or critically connected to, Claude Monet's Water Lilies (Les Nymphéas). Intended as edge targets for a d3/React visualization whose source catalog is water_lilies_catalog.json. Monet painting IDs use the Wildenstein catalogue raisonné numbers (e.g. W.1973) present in water_lilies_catalog.json's `catalog_number` field; Orangerie panels use the 'First room: N' / 'Second room: N' keys from the same file.",
     "created": "2026-04-23",
-    "updated": "2026-04-25",
-    "source_catalog": "water_lilies_catalog.json",
-    
+    "updated": "2026-04-28",
+
     "image_url_status_legend": {
       "resolved": "A real, stable image URL is present in image_url.",
       "placeholder_copyright_estate": "Image rights held by artist estate or foundation; no licensed public endpoint. Retrieve manually from image_source_page.",
       "placeholder_no_api": "Institution holds the work but does not publish an open image API or IIIF endpoint. Retrieve manually from image_source_page."
     },
-    
+
     "image_rights_legend": {
       "public_domain": "Work is out of copyright; reproduction rights generally free.",
       "copyright_estate": "Under artist-estate copyright; requires license for non-editorial use.",
@@ -51,9 +50,9 @@
       "monet_paintings_connected": ["W.1973", "W.1981"],
       "connection_type": ["all-over"],
       "connection_strength": "critical",
-      "connection_claim": "Clement Greenberg's 1957 essay 'The Later Monet' argued that Pollock's all-over, horizonless webs continue the pictorial logic of Monet's late Water Lilies, and Alfred Barr's 1955 acquisition and installation of Monet's triptych at MoMA (W.1973) was staged to make that lineage visible alongside Pollock. In Autumn Rhythm specifically, the edge-to-edge skein of black, white, and ochre drips embodies the no-figure/no-ground logic Greenberg identified — the canvas as a continuous decentered field, the same compositional move Monet made by abandoning the horizon line in his late pond paintings. The work was included in the 2018 Musée de l'Orangerie exhibition explicitly framing this Pollock–Monet lineage.",
-      "citation": "Clement Greenberg, 'The Later Monet,' Art News Annual 26 (1957), 132–148; included in 'Water Lilies: American Abstract Painting and the Last Monet,' Musée de l'Orangerie, Paris, April 13 – August 20, 2018.",
-      "citation_url": "https://www.musee-orangerie.fr/en/whats-on/exhibitions/water-lilies-american-abstract-art-and-last-monet"
+      "connection_claim": "Critic Clement Greenberg's 1957 essay 'The Later Monet' argued that Pollock's even, edge-to-edge drips continued the visual logic of Monet's late Water Lilies, where no horizon line anchors the picture and no single point of focus organizes it. The 2018 Musée de l'Orangerie exhibition 'Water Lilies: American Abstract Painting and the Last Monet' staged this lineage with Pollock's drip paintings hung in dialogue with Monet's late canvases.",
+      "citation": "Clement Greenberg, 'The Later Monet,' Art News Annual 26 (1957), 132–148; Hearne Pardee, 'Water Lilies: American Abstract Painting and the Last Monet,' The Brooklyn Rail (October 2018).",
+      "citation_url": "https://brooklynrail.org/2018/10/artseen/Water-Lilies-American-Abstract-Painting-and-the-Last-Monet/"
     },
     {
       "id": "pollock-one-number31-1950",
@@ -69,12 +68,12 @@
       "image_url_status": "resolved",
       "image_source_page": "https://www.moma.org/collection/works/78386",
       "image_rights": "copyright_estate",
-      "monet_paintings_connected": ["W.1683", "W.1981"],
+      "monet_paintings_connected": ["W.1973", "W.1981"],
       "connection_type": ["all-over", "scale-immersive"],
       "connection_strength": "documented",
-      "connection_claim": "Greenberg described Pollock's 'vaporous dust of interfused lights' as reminding him of Monet's late style. One: Number 31 is the canonical Pollock housed at MoMA, exhibited yards from the Water Lilies triptych (W.1973) acquired the same year — a pairing Alfred Barr orchestrated to make the lineage explicit. The pairing in MoMA's galleries — atmosphere-thick Monet panels facing Pollock's vaporous skein — was the curatorial decision that effectively launched the Monet-as-AbEx-precursor argument; Barr's 1955 wall text described the Monet acquisition as 'a bridge between the naturalism of early Impressionism and the highly developed school of Abstract Art' in New York.",
-      "citation": "Alfred H. Barr Jr., MoMA acquisition file and wall text for Water Lilies (W.1992), 1955; Clement Greenberg, '\"American-Type\" Painting,' Partisan Review 22:2 (1955).",
-      "citation_url": "https://www.moma.org/collection/works/78386"
+      "connection_claim": "MoMA director Alfred Barr acquired Monet's Water Lilies in 1955 and called it a bridge between early Impressionism and the abstract art being made in New York, hanging it near Pollock's One: Number 31 to make the lineage visible. Critics from Greenberg onward read Pollock's veil of dripped paint as a continuation of Monet's atmospheric late surfaces, and Apollo Magazine's 2018 review of the Orangerie show identified this Barr–Pollock pairing as the curatorial premise that launched the whole Monet-as-Abstract-Expressionist-precursor argument.",
+      "citation": "Matthew Holman, 'How Monet's water lilies took root across the pond,' Apollo Magazine, July 17, 2018; Alfred H. Barr Jr., MoMA acquisition file for Water Lilies, 1955.",
+      "citation_url": "https://apollo-magazine.com/water-lilies-american-abstract-painting-monet-review/"
     },
     {
       "id": "pollock-the-deep-1953",
@@ -90,10 +89,10 @@
       "image_url_status": "resolved",
       "image_source_page": "https://www.centrepompidou.fr/en/ressources/oeuvre/cqg7BX5",
       "image_rights": "copyright_estate",
-      "monet_paintings_connected": ["W.1981"],
+      "monet_paintings_connected": ["W.1706"],
       "connection_type": ["horizonless", "loose-critical"],
       "connection_strength": "critical",
-      "connection_claim": "Loaned by the Centre Pompidou for the 2018 Orangerie exhibition Water Lilies: American Abstract Painting and the Last Monet, where it was included as a contested case. The Deep's central white tear opening into a black ground reads more as Clyfford Still's vertical-rupture logic than as Monet's submerged horizon, which is why critic David Anfam argued in The Art Newspaper that the curators were stretching to fit the painting into the Monet thesis. Apollo's Sebastian Smee (2018) by contrast read its 'enigmatic abyss' as the existential dark water of late Monet's Japanese Footbridge canvases.",
+      "connection_claim": "The Deep was loaned by the Centre Pompidou to the 2018 Orangerie show as a contested case. Critic David Anfam argued in The Art Newspaper that the central white tear opening into a black ground reads more as Clyfford Still than as Monet, while Apollo's Sebastian Smee instead saw the same 'enigmatic abyss' as the dark water of Monet's late Japanese Footbridge canvases.",
       "citation": "David Anfam, 'What debt does mid-century American abstract painting owe to Monet?,' The Art Newspaper, August 17, 2018.",
       "citation_url": "https://www.theartnewspaper.com/2018/08/17/what-debt-does-mid-century-american-abstract-painting-owe-to-monet"
     },
@@ -111,12 +110,12 @@
       "image_url_status": "resolved",
       "image_source_page": "https://www.sfmoma.org/artwork/97.524/",
       "image_rights": "copyright_estate",
-      "monet_paintings_connected": ["First room: 1", "First room: 2a-c", "First room: 3a-b", "First room: 4a-d"],
+      "monet_paintings_connected": ["W.1730", "First room: 2a-c", "First room: 3a-b", "First room: 4a-d"],
       "connection_type": ["scale-immersive"],
       "connection_strength": "critical",
-      "connection_claim": "Curators and critics from William Seitz (MoMA 1960) onward read Rothko's wall-scaled color envelopes as the post-war American analogue of the Orangerie's curved, room-sized immersion — the viewer is placed inside color rather than in front of an image. In No. 14 specifically, the two stacked rectangles of orange and deep blue dissolve at their edges into the surrounding ground, refusing the figure-ground separation that anchors traditional easel painting — the same spatial logic Seitz identified in Monet's panels, where the spectator is enveloped by color rather than positioned in front of an image.",
-      "citation": "William C. Seitz, Monet: Seasons and Moments, exh. cat. (New York: The Museum of Modern Art, 1960); SFMOMA catalogue entry.",
-      "citation_url": "https://www.sfmoma.org/artwork/97.524/"
+      "connection_claim": "Curator William Seitz, in MoMA's 1960 catalogue 'Monet: Seasons and Moments,' was among the first to read Rothko's wall-sized color rectangles as the post-war American counterpart to the Orangerie's enveloping panels: viewers stand inside color rather than in front of an image. In No. 14, the orange and blue blocks dissolve at their edges into the surrounding ground, refusing the figure-and-ground separation of traditional easel painting in the way Seitz argued Monet had pioneered.",
+      "citation": "William C. Seitz, Monet: Seasons and Moments, exh. cat. (New York: The Museum of Modern Art, 1960); Hearne Pardee, 'Water Lilies: American Abstract Painting and the Last Monet,' The Brooklyn Rail (October 2018).",
+      "citation_url": "https://brooklynrail.org/2018/10/artseen/Water-Lilies-American-Abstract-Painting-and-the-Last-Monet/"
     },
     {
       "id": "rothko-chapel-north-triptych-1966",
@@ -135,8 +134,8 @@
       "monet_paintings_connected": ["First room: 1", "First room: 2a-c", "First room: 3a-b", "First room: 4a-d", "Second room: 1a-b", "Second room: 2a-c", "Second room: 3a-d", "Second room: 4a-c"],
       "connection_type": ["scale-immersive"],
       "connection_strength": "critical",
-      "connection_claim": "The Rothko Chapel is routinely read as a non-denominational American descendant of the Orangerie's two oval rooms: a site-specific, purpose-built environment whose meaning is produced by wrapping the spectator in a continuous field of painted color. Like the Orangerie, the Chapel was conceived as a permanent, site-specific environment: the spectator stands inside a continuous painted field rather than viewing discrete paintings, and the dim light is calibrated so that the panels reveal themselves slowly to adjusted eyes — the same phenomenology Monet engineered with his diffused skylight at the Orangerie.",
-      "citation": "Robert Rosenblum, Modern Painting and the Northern Romantic Tradition: Friedrich to Rothko (Harper & Row, 1975), chapter 7; Rothko Chapel architectural and conservation history.",
+      "connection_claim": "Critics including Robert Rosenblum read the Rothko Chapel as a non-religious American descendant of the Orangerie's two oval rooms: a purpose-built environment where the viewer stands inside a continuous painted field rather than facing discrete pictures. The Chapel's dim, calibrated light, like Monet's diffused skylight at the Orangerie, is engineered so the panels reveal themselves slowly to adjusted eyes.",
+      "citation": "Robert Rosenblum, Modern Painting and the Northern Romantic Tradition: Friedrich to Rothko (Harper & Row, 1975), chapter 7.",
       "citation_url": "https://rothkochapel.org/learn/the-paintings/"
     },
     {
@@ -153,10 +152,10 @@
       "image_url_status": "resolved",
       "image_source_page": "https://www.moca.org/collection/work/no-61-rust-and-blue-brown-blue-brown-on-blue",
       "image_rights": "copyright_estate",
-      "monet_paintings_connected": ["W.1981", "First room: 4a-d", "First room: 1"],
+      "monet_paintings_connected": ["W.1790", "First room: 4a-d", "First room: 1"],
       "connection_type": ["horizonless", "color-field", "scale-immersive"],
       "connection_strength": "critical",
-      "connection_claim": "Greenberg's 1955 essay '\"American-Type\" Painting' framed Rothko, Newman and Still as the first American painters to break with Cubism by pursuing Monet's all-over empirical sensuousness rather than Cubist construction. In No. 61, the two rectangles of rust and blue float on a thinly washed ground that bleeds into them at the edges, denying spatial recession — the horizonless atmosphere Greenberg argued was Monet's bequest to the New York School. Rothko himself credited Bonnard rather than Monet as his immediate trigger, a counter-attribution David Anfam argues persuasively in his 2018 Art Newspaper review.",
+      "connection_claim": "Greenberg's 1955 essay 'American-Type Painting' framed Rothko, Newman and Still as the first American painters to break with Cubism by following Monet's all-over color sensation rather than Cubist construction. In No. 61, the rust and blue rectangles float on a thinly washed ground that bleeds into them at the edges, denying spatial depth in the way Greenberg argued Monet had bequeathed to the New York School.",
       "citation": "Clement Greenberg, '\"American-Type\" Painting,' Partisan Review 22:2 (1955), 179–196; reprinted in Art and Culture (Beacon Press, 1961).",
       "citation_url": "https://monoskop.org/images/c/ce/Greenberg_Clement_1955_1961_American-Type_Painting.pdf",
       "_note": "Rothko Chapel (1971) carries the Orangerie oval-room immersive logic further; see rothko-chapel-north-triptych-1966."
@@ -178,9 +177,9 @@
       "monet_paintings_connected": ["W.1973", "First room: 1", "First room: 4a-d"],
       "connection_type": ["scale-immersive"],
       "connection_strength": "critical",
-      "connection_claim": "After his 1954 Paris visit to the Orangerie, Greenberg argued that Newman (along with Still) was pursuing the same enveloping, peripheral-vision experience Monet engineered at the Orangerie. In Vir Heroicus Sublimis, Newman's wall-scaled red field — broken only by five vertical 'zips' — saturates the spectator's peripheral vision when viewed at his prescribed close distance; his 1951 Betty Parsons wall statement ('the large pictures in this exhibition are intended to be seen from a short distance') codifies the same immersive proposition without naming Monet, making the connection a critical-curatorial one rather than an artist statement. Newman did publicly rebuke MoMA in the early 1950s for delaying its acquisition of a late Monet, evidence that the Orangerie was on his mind even if the comparison was Greenberg's.",
+      "connection_claim": "After his 1954 Paris visit to the Orangerie, Greenberg argued that Newman pursued the same enveloping, peripheral-vision experience Monet engineered there. Newman's 1951 wall statement at Betty Parsons Gallery directed viewers to stand close to his large paintings, a curatorial counterpart to Monet's panels that Greenberg saw as evidence of the same impulse, even though Newman never named Monet himself.",
       "citation": "Clement Greenberg, '\"American-Type\" Painting,' Partisan Review 22:2 (1955); Barnett Newman, wall statement for his second exhibition at Betty Parsons Gallery, April 1951; reprinted in John P. O'Neill (ed.), Barnett Newman: Selected Writings and Interviews (Knopf, 1990), 178.",
-      "citation_url": "https://www.moma.org/collection/works/79250"
+      "citation_url": "https://brooklynrail.org/2018/10/artseen/Water-Lilies-American-Abstract-Painting-and-the-Last-Monet/"
     },
     {
       "id": "mitchell-la-grande-vallee-xiv-1983",
@@ -197,10 +196,10 @@
       "image_source_page": "https://www.centrepompidou.fr/en/ressources/oeuvre/c6xdABz",
       "image_rights": "copyright_estate",
       "wikiart_url": "https://www.wikiart.org/en/joan-mitchell/la-grande-vallee-xiv-for-a-little-while-1983",
-      "monet_paintings_connected": ["W.1973", "W.1975", "W.1976", "W.1977", "W.1902"],
+      "monet_paintings_connected": ["First room: 2a-c", "W.1975", "W.1976", "W.1977", "W.1902"],
       "connection_type": ["biographical", "scale-immersive"],
       "connection_strength": "documented",
-      "connection_claim": "Mitchell lived from 1968 until her death in the house at Vétheuil on the hillside above Monet's earlier property; her late multi-panel cycles were read by curators (most explicitly in the 2022 Fondation Louis Vuitton 'Monet–Mitchell' pairing) as a direct, lived continuation of Monet's Grandes Décorations. La Grande Vallée XIV was painted in mourning for Mitchell's friend Gisèle Barreau's brother Jean-Philippe and Mitchell's own sister Sally; its diptych format with overlapping bands of cobalt, violet, ochre, and green echoes the multipanel polyptych logic of the Orangerie. Mitchell herself rejected the Monet comparison ('I bought this house because I liked the view, not out of any love for Monet'), but the FLV 2022 curators presented her late cycles as the closest twentieth-century parallel to the Orangerie installation.",
+      "connection_claim": "Mitchell lived from 1968 until her death at Vétheuil, in a house overlooking Monet's earlier property, and the 2022 Fondation Louis Vuitton exhibition 'Monet–Mitchell' paired her late multi-panel paintings directly with the Orangerie panels. Mitchell herself rejected the comparison, telling Deborah Solomon 'I bought this house because I liked the view, not out of any love for Monet,' but the curators presented her late polyptychs as the closest twentieth-century parallel to Monet's installation.",
       "citation": "Suzanne Pagé, Marianne Mathieu, Angeline Scherf et al. (eds.), Monet–Mitchell, exh. cat. (Paris: Fondation Louis Vuitton / Hazan, 2022).",
       "citation_url": "https://www.fondationlouisvuitton.fr/en/events/claude-monet-joan-mitchell"
     },
@@ -222,9 +221,9 @@
       "monet_paintings_connected": ["W.1973", "W.1981", "W.1978"],
       "connection_type": ["horizonless", "color-field"],
       "connection_strength": "critical",
-      "connection_claim": "Frankenthaler's soak-stain technique — pigment soaking into unprimed canvas so that image and support are one membrane — was read by Greenberg and Michael Fried as the American crystallisation of the optical indeterminacy of Monet's late pond paintings, where water, reflection, and painted surface collapse into a single field. In Mountains and Sea, Frankenthaler's thinned oil pigment soaked directly into the raw weave — pigment is no longer applied to a surface but is itself the surface, a literalisation of the same image-surface fusion Monet achieved by painting water-reflecting-sky until neither could be located. Critics from the 1980 BBC series 100 Great Paintings onward have called Mountains and Sea 'the Rosetta Stone of Color Field' and likened its impact on Color Field to Impression, Sunrise's impact on Impressionism.",
-      "citation": "Michael Fried, 'Morris Louis,' in Art and Objecthood (University of Chicago Press, 1998), 102–121; orig. 1967. Frankenthaler Foundation catalogue entry.",
-      "citation_url": "https://www.frankenthalerfoundation.org/artworks/mountains-and-sea/details/all"
+      "connection_claim": "Frankenthaler's soak-stain technique, in which thinned pigment soaks directly into the raw canvas weave, was read by Greenberg and Michael Fried as the American counterpart to Monet's late ponds, where water, reflection, and painted surface collapse into a single optical layer. The 2018 Orangerie exhibition included two large Frankenthalers from 1963 (Riverhead and Milkwood Arcade), which Apollo's reviewer described as demonstrating her debt to the Monet who found pure joy in colour.",
+      "citation": "Michael Fried, 'Morris Louis,' in Art and Objecthood (University of Chicago Press, 1998), 102–121; orig. 1967. Matthew Holman, 'How Monet's water lilies took root across the pond,' Apollo Magazine, July 17, 2018.",
+      "citation_url": "https://apollo-magazine.com/water-lilies-american-abstract-painting-monet-review/"
     },
     {
       "id": "louis-tet-1958",
@@ -242,9 +241,9 @@
       "monet_paintings_connected": ["W.1973", "First room: 3a-b"],
       "connection_type": ["color-field"],
       "connection_strength": "critical",
-      "connection_claim": "The Veil paintings' translucent overlaid washes were framed by Greenberg and later by John Elderfield (MoMA 1986) as the most disciplined inheritance of Monet's submerged greens at the Orangerie: pigment is no longer on the canvas, it is the canvas, just as Monet's water had no surface. In Tet, Louis poured Magna in successive translucent washes that overlap without fully obscuring one another, producing layered atmospheric depth in which colour is always already saturated into the canvas weave — the same submerged-green optical structure the 2018 Orangerie show used to pair Louis's Vernal (1960) with Monet's W.1973.",
-      "citation": "John Elderfield, Morris Louis, exh. cat. (New York: The Museum of Modern Art, 1986); Whitney Museum collection entry.",
-      "citation_url": "https://whitney.org/collection/works/1745"
+      "connection_claim": "John Elderfield's 1986 MoMA monograph framed Louis's Veil paintings as the most disciplined inheritance of Monet's submerged greens at the Orangerie: the pigment is no longer applied to the canvas, it has soaked into it, the way Monet's water has no fixed surface. The 2018 Orangerie show paired Louis's Vernal (1960) with Monet's Water Lilies on exactly these grounds, presenting Louis as the painter who took Monet's surface luminosity furthest into pure stain.",
+      "citation": "John Elderfield, Morris Louis, exh. cat. (New York: The Museum of Modern Art, 1986); Hearne Pardee, 'Water Lilies: American Abstract Painting and the Last Monet,' The Brooklyn Rail (October 2018).",
+      "citation_url": "https://brooklynrail.org/2018/10/artseen/Water-Lilies-American-Abstract-Painting-and-the-Last-Monet/"
     },
     {
       "id": "francis-towards-disappearance-ii-1958",
@@ -264,9 +263,9 @@
       "monet_paintings_connected": ["W.1973", "W.1981", "First room: 3a-b", "First room: 4a-d"],
       "connection_type": ["direct-homage"],
       "connection_strength": "direct",
-      "connection_claim": "Sam Francis lived in Paris through the 1950s, painted at mural scale, and repeatedly cited the Orangerie as the decisive modern precedent; Peter Selz's 1975 Abrams monograph framed his white-centred, edge-gathered compositions as Francis's version of Monet's pond — emptiness in the middle, colour-event at the periphery. MoMA's own catalogue entry confirms Francis was 'particularly influenced by the iridescent atmospherics' of late Monet (and Bonnard); in Towards Disappearance II the cellular swarm of red, blue, and yellow patches gathers at the edges around a luminous white centre, exactly the empty-middle/colour-event-at-periphery composition Selz identified as Francis's adaptation of Monet's pond surface. The Tate research essay 'Space Without Place: Francis's Travel Paintings' confirms critics aligned Francis with Monet from his very first 1957 New York and London exhibitions.",
-      "citation": "Peter Selz, Sam Francis (New York: Harry N. Abrams, 1975; rev. ed. 1982); MoMA collection entry; Tate 'In Focus' research project on Around the Blues (2019).",
-      "citation_url": "https://www.moma.org/collection/works/78776"
+      "connection_claim": "Sam Francis lived in Paris through the 1950s and repeatedly named the Orangerie as the decisive precedent for his mural-scale paintings; Brooklyn Rail's reviewer of the 2018 Orangerie show confirmed he was 'directly inspired by an early experience of Monet's murals.' Critic Peter Selz's 1975 monograph framed Francis's empty white centers ringed by colored patches at the edges as his version of Monet's pond surface, where the colour event happens at the periphery and the middle is held open.",
+      "citation": "Peter Selz, Sam Francis (New York: Harry N. Abrams, 1975; rev. ed. 1982); Hearne Pardee, 'Water Lilies: American Abstract Painting and the Last Monet,' The Brooklyn Rail (October 2018).",
+      "citation_url": "https://brooklynrail.org/2018/10/artseen/Water-Lilies-American-Abstract-Painting-and-the-Last-Monet/"
     },
     {
       "id": "guston-dial-1956",
@@ -285,9 +284,31 @@
       "monet_paintings_connected": ["W.1794", "W.1973"],
       "connection_type": ["all-over"],
       "connection_strength": "critical",
-      "connection_claim": "The term 'Abstract Impressionism' was coined by Louis Finkelstein in 1956 in ARTnews precisely to describe Guston's pulsing, centre-weighted dabs of pink, red and grey — paint behaving like the late Monet's chromatic haze, without Pollock's drawn linearity. In Dial, Guston's strokes mass at the canvas's middle and dissipate towards its edges — paint as chromatic atmosphere rather than image — and the 2018 Orangerie show presented this as a parallel inheritance to Greenberg's all-over Pollock argument, alongside Mitchell and Frankenthaler.",
-      "citation": "Louis Finkelstein, 'New Look: Abstract-Impressionism,' ARTnews 55 (March 1956), 36–39, 66–68; Whitney Museum collection entry.",
-      "citation_url": "https://whitney.org/collection/works/2241"
+      "connection_claim": "Critic Louis Finkelstein coined the term 'Abstract Impressionism' in a 1956 ARTnews article specifically to describe Guston's pulsing, centre-weighted dabs of pink, red and grey, paint behaving like Monet's late chromatic haze rather than like Pollock's drawn linearity. The 2018 Orangerie show presented Dial as a parallel inheritance to Greenberg's all-over Pollock argument, with Brooklyn Rail's reviewer noting that the canvas 'suggests floating leaves' on a horizonless field.",
+      "citation": "Louis Finkelstein, 'New Look: Abstract-Impressionism,' ARTnews 55 (March 1956), 36–39, 66–68; Hearne Pardee, 'Water Lilies: American Abstract Painting and the Last Monet,' The Brooklyn Rail (October 2018).",
+      "citation_url": "https://brooklynrail.org/2018/10/artseen/Water-Lilies-American-Abstract-Painting-and-the-Last-Monet/"
+    },
+    {
+      "id": "guston-painting-1954",
+      "title": "Painting",
+      "artist": "Philip Guston",
+      "artist_dates": "1913–1980",
+      "year": "1954",
+      "medium": "oil on canvas",
+      "dimensions": "160.6 × 152.7 cm (63 1/4 × 60 1/8 in)",
+      "movement": "Abstract Expressionism",
+      "collection": "Museum of Modern Art, New York (Philip Johnson Fund, 7.1956)",
+      "image_url": "/Users/thewildmagnolia/Downloads/moma/Monet experience/src/assets/guston-painting-1954.png",
+      "image_url_status": "resolved",
+      "image_source_page": "https://www.moma.org/collection/works/78383",
+      "image_rights": "copyright_estate",
+      "wikiart_url": "https://www.wikiart.org/en/philip-guston/painting-1954",
+      "monet_paintings_connected": ["W.1852", "W.1878"],
+      "connection_type": ["all-over", "abstract-impressionism", "accumulated-mark"],
+      "connection_strength": "critical",
+      "connection_claim": "Reviewing the 2018 Orangerie show in The Brooklyn Rail, Hearne Pardee observed that although Guston preferred Monet's earlier style, the slow accumulations of marks in Painting evoke the late Water Lilies' liquid surfaces, embodying the existential weight Harold Rosenberg saw concealed under Monet's well-tended pond. Apollo Magazine's Matthew Holman placed the work within curator Cécile Debray's argument that Monet's late, gestural canvases gave postwar American painters a precedent for the canvas as an arena for action.",
+      "citation": "Hearne Pardee, 'Water Lilies: American Abstract Painting and the Last Monet,' The Brooklyn Rail (October 2018); Matthew Holman, 'How Monet's water lilies took root across the pond,' Apollo Magazine, July 17, 2018.",
+      "citation_url": "https://brooklynrail.org/2018/10/artseen/Water-Lilies-American-Abstract-Painting-and-the-Last-Monet/"
     },
     {
       "id": "dekooning-untitled-v-1977",
@@ -304,12 +325,12 @@
       "image_source_page": "https://www.dekooning.org/the-artist/chronology",
       "image_rights": "copyright_estate",
       "wikiart_url": "https://www.wikiart.org/en/willem-de-kooning/untitled-v-1977",
-      "monet_paintings_connected": ["W.1902", "W.1973", "W.1975"],
+      "monet_paintings_connected": ["W.1863", "W.1973", "W.1975"],
       "connection_type": ["loose-critical"],
       "connection_strength": "critical",
-      "connection_claim": "De Kooning's late-1970s 'pastoral' paintings, made in East Hampton on canvases kept wet for weeks, were identified by curators including Diane Waldman and later Richard Shiff as his explicit attempt to regain Monet's watery, weather-soaked palette. In Untitled V, the long looping pink-yellow-blue strokes are dragged through wet under-paint kept moist for weeks, producing the iridescent watery shimmer De Kooning was openly chasing — paint behaving like weather rather than depicting it. The 2018 Orangerie show paired his Villa Borghese (1960) with Monet on exactly these grounds.",
-      "citation": "Richard Shiff, Between Sense and de Kooning (Reaktion Books, 2011), 142–167; Diane Waldman, Willem de Kooning, exh. cat. (Solomon R. Guggenheim Museum, 1988).",
-      "citation_url": "https://www.dekooning.org/the-artist/chronology"
+      "connection_claim": "Curators Diane Waldman and Richard Shiff identified de Kooning's late-1970s East Hampton paintings, made on canvases kept wet for weeks, as his attempt to recapture Monet's watery, weather-soaked palette. The 2018 Orangerie show paired his Villa Borghese (1960) with Monet on these grounds; in Untitled V, the long looping pink-yellow-blue strokes are dragged through wet under-paint to produce paint that behaves like weather rather than depicting it.",
+      "citation": "Richard Shiff, Between Sense and de Kooning (Reaktion Books, 2011), 142–167; Diane Waldman, Willem de Kooning, exh. cat. (Solomon R. Guggenheim Museum, 1988); Hearne Pardee, 'Water Lilies: American Abstract Painting and the Last Monet,' The Brooklyn Rail (October 2018).",
+      "citation_url": "https://brooklynrail.org/2018/10/artseen/Water-Lilies-American-Abstract-Painting-and-the-Last-Monet/"
     },
     {
       "id": "kelly-tableau-vert-1952",
@@ -325,10 +346,10 @@
       "image_url_comment": "Ellsworth Kelly Foundation controls reproduction; the AIC public collection page hosts a low-res reference image.",
       "image_source_page": "https://www.artic.edu/artworks/229390/tableau-vert",
       "image_rights": "copyright_estate",
-      "monet_paintings_connected": ["W.1975", "W.1976", "W.1977", "First room: 3a-b"],
+      "monet_paintings_connected": ["W.1883", "W.1976", "W.1977", "First room: 3a-b"],
       "connection_type": ["direct-homage"],
       "connection_strength": "direct",
-      "connection_claim": "Kelly visited Giverny in August 1952 and was led by Monet's stepson Jean-Pierre Hoschedé into the abandoned Atelier des Nymphéas — pigeons through broken glass, leaves on the floor, and roughly fifteen 20-foot panels stacked unseen. Kelly painted Tableau Vert the following day in Paris; it is documented in his own catalogue statement as a direct response to that encounter ('Monet's last paintings had a great influence on me, and even though my work doesn't look like his, I feel I want the spirit to be the same'). The 2014–15 Clark Art Institute exhibition Monet | Kelly, with essays by Yve-Alain Bois and Sarah Lees, framed this as the most direct artist-to-artist transmission of late Monet in twentieth-century painting; the same painting was hung at the entrance to the 2018 Orangerie show as 'perhaps the only painting in the entire exhibition that is directly influenced by the Impressionist master' (Brooklyn Rail).",
+      "connection_claim": "Kelly visited Giverny in August 1952 and was led by Monet's stepson Jean-Pierre Hoschedé into the abandoned Atelier des Nymphéas, where roughly fifteen 20-foot panels stood unseen; he painted Tableau Vert in Paris the next day. The 2014–15 Clark Art Institute exhibition 'Monet | Kelly,' with essays by Yve-Alain Bois and Sarah Lees, framed this as the most direct artist-to-artist transmission of late Monet in twentieth-century painting, and the same painting was hung at the entrance to the 2018 Orangerie show as the most directly Monet-influenced work in the exhibition.",
       "citation": "Yve-Alain Bois and Sarah Lees, Monet | Kelly, exh. cat. (Williamstown, MA: Clark Art Institute / Yale University Press, 2014).",
       "citation_url": "https://www.clarkart.edu/exhibition/detail/monet-kelly"
     },
@@ -351,7 +372,7 @@
       "monet_paintings_connected": ["W.1509", "W.1511", "W.1512", "W.1517"],
       "connection_type": ["direct-homage"],
       "connection_strength": "direct",
-      "connection_claim": "Lichtenstein's Water Lilies series of 1992 reproduces the Japanese Footbridge compositions in Ben-Day dots screenprinted onto stainless steel — an explicitly parodic homage that re-reads Monet's surface as already a printed, reproducible sign. Lichtenstein's own statement to David Sylvester (1997): 'I'd see something like a way of doing a Monet through just dots that would look like a machine-made impressionist painting.' In Water Lilies with Japanese Bridge specifically, Monet's bridge becomes a flat geometric structure and the pond a Ben-Day-dot grid screenprinted onto polished stainless steel — whose mirror surface throws the viewer's reflection back into the work, mimicking (and parodying) Monet's pond as a reflective surface.",
+      "connection_claim": "Lichtenstein's 1992 Water Lilies series reproduces Monet's Japanese Footbridge in Ben-Day dots screenprinted onto stainless steel, an explicit homage that re-reads Monet's pond surface as a reproducible printed sign. In his 1997 interview with David Sylvester, Lichtenstein described wanting 'a way of doing a Monet through just dots that would look like a machine-made impressionist painting'; the polished steel ground also throws the viewer's reflection back into the work, mimicking Monet's pond as a reflective surface.",
       "citation": "Roy Lichtenstein, interview with David Sylvester, in Some Kind of Reality (Anthony d'Offay Gallery, London, 1997); Andrea Theil, 'Water Lilies with Japanese Bridge, 1992,' in Roy Lichtenstein: A Catalogue Raisonné (Roy Lichtenstein Foundation).",
       "citation_url": "https://www.lichtensteincatalogue.org/catalogue/entry.php?id=186"
     },
@@ -373,7 +394,7 @@
       "monet_paintings_connected": ["W.1902", "W.1973", "First room: 3a-b"],
       "connection_type": ["loose-critical"],
       "connection_strength": "documented",
-      "connection_claim": "Twombly's Quattro Stagioni — seasonal cycles of dripped crimson, green and ochre — were framed by the 2011–12 traveling exhibition Turner Monet Twombly: Later Paintings (Moderna Museet → Staatsgalerie Stuttgart → Tate Liverpool, curated by Jeremy Lewison) as a late-modernist seasonal pendant to Monet's year-long pond observations: cycles of dissolution rather than landscapes. The exhibition hung the Quattro Stagioni cycle directly opposite Monet's late water lily studies in the gallery section titled 'The Seasons,' the centerpiece pairing of the show. Tate's own catalogue entry notes the explicit affinity between Twombly's seasonal cycle and Monet's late practice of painting the same motif under different temporal conditions.",
+      "connection_claim": "Curator Jeremy Lewison's 2011–12 traveling exhibition 'Turner Monet Twombly: Later Paintings' presented Twombly's seasonal cycles of dripped crimson, green and ochre as a late-modernist pendant to Monet's year-long pond observations, treating both as cycles of dissolution rather than landscapes. The Quattro Stagioni was hung directly opposite Monet's late water lily studies in the gallery section titled 'The Seasons,' the centerpiece pairing of the show.",
       "citation": "Jeremy Lewison (curator), Turner Monet Twombly: Later Paintings, exh. cat. (Tate Liverpool / Moderna Museet / Staatsgalerie Stuttgart, 2011–12); Richard Leeman, Cy Twombly: A Monograph (Thames & Hudson, 2005), 242–260.",
       "citation_url": "https://www.tate.org.uk/whats-on/tate-liverpool/turner-monet-twombly-later-paintings"
     },
@@ -393,7 +414,7 @@
       "monet_paintings_connected": ["W.1509", "W.1512", "W.1973"],
       "connection_type": ["loose-critical"],
       "connection_strength": "critical",
-      "connection_claim": "Gary Garrels (curator of the 2006 MoMA retrospective Plane Image: A Brice Marden Retrospective) and Richard Shiff both described Marden's calligraphic, looping Cold Mountain paintings as a late-twentieth-century equivalent of Monet's late Japanese Footbridge canvases — an abstraction derived from arboreal, reflected line rather than from grid or geometry. In Cold Mountain 6 (Bridge), Marden's looping calligraphic line traces a continuous arboreal scribble across the canvas — the bridge's curve and the willow's reflected fronds become a single rhythmic line rather than two distinct objects, exactly the structural move Monet made in his 1918–24 Japanese Bridge paintings, where bridge and reflection collapse into a continuous painted arc.",
+      "connection_claim": "Curator Gary Garrels (in MoMA's 2006 retrospective 'Plane Image: A Brice Marden Retrospective') and critic Richard Shiff described Marden's calligraphic, looping Cold Mountain paintings as a late-twentieth-century counterpart to Monet's Japanese Footbridge canvases: an abstraction drawn from arboreal, reflected line rather than from grid or geometry. In Cold Mountain 6 (Bridge), the bridge curve and the reflected willow fronds collapse into a single rhythmic line, the same move Monet made in his 1918–24 paintings of the same site.",
       "citation": "Gary Garrels (ed.), Plane Image: A Brice Marden Retrospective, exh. cat. (New York: Museum of Modern Art, 2006).",
       "citation_url": "https://www.moma.org/calendar/exhibitions/35"
     },
@@ -414,7 +435,7 @@
       "monet_paintings_connected": ["First room: 2a-c", "W.1973"],
       "connection_type": ["loose-critical", "scale-immersive"],
       "connection_strength": "critical",
-      "connection_claim": "Bleckner's dark, dotted, light-pierced fields were read by Lisa Phillips in the 1995 Guggenheim catalogue as late-twentieth-century sky-versions of Monet's cloud-reflection panels at the Orangerie — the same device (suspended points of illumination on a dark chromatic ground) transposed from water to sky. In Architecture of the Sky III, the dotted points of light suspended in a dark chromatic ground invert Monet's nocturnal cloud-reflection panels — the same suspended-luminance device transposed from pond surface to night sky, reproducing the Orangerie's atmospheric immersion through Symbolist iconography rather than Greenbergian flatness.",
+      "connection_claim": "Curator Lisa Phillips's 1995 Guggenheim catalogue read Bleckner's dark, dotted, light-pierced fields as late-twentieth-century sky-versions of Monet's cloud-reflection panels at the Orangerie, with the same suspended-light device transposed from water surface to night sky. In Architecture of the Sky III, the dotted points of light on a dark chromatic ground recreate the Orangerie's atmospheric immersion through Symbolist motifs rather than through flat color.",
       "citation": "Lisa Phillips, Ross Bleckner, exh. cat. (New York: Solomon R. Guggenheim Museum, 1995).",
       "citation_url": "https://www.guggenheim.org/artwork/artist/ross-bleckner"
     },
@@ -436,9 +457,9 @@
       "monet_paintings_connected": ["W.1683", "First room: 3a-b"],
       "connection_type": ["color-field", "loose-critical"],
       "connection_strength": "critical",
-      "connection_claim": "Rothko explicitly named Bonnard as a key predecessor in dissolving figure into chromatic field; critics from Dore Ashton onward positioned Bonnard's garden paintings as the French bridge between Monet's chromatic dissolution and the American Color Field, with the decisive moment being the 1948 MoMA Bonnard retrospective (organized by John Rewald) attended by both Rothko and de Kooning. Earthly Paradise was painted at the same moment Monet was beginning the Grandes Décorations in his Giverny studio, and Bonnard knew Monet personally — they corresponded and exchanged studio visits — making this the most contemporaneous case of a painter parallel-evolving Monet's strategy of dissolving the figure into the surrounding garden chroma.",
-      "citation": "Dore Ashton, About Rothko (Oxford University Press, 1983), 78–80; James Breslin, Mark Rothko: A Biography (University of Chicago Press, 1993), 246; Art Institute of Chicago catalogue entry.",
-      "citation_url": "https://www.artic.edu/artworks/144361/earthly-paradise"
+      "connection_claim": "Bonnard knew Monet personally and lived as his neighbor for the last sixteen years of Monet's life; the two corresponded and exchanged studio visits while Bonnard developed his own approach to dissolving figure into chromatic field. Critic Hearne Pardee, reviewing the 2018 Orangerie show in The Brooklyn Rail, called Bonnard 'Monet's immediate heir,' and the 1948 MoMA Bonnard retrospective (organized by John Rewald) was attended by both Rothko and de Kooning, making Bonnard a recognized French bridge between Monet's color and the American Color Field painters.",
+      "citation": "Dore Ashton, About Rothko (Oxford University Press, 1983), 78–80; James Breslin, Mark Rothko: A Biography (University of Chicago Press, 1993), 246; Hearne Pardee, 'Water Lilies: American Abstract Painting and the Last Monet,' The Brooklyn Rail (October 2018).",
+      "citation_url": "https://brooklynrail.org/2018/10/artseen/Water-Lilies-American-Abstract-Painting-and-the-Last-Monet/"
     },
     {
       "id": "mitchell-good-bye-door-1980",
@@ -457,9 +478,9 @@
       "monet_paintings_connected": ["W.1973", "First room: 1", "First room: 4a-d"],
       "connection_type": ["scale-immersive", "biographical"],
       "connection_strength": "documented",
-      "connection_claim": "The Good-bye Door was hung outside the first gallery of the 2018 Musée de l'Orangerie exhibition Water Lilies: American Abstract Painting and the Last Monet — what Brooklyn Rail's reviewer called the curatorial 'opening salvo,' staging Mitchell as the polyptych painter most directly continuing Monet's Grandes Décorations format. The nine-panel structure mirrors the Orangerie's chambered installation logic: a continuous painted field whose rhythm depends on multipanel sequencing rather than single-canvas composition, drawn from Mitchell's view of the Seine valley from her terrace at Vétheuil — the same valley Monet painted from the opposite bank in his 1878–81 Vétheuil years before moving to Giverny.",
-      "citation": "Anne Sherwood Pundyk, 'The Water Lilies: American Abstract Painting and the Last Monet,' The Brooklyn Rail (September 2018); Cécile Debray (curator), exh. cat. Nymphéas: L'abstraction américaine et le dernier Monet (Hazan / Musée de l'Orangerie, 2018).",
-      "citation_url": "https://brooklynrail.org/2018/09/artseen/The-Water-Lilies-American-Abstract-Painting-and-the-Last-Monet"
+      "connection_claim": "Hung as the entrance painting to the 2018 Musée de l'Orangerie exhibition 'Water Lilies: American Abstract Painting and the Last Monet,' The Good-bye Door was curator Cécile Debray's opening statement, presenting Mitchell as the polyptych painter most directly continuing Monet's Grandes Décorations format. Apollo Magazine's reviewer Matthew Holman called it the 'knockout work' of the show, and the nine-panel composition was painted from Mitchell's view of the Seine valley at Vétheuil, the same valley Monet had painted from the opposite bank in 1878–81 before moving to Giverny.",
+      "citation": "Matthew Holman, 'How Monet's water lilies took root across the pond,' Apollo Magazine, July 17, 2018; Cécile Debray (curator), exh. cat. Nymphéas: L'abstraction américaine et le dernier Monet (Hazan / Musée de l'Orangerie, 2018).",
+      "citation_url": "https://apollo-magazine.com/water-lilies-american-abstract-painting-monet-review/"
     },
     {
       "id": "mitchell-sunflowers-1990-91",
@@ -475,12 +496,12 @@
       "image_url_comment": "Mitchell Foundation controls reproduction rights; no open API.",
       "image_source_page": "https://www.davidzwirner.com/exhibitions/2024/exceptional-works-joan-mitchell",
       "image_rights": "copyright_estate",
-      "monet_paintings_connected": ["W.1973", "W.1975", "W.1976", "W.1977", "W.1902"],
+      "monet_paintings_connected": ["W.1898", "W.1975", "W.1976", "W.1977", "W.1902"],
       "connection_type": ["color-field", "biographical"],
       "connection_strength": "documented",
-      "connection_claim": "Painted in Mitchell's last years at Vétheuil while she was dying of lung cancer, the Sunflowers diptychs were framed by Cheim & Read's posthumous 2008 retrospective and the 2022 Fondation Louis Vuitton 'Monet–Mitchell' exhibition as her closest engagement with late Monet — the blossoms on the left panel are full and chromatic, those on the right wilting and ghostly, embodying Monet's strategy of painting the same motif under different temporal conditions across multiple canvases. Berkshire Fine Arts critic Charles Giuliano on the Cheim & Read show: 'one feels the presence of the epic, late water lilies of Monet… created when the artist, suffering from cataracts that left him all but blind, was at his most abstract' — a pointed parallel given that Mitchell had cataract surgery in 1984 and approached her late polyptychs through deteriorating peripheral vision, just as Monet did.",
+      "connection_claim": "Painted in Mitchell's last years at Vétheuil while she was dying of lung cancer, the Sunflowers diptychs were framed by the 2022 Fondation Louis Vuitton 'Monet–Mitchell' exhibition as her closest engagement with late Monet: blossoms full and chromatic on the left panel, wilting and ghostly on the right, echoing Monet's strategy of painting the same motif under changing conditions. Mitchell had cataract surgery in 1984 and worked through deteriorating peripheral vision in her late polyptychs, just as Monet did in his last decade.",
       "citation": "Suzanne Pagé et al. (eds.), Monet–Mitchell, exh. cat. (Paris: Fondation Louis Vuitton / Hazan, 2022); Sarah Roberts and Katy Siegel (eds.), Joan Mitchell, exh. cat. (San Francisco: SFMOMA / Yale University Press, 2021).",
-      "citation_url": "https://www.davidzwirner.com/exhibitions/2024/exceptional-works-joan-mitchell"
+      "citation_url": "https://www.fondationlouisvuitton.fr/en/events/claude-monet-joan-mitchell"
     },
     {
       "id": "hockney-arrival-of-spring-normandy-2020",
@@ -496,12 +517,12 @@
       "image_url_comment": "Rights controlled by David Hockney Inc.",
       "image_source_page": "https://www.royalacademy.org.uk/exhibition/david-hockney-the-arrival-of-spring-normandy-2020",
       "image_rights": "copyright_estate",
-      "monet_paintings_connected": ["W.1509", "W.1511", "W.1512", "W.1517", "W.1683"],
+      "monet_paintings_connected": ["W.1656"],
       "connection_type": ["direct-homage", "biographical"],
       "connection_strength": "direct",
-      "connection_claim": "Hockney moved to a Normandy farmhouse near Monet's Giverny in 2019 and made 116 iPad paintings during the 2020 spring lockdown. In his own catalogue text he wrote: 'all the time I was getting better at my mark making on the screen, eventually doing, à la Monet, the water lilies in the pond.' The Royal Academy's 2021 show, curated by Edith Devaney, explicitly presented this body of work as Hockney's late-style Monet homage — the same patient seasonal observation of a single pond and surrounding garden, transposed onto a digital surface, with the lily-pond paintings hung in dialogue with the rest of the cycle to reproduce Monet's serial logic of painting one site through changing light.",
+      "connection_claim": "Hockney moved to a Normandy farmhouse near Monet's Giverny in 2019 and made 116 iPad paintings during the 2020 spring lockdown. In his Royal Academy catalogue text, Hockney himself wrote: 'all the time I was getting better at my mark making on the screen, eventually doing, à la Monet, the water lilies in the pond,' and curator Edith Devaney's 2021 RA exhibition presented the cycle as Hockney's late-style Monet homage, recreating Monet's serial logic of painting one site through changing light.",
       "citation": "David Hockney, exhibition catalogue text for The Arrival of Spring, Normandy, 2020 (Royal Academy of Arts, London, May 23 – September 26, 2021), curated by Edith Devaney.",
-      "citation_url": "https://wwd.com/eye/people/david-hockney-monet-mind-new-royal-academy-arts-show-1234826173/"
+      "citation_url": "https://www.royalacademy.org.uk/exhibition/david-hockney-the-arrival-of-spring-normandy-2020"
     },
     {
       "id": "katz-homage-to-monet-5-2009",
@@ -517,10 +538,10 @@
       "image_url_comment": "Image rights controlled by VAGA / Alex Katz.",
       "image_source_page": "https://www.musee-orangerie.fr/en/whats-on/exhibitions/alex-katz-water-lilies-homage-monet-series-2009-2010",
       "image_rights": "copyright_estate",
-      "monet_paintings_connected": ["W.1973", "W.1975", "W.1976", "W.1977", "First room: 1"],
+      "monet_paintings_connected": ["W.1501", "W.1975", "W.1976", "W.1977", "First room: 1"],
       "connection_type": ["direct-homage"],
       "connection_strength": "direct",
-      "connection_claim": "Katz's own statement, recorded in the Musée de l'Orangerie 2019 exhibition catalogue: 'The water lilies are on the pond in Maine and I've been looking at them for 50 years but I never touched them because of Monet. But I said you're going to do it, and I just did it.' Homage to Monet 5 was hung in a single-painting gallery directly adjacent to Monet's panels at the Orangerie as part of the museum's Contemporary Counterpoint series — the most explicit invitation of a contemporary painter into dialogue with Monet's permanent installation. Katz reduces the pond to flat yellow lily-pad forms scattered on a near-monochrome blue ground — a Pop reduction of Monet's atmospheric pond to its diagrammatic essentials, the lily-pads functioning as flat signs the way comic-strip lines function in his portrait practice.",
+      "connection_claim": "In the Musée de l'Orangerie's 2019 catalogue, Katz himself stated: 'The water lilies are on the pond in Maine and I've been looking at them for 50 years but I never touched them because of Monet. But I said you're going to do it, and I just did it.' Homage to Monet 5 was hung in a single-painting gallery directly adjacent to Monet's panels at the Orangerie as part of the museum's Contemporary Counterpoint series, the most explicit invitation of a contemporary painter into dialogue with Monet's permanent installation.",
       "citation": "Alex Katz, statement and catalogue text for Contemporary Counterpoint 3: Alex Katz. Nymphéas – Homage to Monet, Musée de l'Orangerie, May 15 – September 2, 2019.",
       "citation_url": "https://www.musee-orangerie.fr/en/whats-on/exhibitions/alex-katz-water-lilies-homage-monet-series-2009-2010"
     },
@@ -538,10 +559,10 @@
       "image_url_comment": "The Met hosts a public image; check current accession URL on metmuseum.org.",
       "image_source_page": "https://www.metmuseum.org/art/collection/search?q=Pat+Steir+Sixteen+Waterfalls",
       "image_rights": "copyright_estate",
-      "monet_paintings_connected": ["W.1973", "W.1981", "W.1862"],
+      "monet_paintings_connected": ["W.1857"],
       "connection_type": ["color-field", "scale-immersive"],
       "connection_strength": "documented",
-      "connection_claim": "Steir's pour technique — applying thinned oil at the top of a vertical canvas and letting gravity run the paint downward — produces image and process in one gesture, just as Monet's late water-on-water reflections collapse depicted subject into painted surface. The 2019 Barnes Foundation exhibition Silent Secret Waterfalls: The Barnes Series, curated by director Thom Collins, named Monet alongside Cézanne and Van Gogh as Steir's primary historical influences, citing 'their deep understanding of light and atmosphere.' Sixteen Waterfalls of Dreams, Memories, and Sentiment is the canonical first Waterfall (Steir herself called it 'the first real one,' painted in 1990) and is held by the Met. Steir cites Cage and Chinese ink painting as her direct sources; the Monet line is consistently advanced by curators rather than by the artist herself, making this 'documented' rather than 'direct.'",
+      "connection_claim": "Steir's pour technique, applying thinned oil at the top of a vertical canvas and letting gravity carry the paint downward, produces image and process in one gesture, the way Monet's late water-on-water reflections collapse subject into surface. The 2019 Barnes Foundation exhibition 'Silent Secret Waterfalls,' curated by director Thom Collins, named Monet alongside Cézanne and Van Gogh as Steir's primary historical influences, though Steir herself names John Cage and Chinese ink painting as more direct sources, which is why the connection is curatorial rather than an artist statement.",
       "citation": "Thom Collins (curator), Silent Secret Waterfalls: The Barnes Series, Barnes Foundation, Philadelphia, January 12 – November 17, 2019; Pat Steir interview with Lilly Wei, Studio International (2019).",
       "citation_url": "https://www.barnesfoundation.org/about/press/press-releases/pat-steir"
     }
