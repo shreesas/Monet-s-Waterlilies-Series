@@ -740,9 +740,9 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
                     <span className="font-serif italic text-black/40 text-xs text-center px-3">Monet, Water Lilies</span>
                   </div>
                 )}
-                <p className="font-sans text-black text-xs mt-1 text-center">Claude Monet</p>
-                <p className="font-serif italic text-black text-xs text-center">{monetEntry?.title || "Water Lilies"}</p>
-                <p className="font-sans text-black/55 text-xs text-center">{[monetEntry?.year, monetEntry?.collection].filter(Boolean).join(", ")}</p>
+                <p className="font-sans text-charcoal font-medium mt-2 text-left w-full" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>Claude Monet</p>
+                <p className="font-serif italic text-charcoal text-left w-full" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>{monetEntry?.title || "Water Lilies"}</p>
+                <p className="font-sans text-charcoal/55 text-left w-full" style={{ fontSize: "clamp(11px, 0.85vw, 13px)" }}>{[monetEntry?.year, monetEntry?.collection].filter(Boolean).join(", ")}</p>
               </div>
               <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
                 {imageUrl ? (
@@ -756,9 +756,9 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
                     <span className="font-serif italic text-black/40 text-xs text-center px-3">Image rights restricted</span>
                   </div>
                 )}
-                <p className="font-sans text-black text-xs mt-1 text-center">{painting.artist}</p>
-                <p className="font-serif italic text-black text-xs text-center">{painting.title}</p>
-                <p className="font-sans text-black/55 text-xs text-center">{[painting.year, painting.collection].filter(Boolean).join(", ")}</p>
+                <p className="font-sans text-charcoal font-medium mt-2 text-left w-full" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>{painting.artist}</p>
+                <p className="font-serif italic text-charcoal text-left w-full" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>{painting.title}</p>
+                <p className="font-sans text-charcoal/55 text-left w-full" style={{ fontSize: "clamp(11px, 0.85vw, 13px)" }}>{[painting.year, painting.collection].filter(Boolean).join(", ")}</p>
               </div>
             </div>
             <div className="flex flex-col gap-4">
@@ -791,9 +791,9 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
                   <span className="font-serif italic text-black/40 text-xs text-center px-3">Monet, Water Lilies</span>
                 </div>
               )}
-              <p className="font-sans text-black text-xs mt-1 text-center">Claude Monet</p>
-              <p className="font-serif italic text-black text-xs text-center">{monetEntry?.title || "Water Lilies"}</p>
-              <p className="font-sans text-black/55 text-xs text-center">{[monetEntry?.year, monetEntry?.collection].filter(Boolean).join(", ")}</p>
+              <p className="font-sans text-charcoal font-medium mt-2 text-left" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>Claude Monet</p>
+              <p className="font-serif italic text-charcoal text-left" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>{monetEntry?.title || "Water Lilies"}</p>
+              <p className="font-sans text-charcoal/55 text-left" style={{ fontSize: "clamp(11px, 0.85vw, 13px)" }}>{[monetEntry?.year, monetEntry?.collection].filter(Boolean).join(", ")}</p>
             </div>
             <div style={{ overflow: "hidden" }}>
               <div style={{ float: "left", marginRight: "2.5rem", marginBottom: "0.5rem", maxWidth: "44%" }}>
@@ -806,9 +806,9 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
                     <span className="font-serif italic text-black/40 text-xs text-center px-3">Image rights restricted</span>
                   </div>
                 )}
-                <p className="font-sans text-black text-xs mt-1 text-center">{painting.artist}</p>
-                <p className="font-serif italic text-black text-xs text-center">{painting.title}</p>
-                <p className="font-sans text-black/55 text-xs text-center">{[painting.year, painting.collection].filter(Boolean).join(", ")}</p>
+                <p className="font-sans text-charcoal font-medium mt-2 text-left w-full" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>{painting.artist}</p>
+                <p className="font-serif italic text-charcoal text-left w-full" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>{painting.title}</p>
+                <p className="font-sans text-charcoal/55 text-left w-full" style={{ fontSize: "clamp(11px, 0.85vw, 13px)" }}>{[painting.year, painting.collection].filter(Boolean).join(", ")}</p>
               </div>
               {painting.connection_claim && (
                 <p className="font-serif italic text-charcoal/80 leading-relaxed text-left mb-5" style={{ fontSize: "clamp(14px, 1.1vw, 18px)", textWrap: "pretty" }}>
@@ -839,9 +839,9 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
                   <span className="font-serif italic text-black/40 text-xs text-center px-3">Monet, Water Lilies</span>
                 </div>
               )}
-              <p className="font-sans text-black text-xs mt-1 text-center">Claude Monet</p>
-              <p className="font-serif italic text-black text-xs text-center">{monetEntry?.title || "Water Lilies"}</p>
-              <p className="font-sans text-black/55 text-xs text-center">{[monetEntry?.year, monetEntry?.collection].filter(Boolean).join(", ")}</p>
+              <p className="font-sans text-charcoal font-medium mt-2 text-left" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>Claude Monet</p>
+              <p className="font-serif italic text-charcoal text-left" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>{monetEntry?.title || "Water Lilies"}</p>
+              <p className="font-sans text-charcoal/55 text-left" style={{ fontSize: "clamp(11px, 0.85vw, 13px)" }}>{[monetEntry?.year, monetEntry?.collection].filter(Boolean).join(", ")}</p>
             </div>
             <div className="flex flex-col items-center gap-1.5 mb-8">
               {imageUrl ? (
@@ -853,9 +853,9 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
                   <span className="font-serif italic text-black/40 text-xs text-center px-3">Image rights restricted</span>
                 </div>
               )}
-              <p className="font-sans text-black text-xs mt-1 text-center">{painting.artist}</p>
-              <p className="font-serif italic text-black text-xs text-center">{painting.title}</p>
-              <p className="font-sans text-black/55 text-xs text-center">{[painting.year, painting.collection].filter(Boolean).join(", ")}</p>
+              <p className="font-sans text-charcoal font-medium mt-2 text-left" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>{painting.artist}</p>
+              <p className="font-serif italic text-charcoal text-left" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>{painting.title}</p>
+              <p className="font-sans text-charcoal/55 text-left" style={{ fontSize: "clamp(11px, 0.85vw, 13px)" }}>{[painting.year, painting.collection].filter(Boolean).join(", ")}</p>
             </div>
             <div className="flex flex-col gap-4">
               {painting.connection_claim && (
