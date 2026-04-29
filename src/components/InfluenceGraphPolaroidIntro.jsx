@@ -101,7 +101,7 @@ export default function InfluenceGraphPolaroidIntro({ onDismiss }) {
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); onDismiss(); }}
-            className="mt-10 rounded-full border-2 border-white/75 bg-transparent text-white font-serif font-bold text-sm tracking-wide px-8 py-3 hover:bg-white hover:text-black hover:border-white transition-colors duration-300"
+            className="mt-10 rounded-full border-2 border-white/75 bg-transparent text-white font-serif font-bold text-sm tracking-wide px-8 py-3 hover:bg-white hover:text-black hover:border-white transition-colors duration-150"
           >
             Begin
           </button>

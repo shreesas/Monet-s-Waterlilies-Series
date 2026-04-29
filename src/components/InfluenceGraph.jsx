@@ -627,7 +627,7 @@ export default function InfluenceGraph() {
         })}
       </motion.div>
 
-      <ExploreDropdown currentPage="#/water-lilies-influence" />
+      {!selected && <ExploreDropdown currentPage="#/water-lilies-influence" />}
 
       {/* ── Detail overlay ── */}
       <AnimatePresence>

@@ -11,11 +11,19 @@ export default function ExploreDropdown({ currentPage }) {
 
   return (
     <div
-      className="fixed top-6 right-6 z-40"
+      className="fixed top-6 right-6 z-[70]"
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
     >
-      <button className="rounded-full border border-black/70 bg-transparent text-black font-sans text-sm px-5 py-2.5 shadow-[0_2px_8px_rgba(0,0,0,0.10)] flex items-center gap-2 select-none cursor-default backdrop-blur-sm">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setOpen(false)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className="rounded-full border border-black/70 bg-transparent text-black font-sans text-sm px-5 py-2.5 shadow-[0_2px_8px_rgba(0,0,0,0.10)] flex items-center gap-2 select-none cursor-pointer backdrop-blur-sm transition-colors duration-150 hover:bg-black hover:text-white hover:border-black"
+      >
         Explore
         <span
           className="transition-transform duration-200 inline-block text-base leading-none"

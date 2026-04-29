@@ -8,6 +8,7 @@ import ScatteredPrint from "./ScatteredPrint";
 import LilyTrigger from "./LilyTrigger";
 import InfoBlock from "./InfoBlock";
 import FullscreenLightbox from "./FullscreenLightbox";
+import ExploreDropdown from "./ExploreDropdown";
 
 import { PRINT_BLOCKS } from "../data/scatterLayout";
 import { INFO_BLOCKS } from "../data/infoBlocks";
@@ -485,6 +486,10 @@ export default function EastMeetsWest() {
           />
         )}
       </AnimatePresence>
+
+      {!showIntro && !lightbox && (
+        <ExploreDropdown currentPage="#/ukiyo-e-influence" />
+      )}
 
       {/* Top-right bar — subtitle prompt + progress counter on one line,
           pinned to the top of the right panel. White pill so it reads
