@@ -677,7 +677,7 @@ export default function InfluenceGraphPolaroid() {
         );
       })()}
 
-      <ExploreDropdown currentPage="#/water-lilies-influence-polaroid" />
+      <ExploreDropdown currentPage="#/abstract-legacy" />
 
       {/* ── Detail overlay ── */}
       <AnimatePresence>

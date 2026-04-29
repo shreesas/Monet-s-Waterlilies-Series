@@ -13,7 +13,7 @@ import ExploreDropdown from "./components/ExploreDropdown";
 // the intro in the same visit.
 let homeIntroDismissed = false;
 
-// Tiny hash router: '#/east-meets-west' renders Screen 2; everything else
+// Tiny hash router: '#/ukiyo-e-influence' renders Screen 2; everything else
 // falls back to the original Screen 1.
 function useHashRoute() {
   const [hash, setHash] = useState(() =>
@@ -63,12 +63,12 @@ function ScreenOne() {
 
 export default function App() {
   const hash = useHashRoute();
-  if (hash === "#/water-lilies-influence-polaroid") return <InfluenceGraphPolaroid />;
-  if (hash === "#/east-meets-west")
+  if (hash === "#/abstract-legacy") return <InfluenceGraphPolaroid />;
+  if (hash === "#/ukiyo-e-influence")
     return (
       <>
         <EastMeetsWest />
-        <ExploreDropdown currentPage="#/east-meets-west" />
+        <ExploreDropdown currentPage="#/ukiyo-e-influence" />
       </>
     );
   return <ScreenOne />;

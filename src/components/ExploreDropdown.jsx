@@ -2,8 +2,8 @@ import { useState } from "react";
 
 const PAGES = [
   { label: "The Journey", href: "#/" },
-  { label: "Ukiyo-e Influence", href: "#/east-meets-west" },
-  { label: "Abstract Legacy", href: "#/water-lilies-influence-polaroid" },
+  { label: "Ukiyo-e Influence", href: "#/ukiyo-e-influence" },
+  { label: "Abstract Legacy", href: "#/abstract-legacy" },
 ];
 
 export default function ExploreDropdown({ currentPage }) {
