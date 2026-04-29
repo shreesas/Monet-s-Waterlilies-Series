@@ -45,7 +45,7 @@ export default function EastMeetsWestIntro({ onDismiss }) {
       onClick={onDismiss}
       role="button"
       tabIndex={0}
-      aria-label="Enter East Meets West"
+      aria-label="Enter Ukiyo-e Influence"
     >
       {/* Full-bleed background painting */}
       <img

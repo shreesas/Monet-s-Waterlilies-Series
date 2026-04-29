@@ -42,7 +42,7 @@ export default function InfluenceGraphPolaroidIntro({ onDismiss }) {
       onClick={onDismiss}
       role="button"
       tabIndex={0}
-      aria-label="Enter Curated Lineage"
+      aria-label="Enter Abstract Legacy"
     >
       {/* Full-bleed background painting */}
       <img
