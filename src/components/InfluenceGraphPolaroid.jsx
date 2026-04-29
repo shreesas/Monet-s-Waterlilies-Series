@@ -389,10 +389,6 @@ export default function InfluenceGraphPolaroid() {
           const ang = Math.atan2(ey - cy, ex - cx);
           const x1 = cx + Math.cos(ang) * 160;
           const y1 = cy + Math.sin(ang) * 160;
-          const mx = x1 + (ex - x1) * 0.42;
-          const my = y1 + (ey - y1) * 0.42;
-          let deg = Math.atan2(ey - y1, ex - x1) * (180 / Math.PI);
-          if (deg > 90 || deg < -90) deg += 180;
           const lineOpacity = anyHov ? (isHov ? 1 : 0.25) : 0;
           return (
             <line
@@ -693,6 +689,12 @@ export default function InfluenceGraphPolaroid() {
 }
 
 function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl, onClose }) {
+  const [monetAspect, setMonetAspect] = useState(null);
+  const [paintingAspect, setPaintingAspect] = useState(null);
+  // Use float-wrap only when aspect ratios differ a lot (one wide, one tall)
+  const shouldWrap = monetAspect !== null && paintingAspect !== null &&
+    Math.abs(monetAspect - paintingAspect) > 0.5;
+
   useEffect(() => {
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKey);
@@ -730,6 +732,7 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
               className="w-full h-auto object-contain"
               style={{ maxHeight: "34vh" }}
               draggable={false}
+              onLoad={(e) => setMonetAspect(e.currentTarget.naturalHeight / (e.currentTarget.naturalWidth || 1))}
             />
           ) : (
             <div className="w-full bg-warmgray flex items-center justify-center" style={{ height: "28vh" }}>
@@ -743,51 +746,94 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
           </p>
         </div>
 
-        {/* Influenced painting floated left — description text wraps around it */}
-        <div style={{ overflow: "hidden" }}>
-          <div style={{ float: "left", marginRight: "2.5rem", marginBottom: "0.5rem", maxWidth: "44%" }}>
-            {imageUrl ? (
-              <img
-                src={imageUrl}
-                alt={painting.title}
-                className="h-auto object-contain"
-                style={{ maxHeight: "46vh", width: "100%" }}
-                draggable={false}
-              />
-            ) : (
-              <div className="bg-warmgray flex items-center justify-center" style={{ height: "36vh", width: "100%" }}>
-                <span className="font-serif italic text-black/40 text-xs text-center px-3">Image rights restricted</span>
-              </div>
+        {/* Influenced painting + description:
+            - shouldWrap: painting floats left, text wraps around it
+            - otherwise: painting and text side by side */}
+        {shouldWrap ? (
+          <div style={{ overflow: "hidden" }}>
+            <div style={{ float: "left", marginRight: "2.5rem", marginBottom: "0.5rem", maxWidth: "44%" }}>
+              {imageUrl ? (
+                <img
+                  src={imageUrl}
+                  alt={painting.title}
+                  className="h-auto object-contain"
+                  style={{ maxHeight: "46vh", width: "100%" }}
+                  draggable={false}
+                  onLoad={(e) => setPaintingAspect(e.currentTarget.naturalHeight / (e.currentTarget.naturalWidth || 1))}
+                />
+              ) : (
+                <div className="bg-warmgray flex items-center justify-center" style={{ height: "36vh", width: "100%" }}>
+                  <span className="font-serif italic text-black/40 text-xs text-center px-3">Image rights restricted</span>
+                </div>
+              )}
+              <p className="font-sans text-black text-xs mt-1 text-center">{painting.artist}</p>
+              <p className="font-serif italic text-black text-xs text-center">{painting.title}</p>
+              <p className="font-sans text-black/55 text-xs text-center">
+                {[painting.year, painting.collection].filter(Boolean).join(", ")}
+              </p>
+            </div>
+            {painting.connection_claim && (
+              <p className="font-serif italic text-charcoal/80 leading-relaxed text-left mb-5" style={{ fontSize: "clamp(14px, 1.1vw, 18px)", textWrap: "pretty" }}>
+                {painting.connection_claim}
+              </p>
             )}
-            <p className="font-sans text-black text-xs mt-1 text-center">{painting.artist}</p>
-            <p className="font-serif italic text-black text-xs text-center">{painting.title}</p>
-            <p className="font-sans text-black/55 text-xs text-center">
-              {[painting.year, painting.collection].filter(Boolean).join(", ")}
-            </p>
+            {painting.citation_url && (
+              <a href={painting.citation_url} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 font-sans text-black/60 hover:text-black transition-colors"
+                style={{ fontSize: "0.82rem", borderBottom: "1px solid rgba(0,0,0,0.25)", paddingBottom: 1 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                Learn more
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M2 6h8M6 2l4 4-4 4" />
+                </svg>
+              </a>
+            )}
           </div>
-
-          {/* Description + learn more flows around the float */}
-          {painting.connection_claim && (
-            <p className="font-serif italic text-charcoal/80 leading-relaxed text-left mb-5" style={{ fontSize: "clamp(14px, 1.1vw, 18px)", textWrap: "pretty" }}>
-              {painting.connection_claim}
-            </p>
-          )}
-          {painting.citation_url && (
-            <a
-              href={painting.citation_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 font-sans text-black/60 hover:text-black transition-colors"
-              style={{ fontSize: "0.82rem", borderBottom: "1px solid rgba(0,0,0,0.25)", paddingBottom: 1 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              Learn more
-              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M2 6h8M6 2l4 4-4 4" />
-              </svg>
-            </a>
-          )}
-        </div>
+        ) : (
+          <div className="flex flex-row gap-10 items-start">
+            <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+              {imageUrl ? (
+                <img
+                  src={imageUrl}
+                  alt={painting.title}
+                  className="w-full h-auto object-contain"
+                  style={{ maxHeight: "46vh" }}
+                  draggable={false}
+                  onLoad={(e) => setPaintingAspect(e.currentTarget.naturalHeight / (e.currentTarget.naturalWidth || 1))}
+                />
+              ) : (
+                <div className="w-full bg-warmgray flex items-center justify-center" style={{ height: "36vh" }}>
+                  <span className="font-serif italic text-black/40 text-xs text-center px-3">Image rights restricted</span>
+                </div>
+              )}
+              <p className="font-sans text-black text-xs mt-1 text-center">{painting.artist}</p>
+              <p className="font-serif italic text-black text-xs text-center">{painting.title}</p>
+              <p className="font-sans text-black/55 text-xs text-center">
+                {[painting.year, painting.collection].filter(Boolean).join(", ")}
+              </p>
+            </div>
+            <div className="flex flex-col gap-4 flex-1 min-w-0 pt-2">
+              {painting.connection_claim && (
+                <p className="font-serif italic text-charcoal/80 leading-relaxed text-left" style={{ fontSize: "clamp(14px, 1.1vw, 18px)", textWrap: "pretty" }}>
+                  {painting.connection_claim}
+                </p>
+              )}
+              {painting.citation_url && (
+                <a href={painting.citation_url} target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 font-sans text-black/60 hover:text-black transition-colors w-fit"
+                  style={{ fontSize: "0.82rem", borderBottom: "1px solid rgba(0,0,0,0.25)", paddingBottom: 1 }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Learn more
+                  <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M2 6h8M6 2l4 4-4 4" />
+                  </svg>
+                </a>
+              )}
+            </div>
+          </div>
+        )}
       </motion.div>
 
       <button
