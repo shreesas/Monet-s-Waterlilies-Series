@@ -713,6 +713,29 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
   const [paintingAspect, setPaintingAspect] = useState(null);
   const { quotes, addQuote, removeQuote } = useQuotes(painting.id);
   const [editing, setEditing] = useState(false);
+  const scrollRef = useRef(null);
+  const prevQuotesLen = useRef(quotes.length);
+
+  // After a new quote is added, scroll the overlay's content to the bottom
+  // so the user can immediately see what they just typed. We use a double
+  // rAF so the freshly mounted quote has been laid out before we measure
+  // scrollHeight.
+  useEffect(() => {
+    if (quotes.length > prevQuotesLen.current) {
+      const target = scrollRef.current;
+      if (target) {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            target.scrollTo({
+              top: target.scrollHeight,
+              behavior: "smooth",
+            });
+          });
+        });
+      }
+    }
+    prevQuotesLen.current = quotes.length;
+  }, [quotes.length]);
 
   const overrideWrap = LAYOUT_OVERRIDES.wrap.has(painting.id);
   const overrideSide = LAYOUT_OVERRIDES.sideBySide.has(painting.id);
@@ -741,6 +764,7 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
       <div className="absolute inset-0" onClick={onClose} />
 
       <motion.div
+        ref={scrollRef}
         initial={{ opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.97 }}
