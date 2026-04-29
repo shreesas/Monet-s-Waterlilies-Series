@@ -4,14 +4,14 @@ import { useEffect } from "react";
 
 // Full-bleed intro splash for the Water Lilies Influence (Polaroid) experience.
 // Mirrors the painting-first dissolve sequence of EastMeetsWestIntro.
-// Background: Monet, Nymphéas, 1914–15 (Musée Marmottan).
+// Background: Monet, W.1978 (catalog).
 
 const PAINT_S      = 1.8;
 const TEXT_DELAY_S = 1.2;
 const TEXT_S       = 1.5;
 
 const BG_IMAGE =
-  "https://upload.wikimedia.org/wikipedia/commons/1/10/Claude_Monet%2C_Nymph%C3%A9as%2C_1914-15%2C_Mus%C3%A9e_Marmottan_Monet%2C_Paris.jpg";
+  "https://upload.wikimedia.org/wikipedia/commons/5/50/Claude_Monet_044.jpg";
 
 export default function InfluenceGraphPolaroidIntro({ onDismiss }) {
   useEffect(() => {
@@ -47,7 +47,7 @@ export default function InfluenceGraphPolaroidIntro({ onDismiss }) {
       {/* Full-bleed background painting */}
       <img
         src={BG_IMAGE}
-        alt="Claude Monet, Nymphéas, 1914–15 — ambient background"
+        alt="Claude Monet, Water Lilies (W.1978) — ambient background"
         className="absolute inset-0 w-full h-full object-cover"
         style={{ objectPosition: "center 55%" }}
         draggable={false}
