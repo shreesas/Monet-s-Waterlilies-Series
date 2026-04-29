@@ -689,14 +689,12 @@ export default function InfluenceGraphPolaroid() {
 }
 
 function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl, onClose }) {
-  const [monetAspect, setMonetAspect] = useState(null);
   const [paintingAspect, setPaintingAspect] = useState(null);
-  const aspectDiff = monetAspect !== null && paintingAspect !== null
-    ? Math.abs(monetAspect - paintingAspect) : null;
-  // Similar aspect ratios → both paintings side by side, description below
-  const sideBySide = aspectDiff !== null && aspectDiff <= 0.5;
-  // Very different → Monet full-width at top, influenced floated with text wrapping
-  const shouldWrap = aspectDiff !== null && aspectDiff > 0.5;
+  // Layout is driven by the influenced painting's own proportions:
+  // portrait/square (h/w >= 0.85) → both paintings side by side
+  // landscape (h/w < 0.85)        → Monet full-width top, influenced floated with text wrap
+  const sideBySide = paintingAspect !== null && paintingAspect >= 0.85;
+  const shouldWrap = paintingAspect !== null && paintingAspect < 0.85;
 
   useEffect(() => {
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
@@ -734,7 +732,7 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
                 {monetImageUrl ? (
                   <img src={monetImageUrl} alt={monetEntry?.title || "Monet, Water Lilies"}
                     className="w-full h-auto object-contain" style={{ maxHeight: "48vh" }} draggable={false}
-                    onLoad={(e) => setMonetAspect(e.currentTarget.naturalHeight / (e.currentTarget.naturalWidth || 1))} />
+                    />
                 ) : (
                   <div className="w-full bg-warmgray flex items-center justify-center" style={{ height: "36vh" }}>
                     <span className="font-serif italic text-black/40 text-xs text-center px-3">Monet, Water Lilies</span>
@@ -783,7 +781,7 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
               {monetImageUrl ? (
                 <img src={monetImageUrl} alt={monetEntry?.title || "Monet, Water Lilies"}
                   className="w-full h-auto object-contain" style={{ maxHeight: "34vh" }} draggable={false}
-                  onLoad={(e) => setMonetAspect(e.currentTarget.naturalHeight / (e.currentTarget.naturalWidth || 1))} />
+                  />
               ) : (
                 <div className="w-full bg-warmgray flex items-center justify-center" style={{ height: "28vh" }}>
                   <span className="font-serif italic text-black/40 text-xs text-center px-3">Monet, Water Lilies</span>
@@ -831,7 +829,7 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
               {monetImageUrl ? (
                 <img src={monetImageUrl} alt={monetEntry?.title || "Monet, Water Lilies"}
                   className="w-full h-auto object-contain" style={{ maxHeight: "34vh" }} draggable={false}
-                  onLoad={(e) => setMonetAspect(e.currentTarget.naturalHeight / (e.currentTarget.naturalWidth || 1))} />
+                  />
               ) : (
                 <div className="w-full bg-warmgray flex items-center justify-center" style={{ height: "28vh" }}>
                   <span className="font-serif italic text-black/40 text-xs text-center px-3">Monet, Water Lilies</span>
