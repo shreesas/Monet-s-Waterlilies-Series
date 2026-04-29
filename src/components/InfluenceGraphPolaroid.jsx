@@ -796,7 +796,7 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
         ) : shouldWrap ? (
           /* ── Very different sizes: Monet full-width top, influenced floated with wrap ── */
           <>
-            <div className="flex flex-col items-center gap-1.5 mb-10">
+            <div className="flex flex-col items-start gap-1.5 mb-10">
               {monetImageUrl ? (
                 <img src={monetImageUrl} alt={monetEntry?.title || "Monet, Water Lilies"}
                   className="w-full h-auto object-contain" style={{ maxHeight: "34vh" }} draggable={false}
@@ -844,7 +844,7 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
         ) : (
           /* ── Loading / fallback: Monet top, influenced + description stacked ── */
           <>
-            <div className="flex flex-col items-center gap-1.5 mb-10">
+            <div className="flex flex-col items-start gap-1.5 mb-10">
               {monetImageUrl ? (
                 <img src={monetImageUrl} alt={monetEntry?.title || "Monet, Water Lilies"}
                   className="w-full h-auto object-contain" style={{ maxHeight: "34vh" }} draggable={false}
@@ -858,7 +858,7 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
               <p className="font-serif italic text-charcoal text-left" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>{monetEntry?.title || "Water Lilies"}</p>
               <p className="font-sans text-charcoal/55 text-left" style={{ fontSize: "clamp(11px, 0.85vw, 13px)" }}>{[monetEntry?.year, monetEntry?.collection].filter(Boolean).join(", ")}</p>
             </div>
-            <div className="flex flex-col items-center gap-1.5 mb-8">
+            <div className="flex flex-col items-start gap-1.5 mb-8">
               {imageUrl ? (
                 <img src={imageUrl} alt={painting.title}
                   className="w-full h-auto object-contain" style={{ maxHeight: "34vh" }} draggable={false}
