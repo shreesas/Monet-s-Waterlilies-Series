@@ -69,13 +69,6 @@ export default function InfluenceGraphPolaroidIntro({ onDismiss }) {
             y:       { duration: TEXT_S, delay: TEXT_DELAY_S, ease: [0.22, 1, 0.36, 1] },
           }}
         >
-          <p
-            className="font-sans text-white/70 uppercase tracking-widest mb-3"
-            style={{ fontSize: "clamp(0.65rem, 0.9vw, 0.8rem)", letterSpacing: "0.2em" }}
-          >
-            Water Lilies &amp; Their Legacy
-          </p>
-
           <h2
             className="font-serif text-white leading-[1.1]"
             style={{ fontSize: "clamp(1.75rem, 4vw, 3.25rem)" }}
@@ -84,7 +77,7 @@ export default function InfluenceGraphPolaroidIntro({ onDismiss }) {
           </h2>
 
           <p
-            className="mt-6 font-sans text-white/88 leading-snug"
+            className="mt-6 font-sans text-white leading-snug"
             style={{ fontSize: "clamp(1rem, 1.55vw, 1.45rem)", textWrap: "pretty" }}
           >
             After his death in 1926, Monet&rsquo;s massive late canvases sat in his
