@@ -688,14 +688,27 @@ export default function InfluenceGraphPolaroid() {
   );
 }
 
+// Explicit layout overrides for paintings where image crop doesn't match painting proportions
+const LAYOUT_OVERRIDES = {
+  wrap: new Set([
+    'francis-towards-disappearance-ii-1958',
+    'frankenthaler-mountains-and-sea-1952',
+  ]),
+  sideBySide: new Set([
+    'rothko-chapel-north-triptych-1966',
+    'steir-sixteen-waterfalls-1990',
+    'katz-homage-to-monet-5-2009',
+  ]),
+};
+
 function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl, onClose }) {
   const [paintingAspect, setPaintingAspect] = useState(null);
-  // Layout driven by the influenced painting's h/w ratio.
-  // Wrap threshold 0.67 covers only the explicitly wide-landscape cases
-  // (Tet ~0.63, La Grande Vallée ~0.65, Pollock/Newman panoramas ~0.45–0.51).
-  // Everything else (>= 0.67) shows side by side at matched height.
-  const sideBySide = paintingAspect !== null && paintingAspect >= 0.67;
-  const shouldWrap = paintingAspect !== null && paintingAspect < 0.67;
+
+  const overrideWrap = LAYOUT_OVERRIDES.wrap.has(painting.id);
+  const overrideSide = LAYOUT_OVERRIDES.sideBySide.has(painting.id);
+  // Aspect-ratio fallback: wrap if h/w < 0.67, side by side otherwise
+  const sideBySide = overrideSide || (!overrideWrap && paintingAspect !== null && paintingAspect >= 0.67);
+  const shouldWrap  = overrideWrap  || (!overrideSide && paintingAspect !== null && paintingAspect < 0.67);
 
   useEffect(() => {
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
