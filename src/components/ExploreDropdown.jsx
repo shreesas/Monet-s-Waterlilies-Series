@@ -3,7 +3,6 @@ import { useState } from "react";
 const PAGES = [
   { label: "The Journey", href: "#/" },
   { label: "Ukiyo-e Influence", href: "#/ukiyo-e-influence" },
-  { label: "Ukiyo-e Influence V2", href: "#/ukiyo-e-influence-v2" },
   { label: "Abstract Legacy", href: "#/abstract-legacy" },
 ];
 
