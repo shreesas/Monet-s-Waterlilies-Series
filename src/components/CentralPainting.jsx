@@ -11,15 +11,21 @@ import { useEffect, useState } from "react";
 // scattered prints. The slab's aspect is locked to the FIRST painting
 // loaded so the box doesn't reshape when the user clicks through
 // subsequent paintings (those are cropped to fit via `object-cover`).
+//
+// When `squareSize` is set (e.g. `min(24vw, 32vh)`), the slab is a fixed
+// square of that CSS length on both axes — useful for radial scatter
+// layouts where the Monet should read as a crop-on-square anchor.
 export default function CentralPainting({
   painting,
   height,
   maxWidth,
   onSelect,
+  squareSize,
 }) {
   const [aspect, setAspect] = useState(null);
 
   useEffect(() => {
+    if (squareSize) return; // square box ignores natural aspect for layout
     if (aspect !== null) return; // already locked; never re-measure
     if (!painting?.image_url) return;
     const probe = new Image();
@@ -29,7 +35,7 @@ export default function CentralPainting({
       }
     };
     probe.src = painting.image_url;
-  }, [aspect, painting?.image_url]);
+  }, [aspect, painting?.image_url, squareSize]);
 
   if (!painting) return null;
 
@@ -38,13 +44,16 @@ export default function CentralPainting({
   const lockedAspect = aspect ?? 0.78;
   const slabWidth = `min(${maxWidth}, calc(${lockedAspect} * ${height}))`;
 
+  const square = Boolean(squareSize);
+
   return (
     <div
       className="relative pointer-events-auto cursor-pointer overflow-hidden"
-      style={{
-        width: slabWidth,
-        height,
-      }}
+      style={
+        square
+          ? { width: squareSize, height: squareSize }
+          : { width: slabWidth, height }
+      }
       onClick={onSelect}
     >
       <AnimatePresence>
@@ -54,7 +63,9 @@ export default function CentralPainting({
           alt={painting.alt_text || painting.title}
           draggable={false}
           className="absolute inset-0 block w-full h-full select-none object-cover"
-          initial={aspect === null ? false : { opacity: 0 }}
+          initial={
+            square ? { opacity: 0 } : aspect === null ? false : { opacity: 0 }
+          }
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 1.4, ease: "easeInOut" }}

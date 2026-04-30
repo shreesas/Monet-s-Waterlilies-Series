@@ -41,47 +41,55 @@ const PRINT_IMAGES = Object.fromEntries(
 const LILY_TO_PRINT = ["J1", "J5", "J3", "J6", "J4", "J8"];
 
 // Three decorative-only prints from V1. These appear once all six lilies
-// have been collected, as bonus reveals around the central painting.
+// have been collected, as bonus reveals on an outer ring.
 const BONUS_PRINTS = ["J2", "J7", "J9"];
 
-// 6 lily slot positions around the central painting, expressed as
-// percentages of the viewport. Tuned to roughly mirror the reference
-// image: three on the left arc, three on the right arc, with the
-// central painting reserving a vertical band in the middle.
-const LILY_SLOTS = [
-  { top: "20%", left: "26%" },   // 0 — top-left
-  { top: "20%", left: "74%" },   // 1 — top-right
-  { top: "50%", left: "14%" },   // 2 — mid-left
-  { top: "50%", left: "86%" },   // 3 — mid-right
-  { top: "78%", left: "26%" },   // 4 — bottom-left
-  { top: "78%", left: "74%" },   // 5 — bottom-right
-];
+// Evenly space six lilies around a circle, starting at 12 o'clock (-90°).
+const LILY_COUNT = 6;
 
-// 3 bonus slot positions for the decorative prints — tucked into the
-// gaps between the lily ring and the viewport edges so they don't
-// crowd the central painting or overlap any lily slot.
-const BONUS_SLOTS = [
-  { top: "10%", left: "50%" },   // top-center, below the pill
-  { top: "90%", left: "30%" },   // bottom-left
-  { top: "90%", left: "70%" },   // bottom-right
-];
+function lilyAngleDeg(index) {
+  return -90 + (360 / LILY_COUNT) * index;
+}
 
-// Mobile slot variants — pulled into a tight ring so 6 + 3 placements
-// still fit on a phone-sized viewport.
-const LILY_SLOTS_MOBILE = [
-  { top: "16%", left: "22%" },
-  { top: "16%", left: "78%" },
-  { top: "44%", left: "10%" },
-  { top: "44%", left: "90%" },
-  { top: "82%", left: "22%" },
-  { top: "82%", left: "78%" },
-];
+// Bonus prints sit at the mid-angle between adjacent lilies (outer ring).
+const BONUS_ANGLE_OFFSET_DEG = 360 / LILY_COUNT / 2; // 30°
 
-const BONUS_SLOTS_MOBILE = [
-  { top: "8%",  left: "50%" },
-  { top: "94%", left: "30%" },
-  { top: "94%", left: "70%" },
-];
+function bonusAngleDeg(index) {
+  return -90 + BONUS_ANGLE_OFFSET_DEG + index * (360 / LILY_COUNT);
+}
+
+function degToRad(deg) {
+  return (deg * Math.PI) / 180;
+}
+
+function polarPoint(cx, cy, r, angleDeg) {
+  const a = degToRad(angleDeg);
+  return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+}
+
+// Compute concentric ring radii from the square painting's center so lilies,
+// revealed prints, and bonus prints read as a radial gallery wall.
+function ringGeometry(containerSize, paintingRect, isMobile) {
+  const w = containerSize.w;
+  const h = containerSize.h;
+  const vmin = Math.min(w, h) || 1;
+  let cx = w / 2;
+  let cy = h / 2 - vmin * 0.02;
+  let half = vmin * 0.14;
+
+  if (paintingRect && paintingRect.width > 0) {
+    cx = paintingRect.left + paintingRect.width / 2;
+    cy = paintingRect.top + paintingRect.height / 2;
+    half = paintingRect.width / 2;
+  }
+
+  const gap = vmin * (isMobile ? 0.26 : 0.24);
+  const rLily = half + gap;
+  const rPrint = half + gap * 0.52;
+  const rBonus = rLily + vmin * (isMobile ? 0.11 : 0.095);
+
+  return { cx, cy, rLily, rPrint, rBonus };
+}
 
 export default function EastMeetsWestV2() {
   const [monetCatalog, setMonetCatalog] = useState([]);
@@ -184,24 +192,17 @@ export default function EastMeetsWestV2() {
     if (entry && imgSrc) setLightbox(printToLightbox(entry, imgSrc));
   };
 
-  // Sizing — mirrors V1 numbers so the painting reads at the same scale
-  // when V1 and V2 sit side-by-side in the dropdown.
-  const lilySize       = isMobile ? "9vh" : "11vh";
-  const printMaxSize   = isMobile ? "min(20vh, 36vw)" : "min(22vh, 18vw)";
-  const centralMaxWidth = isMobile ? "70vw" : "32vw";
-  const topMargin    = isMobile ? "1.25rem" : "1.75rem";
-  const bottomMargin = isMobile ? "1.25rem" : "1.75rem";
-  const captionReserve = "5.5vh";
-  const centralHeight = `calc(100vh - ${topMargin} - ${bottomMargin} - ${captionReserve})`;
+  // Smaller square Monet at the hub of a circular print + lily ring.
+  const lilySize = isMobile ? "8vh" : "10vh";
+  const printMaxSize = isMobile ? "min(17vh, 32vw)" : "min(19vh, 15vw)";
+  const centralSquareSize = isMobile ? "min(46vw, 32vh)" : "min(19vw, 28vh)";
 
   const centralPainting = centralPool[centralIndex];
-  const lilySlots  = isMobile ? LILY_SLOTS_MOBILE  : LILY_SLOTS;
-  const bonusSlots = isMobile ? BONUS_SLOTS_MOBILE : BONUS_SLOTS;
   const allCollected = usedLilies.size >= INFO_BLOCKS.length;
 
-  // Pixel coords for connection-line endpoints. Recomputed on resize and
-  // whenever the painting's bounding box changes (e.g. after the central
-  // painting morphs to a different aspect ratio).
+  // Pixel coords for connection-line endpoints. `paintingRef` wraps only
+  // the square painting slab (not the caption) so the polar ring aligns
+  // to the artwork's true center.
   const paintingRef = useRef(null);
   const containerRef = useRef(null);
   const [paintingRect, setPaintingRect] = useState(null);
@@ -210,25 +211,28 @@ export default function EastMeetsWestV2() {
   useLayoutEffect(() => {
     function measure() {
       const c = containerRef.current;
-      const p = paintingRef.current?.querySelector("img,div");
+      const wrap = paintingRef.current;
       if (c) {
         const cr = c.getBoundingClientRect();
         setContainerSize({ w: cr.width, h: cr.height });
       }
-      if (p && c) {
-        const pr = p.getBoundingClientRect();
-        const cr = c.getBoundingClientRect();
-        setPaintingRect({
-          left:  pr.left  - cr.left,
-          top:   pr.top   - cr.top,
-          width: pr.width,
-          height: pr.height,
-        });
+      if (wrap && c) {
+        const slab = wrap.querySelector(".relative.pointer-events-auto");
+        const el = slab || wrap.firstElementChild;
+        if (el) {
+          const pr = el.getBoundingClientRect();
+          const cr = c.getBoundingClientRect();
+          setPaintingRect({
+            left: pr.left - cr.left,
+            top: pr.top - cr.top,
+            width: pr.width,
+            height: pr.height,
+          });
+        }
       }
     }
     measure();
     window.addEventListener("resize", measure);
-    // Rerun once images settle in. Cheap belt-and-braces.
     const t = window.setTimeout(measure, 250);
     const t2 = window.setTimeout(measure, 1200);
     return () => {
@@ -238,35 +242,35 @@ export default function EastMeetsWestV2() {
     };
   }, [showIntro, isMobile, centralIndex, centralPainting?.image_url]);
 
-  // Convert a slot's percentage coords into pixel coords inside the
-  // viewport-sized container.
-  function slotToPx(slot) {
-    const x = (parseFloat(slot.left) / 100) * containerSize.w;
-    const y = (parseFloat(slot.top)  / 100) * containerSize.h;
-    return { x, y };
+  const ring = useMemo(
+    () => ringGeometry(containerSize, paintingRect, isMobile),
+    [containerSize, paintingRect, isMobile]
+  );
+
+  function lilyPixelPos(index) {
+    return polarPoint(ring.cx, ring.cy, ring.rLily, lilyAngleDeg(index));
   }
 
-  // Same shift logic as the print-render block below. Returns the print's
-  // pixel center so the connection line and the floating text use the
-  // print's true position, not the lily's underlying slot.
-  function printPx(slot) {
-    const lily = slotToPx(slot);
-    const isLeft   = parseFloat(slot.left) < 50;
-    const topPct   = parseFloat(slot.top);
-    const isMidRow = Math.abs(topPct - 50) < 5;
-    const isTop    = topPct < 45;
-    // 1vh = containerSize.h / 100; 1vw = containerSize.w / 100.
-    const vShiftPx = isMidRow ? 0 : (isTop ? 8 : -8) * (containerSize.h / 100);
-    const hShiftPx = (isLeft ? 8 : -8) * (containerSize.w / 100);
-    return { x: lily.x + hShiftPx, y: lily.y + vShiftPx };
+  function printPixelPos(index) {
+    return polarPoint(ring.cx, ring.cy, ring.rPrint, lilyAngleDeg(index));
+  }
+
+  function bonusPixelPos(index) {
+    return polarPoint(ring.cx, ring.cy, ring.rBonus, bonusAngleDeg(index));
   }
 
   // Closest point on the painting's bounding box to a given (x, y) — so
   // the connection line touches the nearest edge instead of the center.
   function closestPointOnPainting(x, y) {
     if (!paintingRect) return { x, y };
-    const cx = Math.max(paintingRect.left, Math.min(x, paintingRect.left + paintingRect.width));
-    const cy = Math.max(paintingRect.top,  Math.min(y, paintingRect.top  + paintingRect.height));
+    const cx = Math.max(
+      paintingRect.left,
+      Math.min(x, paintingRect.left + paintingRect.width)
+    );
+    const cy = Math.max(
+      paintingRect.top,
+      Math.min(y, paintingRect.top + paintingRect.height)
+    );
     return { x: cx, y: cy };
   }
 
@@ -280,28 +284,25 @@ export default function EastMeetsWestV2() {
       </AnimatePresence>
 
       {showIntro ? null : (<>
-      {/* Central Monet painting — anchored to the viewport center. */}
+      {/* Central Monet — smaller square slab + caption, vertically centred. */}
       <div
-        ref={paintingRef}
-        className="absolute pointer-events-none z-20 flex flex-col items-center justify-center"
-        style={{
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-        }}
+        className="absolute inset-0 z-20 flex flex-col items-center justify-center pointer-events-none"
       >
-        <CentralPainting
-          painting={centralPainting}
-          maxWidth={centralMaxWidth}
-          height={centralHeight}
-          onSelect={openCentralLightbox}
-        />
+        <div
+          ref={paintingRef}
+          className="pointer-events-auto rounded-sm shadow-[0_14px_44px_rgba(0,0,0,0.14)]"
+        >
+          <CentralPainting
+            painting={centralPainting}
+            squareSize={centralSquareSize}
+            onSelect={openCentralLightbox}
+          />
+        </div>
         {centralPainting && (
-          <div className="mt-2 font-sans text-center px-4 pointer-events-none">
+          <div className="mt-2 font-sans text-center px-4 max-w-[min(90vw,520px)] pointer-events-none">
             <p
               className="text-charcoal font-medium leading-tight"
-              style={{ fontSize: "clamp(15px, 1.15vw, 19px)" }}
+              style={{ fontSize: "clamp(14px, 1.05vw, 18px)" }}
             >
               {centralPainting.title}
               {centralPainting.year && (
@@ -313,7 +314,7 @@ export default function EastMeetsWestV2() {
             {centralPainting.collection && (
               <p
                 className="mt-1 text-charcoal/55"
-                style={{ fontSize: "clamp(12px, 0.9vw, 14px)" }}
+                style={{ fontSize: "clamp(11px, 0.85vw, 13px)" }}
               >
                 {centralPainting.collection}
               </p>
@@ -322,11 +323,8 @@ export default function EastMeetsWestV2() {
         )}
       </div>
 
-      {/* SVG overlay — connection lines from each revealed print to the
-          central painting. Sits above the painting wrapper so the line
-          appears to land on the painting, but pointer-events-none so
-          the painting and prints stay clickable through it. */}
-      {paintingRect && containerSize.w > 0 && (
+      {/* SVG overlay — dashed lines from each revealed print to the painting. */}
+      {containerSize.w > 0 && (
         <svg
           className="absolute inset-0 pointer-events-none"
           width={containerSize.w}
@@ -335,9 +333,7 @@ export default function EastMeetsWestV2() {
           aria-hidden="true"
         >
           {Array.from(usedLilies).map((lilyIndex) => {
-            const slot = lilySlots[lilyIndex];
-            if (!slot) return null;
-            const start = printPx(slot);
+            const start = printPixelPos(lilyIndex);
             const end = closestPointOnPainting(start.x, start.y);
             return (
               <motion.line
@@ -346,7 +342,7 @@ export default function EastMeetsWestV2() {
                 y1={start.y}
                 x2={end.x}
                 y2={end.y}
-                stroke="rgba(60, 50, 45, 0.45)"
+                stroke="rgba(45, 40, 38, 0.42)"
                 strokeWidth={1}
                 strokeDasharray="4 4"
                 initial={{ pathLength: 0, opacity: 0 }}
@@ -358,135 +354,119 @@ export default function EastMeetsWestV2() {
         </svg>
       )}
 
-      {/* Lilies — always present, fade to "used" once clicked. */}
-      {lilySlots.map((slot, lilyIndex) => {
-        const used = usedLilies.has(lilyIndex);
-        return (
-          <div
-            key={`lily-${lilyIndex}`}
-            className="absolute z-30"
-            style={{
-              top: slot.top,
-              left: slot.left,
-              transform: "translate(-50%, -50%)",
-              width: lilySize,
-            }}
-          >
-            <LilyTrigger
-              flow
-              src={LILY_IMAGES[lilyIndex]}
-              size={lilySize}
-              used={used}
-              onSelect={() => handleLilyClick(lilyIndex)}
-            />
-          </div>
-        );
-      })}
-
-      {/* Revealed paired prints + descriptions. The print sits just
-          inside the lily's slot (offset toward the painting), and the
-          description floats above the connection line's midpoint. */}
-      {Array.from(usedLilies).map((lilyIndex) => {
-        const slot = lilySlots[lilyIndex];
-        const printId = LILY_TO_PRINT[lilyIndex];
-        const fileName = `${printId}.jpg`;
-        const src = PRINT_IMAGES[fileName];
-        const entry = printsByFile[fileName];
-        if (!slot || !src) return null;
-
-        // Offset the print toward the painting so it sits next to the
-        // lily but slightly closer to the central painting. Mid-row
-        // lilies (top ≈ 50%) shift only horizontally; top/bottom-row
-        // lilies shift on both axes so the print tucks into the
-        // diagonal gap toward the painting.
-        const isLeft  = parseFloat(slot.left) < 50;
-        const topPct  = parseFloat(slot.top);
-        const isMidRow = Math.abs(topPct - 50) < 5;
-        const isTop    = topPct < 45;
-        const vShift  = isMidRow ? "0vh" : isTop ? "8vh" : "-8vh";
-        const hShift  = isLeft ? "8vw" : "-8vw";
-        const printTop  = `calc(${slot.top} + ${vShift})`;
-        const printLeft = `calc(${slot.left} + ${hShift})`;
-
-        // Text sits above the line midpoint between print and painting.
-        const startPx = printPx(slot);
-        const endPx   = paintingRect
-          ? closestPointOnPainting(startPx.x, startPx.y)
-          : startPx;
-        const midX    = (startPx.x + endPx.x) / 2;
-        const midY    = (startPx.y + endPx.y) / 2;
-
-        return (
-          <div key={`reveal-${lilyIndex}`}>
-            <motion.div
+      {/* Lilies on the outer ring — six positions around the square Monet. */}
+      {containerSize.w > 0 &&
+        Array.from({ length: LILY_COUNT }, (_, lilyIndex) => {
+          const used = usedLilies.has(lilyIndex);
+          const { x, y } = lilyPixelPos(lilyIndex);
+          return (
+            <div
+              key={`lily-${lilyIndex}`}
               className="absolute z-30"
               style={{
-                top: printTop,
-                left: printLeft,
+                left: x,
+                top: y,
                 transform: "translate(-50%, -50%)",
+                width: lilySize,
               }}
-              initial={{ opacity: 0, scale: 0.92 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
             >
-              <ScatteredPrint
+              <LilyTrigger
                 flow
-                src={src}
-                alt={entry?.title || printId}
-                maxSize={printMaxSize}
-                onSelect={() => openPrintLightbox(printId)}
+                src={LILY_IMAGES[lilyIndex]}
+                size={lilySize}
+                used={used}
+                onSelect={() => handleLilyClick(lilyIndex)}
               />
-            </motion.div>
+            </div>
+          );
+        })}
 
-            {containerSize.w > 0 && paintingRect && (
+      {/* Revealed paired prints + descriptions on the inner ring. */}
+      {containerSize.w > 0 &&
+        Array.from(usedLilies).map((lilyIndex) => {
+          const printId = LILY_TO_PRINT[lilyIndex];
+          const fileName = `${printId}.jpg`;
+          const src = PRINT_IMAGES[fileName];
+          const entry = printsByFile[fileName];
+          if (!src) return null;
+
+          const { x: px, y: py } = printPixelPos(lilyIndex);
+          const startPx = { x: px, y: py };
+          const endPx = closestPointOnPainting(startPx.x, startPx.y);
+          const midX = (startPx.x + endPx.x) / 2;
+          const midY = (startPx.y + endPx.y) / 2;
+
+          return (
+            <div key={`reveal-${lilyIndex}`}>
               <motion.div
-                className="absolute z-30 pointer-events-none"
+                className="absolute z-30"
                 style={{
-                  top: midY,
-                  left: midX,
-                  transform: "translate(-50%, calc(-100% - 12px))",
-                  width: "min(280px, 28vw)",
+                  left: px,
+                  top: py,
+                  transform: "translate(-50%, -50%)",
                 }}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.5,
-                  delay: 0.35,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
+                initial={{ opacity: 0, scale: 0.92 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
               >
-                <p
-                  className="font-serif italic text-charcoal/80 text-center leading-snug"
+                <ScatteredPrint
+                  flow
+                  src={src}
+                  alt={entry?.title || printId}
+                  maxSize={printMaxSize}
+                  onSelect={() => openPrintLightbox(printId)}
+                />
+              </motion.div>
+
+              {paintingRect && (
+                <motion.div
+                  className="absolute z-30 pointer-events-none"
                   style={{
-                    fontSize: "clamp(12px, 0.95vw, 15px)",
-                    textWrap: "pretty",
+                    top: midY,
+                    left: midX,
+                    transform: "translate(-50%, calc(-100% - 10px))",
+                    width: "min(240px, 26vw)",
+                  }}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.5,
+                    delay: 0.35,
+                    ease: [0.22, 1, 0.36, 1],
                   }}
                 >
-                  {INFO_BLOCKS[lilyIndex]}
-                </p>
-              </motion.div>
-            )}
-          </div>
-        );
-      })}
+                  <p
+                    className="font-serif italic text-charcoal/80 text-center leading-snug"
+                    style={{
+                      fontSize: "clamp(11px, 0.88vw, 14px)",
+                      textWrap: "pretty",
+                    }}
+                  >
+                    {INFO_BLOCKS[lilyIndex]}
+                  </p>
+                </motion.div>
+              )}
+            </div>
+          );
+        })}
 
-      {/* Bonus prints — fade in once all 6 lilies are collected. No
-          connection line, no text: pure decoration. */}
+      {/* Bonus prints — outer ring, mid-angle between lilies. */}
       <AnimatePresence>
         {allCollected &&
+          containerSize.w > 0 &&
           BONUS_PRINTS.map((printId, i) => {
-            const slot = bonusSlots[i];
             const fileName = `${printId}.jpg`;
             const src = PRINT_IMAGES[fileName];
             const entry = printsByFile[fileName];
-            if (!slot || !src) return null;
+            if (!src) return null;
+            const { x, y } = bonusPixelPos(i);
             return (
               <motion.div
                 key={`bonus-${printId}`}
                 className="absolute z-20"
                 style={{
-                  top: slot.top,
-                  left: slot.left,
+                  left: x,
+                  top: y,
                   transform: "translate(-50%, -50%)",
                 }}
                 initial={{ opacity: 0, scale: 0.94 }}
