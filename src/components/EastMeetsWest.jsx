@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import EastMeetsWestIntro from "./EastMeetsWestIntro";
+import EastMeetsWestEndPopup from "./EastMeetsWestEndPopup";
 import CentralPainting from "./CentralPainting";
 import ScatteredPrint from "./ScatteredPrint";
 import LilyTrigger from "./LilyTrigger";
@@ -53,20 +54,15 @@ export default function EastMeetsWest() {
   const [japanesePrints, setJapanesePrints] = useState([]);
   const [centralIndex, setCentralIndex] = useState(0);
   const [usedLilies, setUsedLilies] = useState(() => new Set());
-  const [userRevealed, setUserRevealed] = useState(() => new Set());
+  const [activeTextIndex, setActiveTextIndex] = useState(null);
   const [lightbox, setLightbox] = useState(null);
   // Always show the intro when this component mounts (i.e. every time
   // the user clicks "East Meets West").
   const [showIntro, setShowIntro] = useState(true);
+  const [showEndPopup, setShowEndPopup] = useState(false);
   const [isMobile, setIsMobile] = useState(
     () => typeof window !== "undefined" && window.innerWidth < 768
   );
-  // Derived: on mobile every block is auto-revealed; on desktop only the ones
-  // the user has clicked. We avoid an extra useEffect+setState cascade.
-  const revealedTexts = useMemo(() => {
-    if (isMobile) return new Set(INFO_BLOCKS.map((_, idx) => idx));
-    return userRevealed;
-  }, [isMobile, userRevealed]);
 
   useEffect(() => {
     Promise.all([
@@ -147,6 +143,17 @@ export default function EastMeetsWest() {
     setShowIntro(false);
   };
 
+  // Show the end-of-experience popup 10 seconds after the last lily is
+  // collected — gives the visitor time to read the final info block before
+  // being guided to the next experience.
+  useEffect(() => {
+    if (usedLilies.size < INFO_BLOCKS.length) return;
+    if (showEndPopup) return;
+    const timer = window.setTimeout(() => setShowEndPopup(true), 3_000);
+    return () => window.clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [usedLilies.size]);
+
   // Each lily is tied to a specific painting in the central pool.
   // The pool is already in chronological order (W.1509 → W.1631).
   // centralIndex starts at 0 (earliest painting, shown before any
@@ -161,11 +168,7 @@ export default function EastMeetsWest() {
       return next;
     });
     if (lily.textIndex !== undefined) {
-      setUserRevealed((prev) => {
-        const next = new Set(prev);
-        next.add(lily.textIndex);
-        return next;
-      });
+      setActiveTextIndex(lily.textIndex);
       // Explicit mapping from lily scroll-position (textIndex 0–5) to
       // painting pool index. Lilies 1 and 2 (2nd and 3rd from top)
       // are swapped relative to strict chronological order.
@@ -203,9 +206,8 @@ export default function EastMeetsWest() {
   const sideMargin = isMobile ? "1rem" : "2rem";
   const topMargin = isMobile ? "1.25rem" : "1.75rem";   // matches bottom
   const bottomMargin = isMobile ? "1.25rem" : "1.75rem";
-  // Reserve space below the painting for the title / year / collection
-  // caption.
-  const captionReserve = "5.5vh";
+  // Reserve space below the painting for the revealed info text.
+  const captionReserve = "22vh";
   const centralHeight = `calc(100vh - ${titleAreaHeight} - ${topMargin} - ${bottomMargin} - ${captionReserve})`;
 
   const centralPainting = centralPool[centralIndex];
@@ -418,11 +420,6 @@ export default function EastMeetsWest() {
                     })
                   }
                 />
-                <InfoBlock
-                  flow
-                  text={INFO_BLOCKS[block.textIndex]}
-                  visible={revealedTexts.has(block.textIndex)}
-                />
               </div>
             );
           })}
@@ -451,31 +448,15 @@ export default function EastMeetsWest() {
           height={centralHeight}
           onSelect={openCentralLightbox}
         />
-        {/* Painting caption — title, year, collection. Same typography
-            as the home page's per-anchor metadata block. */}
-        {centralPainting && (
-          <div className="mt-2 font-sans text-center px-4">
-            <p
-              className="text-charcoal font-medium leading-tight"
-              style={{ fontSize: "clamp(15px, 1.15vw, 19px)" }}
-            >
-              {centralPainting.title}
-              {centralPainting.year && (
-                <span className="text-charcoal/55 font-normal">
-                  , {centralPainting.year}
-                </span>
-              )}
-            </p>
-            {centralPainting.collection && (
-              <p
-                className="mt-1 text-charcoal/55"
-                style={{ fontSize: "clamp(12px, 0.9vw, 14px)" }}
-              >
-                {centralPainting.collection}
-              </p>
-            )}
-          </div>
-        )}
+        {/* Info text revealed by clicking a lily — replaces the old
+            title/year/collection caption below the painting. */}
+        <div className="mt-4 w-full px-6 flex justify-center">
+          <InfoBlock
+            flow
+            text={activeTextIndex !== null ? INFO_BLOCKS[activeTextIndex] : ""}
+            visible={activeTextIndex !== null}
+          />
+        </div>
       </div>
 
       <AnimatePresence>
@@ -484,6 +465,12 @@ export default function EastMeetsWest() {
             data={lightbox}
             onClose={() => setLightbox(null)}
           />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showEndPopup && !lightbox && (
+          <EastMeetsWestEndPopup onDismiss={() => setShowEndPopup(false)} />
         )}
       </AnimatePresence>
 
