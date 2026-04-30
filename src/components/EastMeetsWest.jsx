@@ -460,8 +460,12 @@ export default function EastMeetsWest() {
         >
           <InfoBlock
             flow
-            text={activeTextIndex !== null ? INFO_BLOCKS[activeTextIndex] : ""}
-            visible={activeTextIndex !== null}
+            text={
+              activeTextIndex !== null
+                ? INFO_BLOCKS[activeTextIndex]
+                : "Monet painted 12–18 works depicting the Japanese bridge. On the right are several woodblock prints from his personal collection."
+            }
+            visible
           />
         </div>
       </div>
