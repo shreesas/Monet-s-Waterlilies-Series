@@ -427,14 +427,11 @@ export default function EastMeetsWest() {
         </div>
       </div>
 
-      {/* Central Monet painting — horizontally centred inside the
-          white left-side panel, vertically centred in the space
-          below the subtitle bar. The wrapper itself is
-          pointer-events-none so clicks elsewhere reach the
-          prints/lilies behind; CentralPainting re-enables pointer
-          events on its own bounding box so the painting is clickable. */}
+      {/* Central Monet painting — left panel, split into a fixed painting
+          zone and a fixed text zone so the painting never shifts when
+          text appears or changes below it. */}
       <div
-        className="fixed pointer-events-none z-20 flex flex-col items-center justify-center"
+        className="fixed pointer-events-none z-20 flex flex-col items-center"
         style={{
           top: topMargin,
           left: 0,
@@ -442,15 +439,25 @@ export default function EastMeetsWest() {
           bottom: bottomMargin,
         }}
       >
-        <CentralPainting
-          painting={centralPainting}
-          maxWidth={centralMaxWidth}
-          height={centralHeight}
-          onSelect={openCentralLightbox}
-        />
-        {/* Info text revealed by clicking a lily — replaces the old
-            title/year/collection caption below the painting. */}
-        <div className="mt-4 w-full px-6 flex justify-center">
+        {/* Painting zone: fills the space above the text reserve and
+            keeps the painting vertically centred within its own area. */}
+        <div
+          className="flex items-center justify-center w-full"
+          style={{ height: centralHeight, flexShrink: 0 }}
+        >
+          <CentralPainting
+            painting={centralPainting}
+            maxWidth={centralMaxWidth}
+            height={centralHeight}
+            onSelect={openCentralLightbox}
+          />
+        </div>
+        {/* Text zone: fixed height at the bottom of the panel so the
+            painting position is never affected by text appearing here. */}
+        <div
+          className="w-full px-6 flex justify-center items-start"
+          style={{ height: captionReserve, paddingTop: "0.75rem" }}
+        >
           <InfoBlock
             flow
             text={activeTextIndex !== null ? INFO_BLOCKS[activeTextIndex] : ""}
