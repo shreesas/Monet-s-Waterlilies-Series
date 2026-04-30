@@ -495,7 +495,7 @@ export default function EastMeetsWest() {
           cleanly against the ambient pond background. */}
       <div
         className="fixed top-4 md:top-6 z-40 pointer-events-none flex items-center"
-        style={{ left: rightColumnLeft, right: 0, justifyContent: "center", paddingRight: "9rem" }}
+        style={{ left: rightColumnLeft, right: "8.5rem", justifyContent: "center" }}
       >
         <div
           className="font-serif text-charcoal bg-white rounded-full shadow-[0_8px_24px_rgba(0,0,0,0.18)] whitespace-nowrap flex items-center gap-3"
