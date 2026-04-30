@@ -206,8 +206,9 @@ export default function EastMeetsWest() {
   const sideMargin = isMobile ? "1rem" : "2rem";
   const topMargin = isMobile ? "1.25rem" : "1.75rem";   // matches bottom
   const bottomMargin = isMobile ? "1.25rem" : "1.75rem";
-  // Reserve space below the painting for the revealed info text.
-  const captionReserve = "22vh";
+  // Gap between painting bottom and text = topMargin so all four sides
+  // of the painting have equal whitespace. 13vh is the text content area.
+  const captionReserve = `calc(${topMargin} + 13vh)`;
   const centralHeight = `calc(100vh - ${titleAreaHeight} - ${topMargin} - ${bottomMargin} - ${captionReserve})`;
 
   const centralPainting = centralPool[centralIndex];
@@ -456,7 +457,7 @@ export default function EastMeetsWest() {
             painting position is never affected by text appearing here. */}
         <div
           className="w-full px-6 flex justify-center items-start"
-          style={{ height: captionReserve, paddingTop: "0.75rem" }}
+          style={{ height: captionReserve, paddingTop: topMargin }}
         >
           <InfoBlock
             flow
