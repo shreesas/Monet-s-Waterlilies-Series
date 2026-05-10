@@ -47,12 +47,12 @@ export default function EastMeetsWestIntro({ onDismiss }) {
       tabIndex={0}
       aria-label="Enter Ukiyo-e Influence"
     >
-      {/* Full-bleed background painting */}
+      {/* Full-bleed background painting at 70% opacity */}
       <img
         src={BG_IMAGE}
         alt="Claude Monet, Water-Lilies (c. 1916) — ambient background"
         className="absolute inset-0 w-full h-full object-cover"
-        style={{ objectPosition: "center 40%" }}
+        style={{ objectPosition: "center 40%", opacity: 0.7 }}
         draggable={false}
       />
 

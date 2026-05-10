@@ -18,10 +18,10 @@ function resolveImageUrl(url) {
   return ASSETS[url.split("/").pop()] ?? null;
 }
 
-const STRENGTH_SIZE = { direct: 153, critical: 116, documented: 92 };
+const STRENGTH_SIZE = { direct: 118, critical: 118, documented: 118 };
 const STRENGTH_LABEL = { direct: "Artist stated", critical: "Critic-attributed", documented: "Archival" };
 const POLAROID_BORDER = 8;  // white border on left / right / top
-const CAPTION_H = 44;       // white caption strip below the image
+const CAPTION_H = 30;       // white caption strip below the image
 
 function findConnectedMonet(painting, catalog) {
   for (const id of painting.monet_paintings_connected || []) {
@@ -44,6 +44,8 @@ export default function InfluenceGraphPolaroid() {
   const [dims, setDims] = useState({ w: window.innerWidth, h: window.innerHeight });
   const [rotatingPaintings, setRotatingPaintings] = useState([]);
   const [rotateIdx, setRotateIdx] = useState(0);
+  const circleRef = useRef(null);
+  const [circleCenter, setCircleCenter] = useState({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
 
   useEffect(() => {
     Promise.all([
@@ -83,6 +85,15 @@ export default function InfluenceGraphPolaroid() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  // Measure the actual pixel center of the circle after every layout change
+  // so SVG lines start exactly at the circle's edge rather than at the
+  // container center (which is offset by the label below the circle).
+  useEffect(() => {
+    if (!circleRef.current) return;
+    const rect = circleRef.current.getBoundingClientRect();
+    setCircleCenter({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
+  }, [dims, showIntro]);
+
   const cx = dims.w / 2;
   const cy = dims.h / 2;
 
@@ -115,8 +126,8 @@ export default function InfluenceGraphPolaroid() {
     };
 
     const ORBITS = [
-      { count: 6, ringScale: 0.52, sizeScale: 0.82 },
-      { count: 8, ringScale: 0.74, sizeScale: 0.92 },
+      { count: 6, ringScale: 0.52, sizeScale: 1 },
+      { count: 8, ringScale: 0.74, sizeScale: 1 },
       { count: 10, ringScale: 1, sizeScale: 1 },
     ];
 
@@ -393,9 +404,9 @@ export default function InfluenceGraphPolaroid() {
           const anyHov = hoveredId !== null;
           const ex = x + push.x;
           const ey = y + push.y;
-          const ang = Math.atan2(ey - cy, ex - cx);
-          const x1 = cx + Math.cos(ang) * 160;
-          const y1 = cy + Math.sin(ang) * 160;
+          const ang = Math.atan2(ey - circleCenter.y, ex - circleCenter.x);
+          const x1 = circleCenter.x + Math.cos(ang) * 160;
+          const y1 = circleCenter.y + Math.sin(ang) * 160;
           const lineOpacity = anyHov ? (isHov ? 1 : 0.25) : 0;
           return (
             <line
@@ -410,20 +421,6 @@ export default function InfluenceGraphPolaroid() {
         })}
       </svg>
 
-      {/* ── Backdrop blur ── */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          zIndex: 22,
-          backdropFilter: "blur(1px)",
-          WebkitBackdropFilter: "blur(1px)",
-          background: "transparent",
-          pointerEvents: "none",
-          opacity: hoveredId ? 1 : 0,
-          transition: "opacity 0.35s ease",
-        }}
-      />
 
       {/* ── Center node: rotating Monet paintings with cross-dissolve ── */}
       <div
@@ -436,6 +433,7 @@ export default function InfluenceGraphPolaroid() {
         }}
       >
         <div
+          ref={circleRef}
           style={{
             width: 320,
             height: 320,
@@ -588,7 +586,7 @@ export default function InfluenceGraphPolaroid() {
               <div
                 style={{
                   height: CAPTION_H,
-                  padding: "5px 8px 6px",
+                  padding: "4px 8px 4px",
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "center",
@@ -629,6 +627,46 @@ export default function InfluenceGraphPolaroid() {
                 </span>
               </div>
             </motion.div>
+
+            {/* Strength pill — floats below the polaroid on hover */}
+            <AnimatePresence>
+              {isHov && (
+                <motion.div
+                  key="pill"
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  style={{
+                    position: "absolute",
+                    top: Math.ceil(cardH / 2 * 2.45) + 2,
+                    left: 0,
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    pointerEvents: "none",
+                  }}
+                >
+                  <span
+                    style={{
+                      background: "rgba(0,0,0,0.75)",
+                      color: "#fff",
+                      fontFamily: "sans-serif",
+                      fontSize: 9,
+                      fontWeight: 500,
+                      letterSpacing: "0.04em",
+                      lineHeight: 1,
+                      padding: "4px 9px",
+                      borderRadius: 20,
+                      whiteSpace: "nowrap",
+                      userSelect: "none",
+                    }}
+                  >
+                    {STRENGTH_LABEL[strength] ?? strength}
+                  </span>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.button>
         );
       })}
@@ -640,9 +678,9 @@ export default function InfluenceGraphPolaroid() {
         const push = pushOffsets[hovNode.painting.id] ?? { x: 0, y: 0 };
         const ex = hovNode.x + push.x;
         const ey = hovNode.y + push.y;
-        const ang2 = Math.atan2(ey - cy, ex - cx);
-        const lx1 = cx + Math.cos(ang2) * 160;
-        const ly1 = cy + Math.sin(ang2) * 160;
+        const ang2 = Math.atan2(ey - circleCenter.y, ex - circleCenter.x);
+        const lx1 = circleCenter.x + Math.cos(ang2) * 160;
+        const ly1 = circleCenter.y + Math.sin(ang2) * 160;
         const bmx = lx1 + (ex - lx1) * 0.42;
         const bmy = ly1 + (ey - ly1) * 0.42;
         let bdeg = Math.atan2(ey - ly1, ex - lx1) * (180 / Math.PI);
@@ -655,24 +693,10 @@ export default function InfluenceGraphPolaroid() {
             <line
               x1={lx1} y1={ly1} x2={ex} y2={ey}
               stroke="black"
-              strokeWidth={1.5}
+              strokeWidth={3}
+              strokeLinecap="round"
               opacity={1}
             />
-            <text
-              x={bmx} y={bmy}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              fontSize="13"
-              fontFamily="sans-serif"
-              fill="rgba(0,0,0,0.85)"
-              stroke="#F5F0EB"
-              strokeWidth="4"
-              paintOrder="stroke"
-              style={{ userSelect: "none" }}
-              transform={`rotate(${bdeg}, ${bmx}, ${bmy})`}
-            >
-              {STRENGTH_LABEL[hovNode.painting.connection_strength] ?? hovNode.painting.connection_strength}
-            </text>
           </svg>
         );
       })()}
@@ -712,17 +736,25 @@ const LAYOUT_OVERRIDES = {
 function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl, onClose }) {
   const [paintingAspect, setPaintingAspect] = useState(null);
   const { quotes, addQuote, removeQuote } = useQuotes(painting.id);
-  const [editing, setEditing] = useState(false);
-  const scrollRef = useRef(null);
+  const [quoteText, setQuoteText] = useState("");
+  const [editingQuotes, setEditingQuotes] = useState(false);
+  const quotesScrollRef = useRef(null);
   const prevQuotesLen = useRef(quotes.length);
 
-  // After a new quote is added, scroll the overlay's content to the bottom
-  // so the user can immediately see what they just typed. We use a double
-  // rAF so the freshly mounted quote has been laid out before we measure
-  // scrollHeight.
+  const isTyping = quoteText.trim().length > 0;
+
+  const handleQuoteSubmit = () => {
+    const t = quoteText.trim();
+    if (!t) return;
+    addQuote(t);
+    setQuoteText("");
+    setEditingQuotes(false);
+  };
+
+  // After a new quote is added, scroll the right-panel quotes list to the end.
   useEffect(() => {
     if (quotes.length > prevQuotesLen.current) {
-      const target = scrollRef.current;
+      const target = quotesScrollRef.current;
       if (target) {
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
@@ -759,20 +791,23 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-stone"
+      className="fixed inset-0 z-50 bg-stone"
     >
       <div className="absolute inset-0" onClick={onClose} />
 
       <motion.div
-        ref={scrollRef}
         initial={{ opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.97 }}
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-10 w-full h-screen overflow-y-auto px-16 py-12"
-        style={{ paddingBottom: "8rem" }}
+        className="relative z-10 w-full h-screen flex flex-row items-stretch overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* ── Left section: paintings + description + reader quotes ── */}
+        <div
+          className="flex-1 min-h-0 overflow-y-auto px-16 py-12"
+          style={{ paddingBottom: "5rem" }}
+        >
         {sideBySide ? (
           /* ── Both paintings side by side, description below ── */
           <>
@@ -928,64 +963,82 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
             </div>
           </>
         )}
+        </div>
 
-        {/* Reader quotes — pinned to the bottom of the scroll content,
-            wrap naturally with a comfortable measure. */}
-        {quotes.length > 0 && (
-          <div className="mt-16 pt-8 border-t border-charcoal/10">
-            <div className="mx-auto text-center" style={{ maxWidth: "70ch" }}>
-              <QuotesList quotes={quotes} editing={editing} onDelete={removeQuote} centered />
+        {/* ── Vertical divider ── */}
+        <div
+          aria-hidden="true"
+          className="flex-shrink-0 self-stretch"
+          style={{ width: 1, background: "rgba(0,0,0,0.12)" }}
+        />
+
+        {/* ── Right section: reader quotes + input at bottom ── */}
+        <div
+          className="flex flex-col min-h-0 h-full flex-shrink-0"
+          style={{ width: "20%" }}
+        >
+          <div
+            ref={quotesScrollRef}
+            className="flex-1 min-h-0 overflow-y-auto px-5 pt-16 pb-4"
+          >
+            {quotes.length > 0 && (
+              <div className="space-y-3">
+                <QuotesList
+                  quotes={quotes}
+                  editing={editingQuotes}
+                  onDelete={removeQuote}
+                  compact
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="flex-shrink-0 border-t border-charcoal/12 px-5 pt-4 pb-6">
+            <div className="flex items-end gap-2">
+              <div className="flex-1 min-w-0">
+                <QuotePill
+                  text={quoteText}
+                  onChange={setQuoteText}
+                  onSubmit={handleQuoteSubmit}
+                  autoFocus
+                  maxRows={5}
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (isTyping) {
+                    handleQuoteSubmit();
+                  } else {
+                    setEditingQuotes((v) => !v);
+                  }
+                }}
+                aria-label={isTyping ? "Submit response" : editingQuotes ? "Done editing" : "Edit responses"}
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-charcoal text-white shadow-[0_4px_16px_rgba(0,0,0,0.18)] hover:bg-charcoal/85 transition-colors flex-shrink-0"
+              >
+                {isTyping ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="9 10 4 15 9 20" />
+                    <path d="M20 4v7a4 4 0 0 1-4 4H4" />
+                  </svg>
+                ) : (
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                  </svg>
+                )}
+              </button>
             </div>
           </div>
-        )}
+        </div>
       </motion.div>
-
-      {/* Bottom-right control cluster: animated prompt slides in to the
-          left of the pencil FAB so both share the same baseline. */}
-      <div className="absolute bottom-6 right-6 z-30 flex items-center gap-3 pointer-events-none">
-        <AnimatePresence>
-          {editing && (
-            <motion.div
-              key="quote-prompt"
-              initial={{ opacity: 0, x: 24 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 24 }}
-              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-              className="pointer-events-auto"
-              style={{ width: "min(60vw, 520px)" }}
-            >
-              <QuotePill onSubmit={addQuote} autoFocus />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            setEditing((v) => !v);
-          }}
-          aria-label={editing ? "Close prompt" : "Add a response"}
-          aria-pressed={editing}
-          className="pointer-events-auto w-14 h-14 flex items-center justify-center rounded-full bg-charcoal text-white shadow-[0_8px_28px_rgba(0,0,0,0.18)] hover:bg-charcoal/85 transition-colors flex-shrink-0"
-        >
-          {editing ? (
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
-          ) : (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 20h9" />
-              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-            </svg>
-          )}
-        </button>
-      </div>
 
       <button
         type="button"
         onClick={onClose}
-        className="absolute top-5 right-5 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/8 hover:bg-black/14 text-black transition-colors"
+        className="absolute top-5 right-5 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-transparent hover:bg-black/10 active:bg-black/16 text-black transition-colors duration-150"
         aria-label="Close"
       >
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -1054,32 +1107,41 @@ function useQuotes(paintingId) {
 }
 
 // Renders submitted quotes as Inter-bold pull quotes with curly quotation
-// marks. Sized to match the connection-claim description text so the
-// reader's response feels native to the page typography. When `editing`
-// is true, a small delete button appears beside each quote.
-function QuotesList({ quotes, editing = false, onDelete, centered = false }) {
+// marks. The sidebar (`compact`) uses Libre Baskerville at 16pt+ on desktop.
+// When `editing` is true, a small delete button appears beside each quote.
+function QuotesList({ quotes, editing = false, onDelete, centered = false, compact = false }) {
   if (!quotes.length) return null;
+  const defaultStyle = {
+    fontFamily: "'Inter', system-ui, sans-serif",
+    fontWeight: 700,
+    fontSize: "clamp(24px, 2vw, 36px)",
+    lineHeight: 1.25,
+    color: "#111",
+    textWrap: "pretty",
+    textAlign: centered ? "center" : "left",
+    flex: centered ? "0 1 auto" : 1,
+  };
+
   return (
-    <ul className="flex flex-col gap-4">
+    <ul className={compact ? "flex flex-col gap-4" : "flex flex-col gap-4"}>
       {quotes.map((q, i) => (
         <li
           key={`${q.ts}-${i}`}
-          className={`relative flex items-center gap-2 ${centered ? "justify-center" : ""}`}
+          className={`relative flex gap-2 ${
+            compact
+              ? "items-start"
+              : `items-center ${centered ? "justify-center" : ""}`
+          }`}
         >
-          <p
-            style={{
-              fontFamily: "'Inter', system-ui, sans-serif",
-              fontWeight: 700,
-              fontSize: "clamp(24px, 2vw, 36px)",
-              lineHeight: 1.25,
-              color: "#111",
-              textWrap: "pretty",
-              textAlign: centered ? "center" : "left",
-              flex: centered ? "0 1 auto" : 1,
-            }}
-          >
-            &ldquo;{q.text}&rdquo;
-          </p>
+          {compact ? (
+            <p className="min-w-0 flex-1 text-pretty text-left text-[#111] font-serif font-normal text-sm leading-[1.45] md:text-[16pt]">
+              &ldquo;{q.text}&rdquo;
+            </p>
+          ) : (
+            <p style={defaultStyle}>
+              &ldquo;{q.text}&rdquo;
+            </p>
+          )}
           {editing && onDelete && (
             <button
               type="button"
@@ -1088,7 +1150,9 @@ function QuotesList({ quotes, editing = false, onDelete, centered = false }) {
                 onDelete(q.ts);
               }}
               aria-label="Remove quote"
-              className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-charcoal/10 hover:bg-charcoal/25 text-charcoal/70 hover:text-charcoal transition-colors"
+              className={`flex-shrink-0 flex items-center justify-center rounded-full bg-charcoal/10 hover:bg-charcoal/25 text-charcoal/70 hover:text-charcoal transition-colors w-6 h-6 ${
+                compact ? "mt-[0.35em]" : ""
+              }`}
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M18 6L6 18M6 6l12 12" />
@@ -1102,56 +1166,47 @@ function QuotesList({ quotes, editing = false, onDelete, centered = false }) {
 }
 
 // Large pill-shaped prompt anchored to the bottom of the overlay viewport.
-// Uses a wrapping textarea that auto-grows with content. Press Enter to
+// Controlled: text/onChange are managed by the parent. Press Enter to
 // submit (Shift+Enter inserts a newline); empty submissions are ignored.
-function QuotePill({ onSubmit, autoFocus = false }) {
-  const [text, setText] = useState("");
+function QuotePill({ text, onChange, onSubmit, autoFocus = false, maxRows = null }) {
   const ref = useRef(null);
-
-  // Auto-grow: reset to 'auto' first so the textarea can also shrink when
-  // characters are deleted, then snap to scrollHeight.
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    el.style.height = "auto";
-    el.style.height = `${el.scrollHeight}px`;
-  }, [text]);
+  const fontSize = 13;
+  const lineHeight = 1.45;
+  const paddingV = 14;
+  const paddingH = 14;
+  const cappedHeight = maxRows
+    ? Math.ceil(fontSize * lineHeight * maxRows + paddingV * 2)
+    : null;
 
   useEffect(() => {
     if (autoFocus && ref.current) ref.current.focus();
   }, [autoFocus]);
 
-  const submit = () => {
-    const t = text.trim();
-    if (!t) return;
-    onSubmit(t);
-    setText("");
-  };
-
   return (
     <textarea
       ref={ref}
       value={text}
-      rows={1}
+      rows={maxRows ?? 1}
       placeholder="What commonalities do you see between Monet's work and this piece?"
-      onChange={(e) => setText(e.target.value)}
+      onChange={(e) => onChange(e.target.value)}
       onKeyDown={(e) => {
         if (e.key === "Enter" && !e.shiftKey) {
           e.preventDefault();
-          submit();
+          onSubmit();
         }
       }}
       onClick={(e) => e.stopPropagation()}
-      className="w-full bg-white border border-charcoal/70 text-charcoal placeholder-charcoal/40 focus:outline-none focus:border-charcoal transition-colors resize-none"
+      className="w-full bg-stone border border-charcoal/70 text-charcoal placeholder-charcoal/40 focus:outline-none focus:border-charcoal transition-colors resize-none"
       style={{
         fontFamily: "'Inter', system-ui, sans-serif",
         fontWeight: 400,
-        fontSize: "clamp(14px, 1.05vw, 17px)",
-        lineHeight: 1.4,
-        padding: "18px 32px",
+        fontSize,
+        lineHeight,
+        padding: `${paddingV}px ${paddingH}px`,
         borderRadius: 10,
-        boxShadow: "0 8px 28px rgba(0,0,0,0.10)",
-        maxHeight: "55vh",
+        boxShadow: "0 6px 20px rgba(0,0,0,0.10)",
+        height: cappedHeight ? `${cappedHeight}px` : undefined,
+        maxHeight: cappedHeight ? `${cappedHeight}px` : "55vh",
         overflowY: "auto",
       }}
     />

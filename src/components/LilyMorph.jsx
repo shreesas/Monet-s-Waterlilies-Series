@@ -1,9 +1,22 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { motion } from "framer-motion";
+// eslint-disable-next-line no-unused-vars -- `AnimatePresence` is used in JSX; project eslint lacks jsx-uses-vars
+import { motion, AnimatePresence } from "framer-motion";
+import TimelineEndPopup from "./TimelineEndPopup";
 
 const MANIFEST_URL = "/lily_morphs/manifest.json";
 const BASE = "/lily_morphs/";
 const DURATION_MS = 4000;
+
+// Delay (after the final morph has finished) before the end-of-timeline popup
+// appears, so the visitor has time to read the last painting's description
+// before being invited to the next experience.
+const END_PROMPT_DELAY_MS = 3000;
+
+// Module-level flag: once the popup has been shown (and dismissed) in this
+// JS session, we don't auto-show it again if the user navigates back to The
+// Journey via the Explore dropdown. Mirrors the firstIntroScreenSeen pattern
+// used in App.jsx.
+let endPromptShownThisSession = false;
 
 const ANCHOR_META = [
   { title: "Water Lilies", year: "1897\u20131898", collection: "Los Angeles County Museum of Art" },
@@ -71,6 +84,7 @@ export default function LilyMorph() {
   const [totalCount, setTotalCount] = useState(0);
   const [error, setError] = useState(null);
   const [paintingVisible, setPaintingVisible] = useState(false);
+  const [showEndPrompt, setShowEndPrompt] = useState(false);
 
   const imgRef = useRef(null);
   const animatingRef = useRef(false);
@@ -154,6 +168,25 @@ export default function LilyMorph() {
     if (animatingRef.current) return;
     imgRef.current.src = anchors[anchorIdx].frame.img.src;
   }, [anchors, anchorIdx]);
+
+  // Trigger the end-of-timeline popup once the user has reached the final
+  // anchor and the morph has finished playing. We wait a few extra seconds so
+  // the last painting's description has time to be read, and we only auto-
+  // show it once per session — if the visitor dismisses and steps back, they
+  // can still reach the next experience via the Explore dropdown.
+  useEffect(() => {
+    if (!anchors.length) return;
+    if (anchorIdx !== anchors.length - 1) return;
+    if (animating) return;
+    if (endPromptShownThisSession) return;
+
+    const timer = window.setTimeout(() => {
+      endPromptShownThisSession = true;
+      setShowEndPrompt(true);
+    }, END_PROMPT_DELAY_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [anchorIdx, animating, anchors.length]);
 
   // Measure the vertical position of the painting title (in the right-side
   // text column) relative to the timeline aside, so we can slide the timeline
@@ -279,6 +312,7 @@ export default function LilyMorph() {
   const preloadDone = totalCount > 0 && loadedCount >= totalCount;
 
   return (
+    <>
     <section className="h-[80vh] w-full flex flex-col lg:grid lg:grid-cols-[1fr_96px_22%] xl:grid-cols-[1fr_112px_20%] lg:grid-rows-1">
       {/* DESKTOP: vertical year timeline next to the painting.
           A single continuous vertical line runs top-to-bottom behind the
@@ -492,5 +526,12 @@ export default function LilyMorph() {
         </div>
       </motion.div>
     </section>
+
+    <AnimatePresence>
+      {showEndPrompt && (
+        <TimelineEndPopup onDismiss={() => setShowEndPrompt(false)} />
+      )}
+    </AnimatePresence>
+    </>
   );
 }

@@ -44,19 +44,13 @@ export default function InfluenceGraphPolaroidIntro({ onDismiss }) {
       tabIndex={0}
       aria-label="Enter Abstract Legacy"
     >
-      {/* Full-bleed background painting */}
+      {/* Full-bleed background painting at 70% opacity */}
       <img
         src={BG_IMAGE}
         alt="Claude Monet, Water Lilies (W.1978) — ambient background"
         className="absolute inset-0 w-full h-full object-cover"
-        style={{ objectPosition: "center 55%" }}
+        style={{ objectPosition: "center 55%", opacity: 0.7 }}
         draggable={false}
-      />
-
-      {/* Soft dark veil so text stays legible over the painting */}
-      <div
-        className="absolute inset-0"
-        style={{ background: "linear-gradient(to right, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.18) 60%, transparent 100%)" }}
       />
 
       <div className="absolute inset-0 flex items-center justify-start px-12 md:px-20 lg:px-28">
@@ -70,30 +64,23 @@ export default function InfluenceGraphPolaroidIntro({ onDismiss }) {
           }}
         >
           <h2
-            className="font-serif text-white leading-[1.1]"
+            className="font-serif text-black leading-[1.1]"
             style={{ fontSize: "clamp(1.75rem, 4vw, 3.25rem)" }}
           >
             The &ldquo;Curated Lineage&rdquo;
           </h2>
 
           <p
-            className="mt-6 font-sans text-white leading-snug"
-            style={{ fontSize: "clamp(1rem, 1.55vw, 1.45rem)", textWrap: "pretty" }}
+            className="mt-6 font-sans text-black/85 leading-snug"
+            style={{ fontSize: "clamp(1.1rem, 1.8vw, 1.6rem)", textWrap: "pretty" }}
           >
-            After his death in 1926, Monet&rsquo;s massive late canvases sat in his
-            studio, dismissed as the messy, formless mistakes of a failing eye. For
-            nearly thirty years, the art world ignored them. But in the 1950s, as
-            American painters began pouring, dripping, and staining massive canvases,
-            critics started drawing a connection. Suddenly, Monet&rsquo;s horizonless,
-            edge-to-edge ponds looked exactly like the radical new work of the Abstract
-            Expressionists. But was Monet truly the blueprint for artists like Pollock
-            and Rothko, or was this connection a convenient bridge built by mid-century
-            critics?
+            Once dismissed as "formless mistakes" caused by failing eyesight, Monet’s late works were ignored for decades. In the 1950s, critics rediscovered them as a precursor to Abstract Expressionism. But was Monet truly the blueprint for artists like Pollock and Rothko, or was this connection a convenient bridge built by mid-century critics?
+
           </p>
 
           <p
-            className="mt-5 font-serif italic text-white/80 leading-snug"
-            style={{ fontSize: "clamp(1rem, 1.55vw, 1.45rem)", textWrap: "pretty" }}
+            className="mt-5 font-serif italic text-black/85 leading-snug"
+            style={{ fontSize: "clamp(1.1rem, 1.8vw, 1.6rem)", textWrap: "pretty" }}
           >
             Click a painting to uncover the true nature of its connection.
           </p>
@@ -101,7 +88,7 @@ export default function InfluenceGraphPolaroidIntro({ onDismiss }) {
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); onDismiss(); }}
-            className="mt-10 rounded-full border-2 border-white/75 bg-transparent text-white font-serif font-bold text-sm tracking-wide px-8 py-3 hover:bg-white hover:text-black hover:border-white transition-colors duration-150"
+            className="mt-10 rounded-full border-2 border-black/70 bg-transparent text-black font-serif font-bold text-sm tracking-wide px-8 py-3 hover:bg-black hover:text-white hover:border-black transition-colors duration-150"
           >
             Begin
           </button>
