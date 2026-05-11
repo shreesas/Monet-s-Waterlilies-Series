@@ -731,6 +731,10 @@ const LAYOUT_OVERRIDES = {
     'steir-sixteen-waterfalls-1990',
     'katz-homage-to-monet-5-2009',
   ]),
+  // Monet full-width banner at top, influenced painting left + description right below
+  monetTopSplit: new Set([
+    'bleckner-architecture-of-the-sky-iii-1988',
+  ]),
 };
 
 function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl, onClose }) {
@@ -771,9 +775,10 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
 
   const overrideWrap = LAYOUT_OVERRIDES.wrap.has(painting.id);
   const overrideSide = LAYOUT_OVERRIDES.sideBySide.has(painting.id);
+  const overrideMonetTopSplit = LAYOUT_OVERRIDES.monetTopSplit.has(painting.id);
   // Aspect-ratio fallback: wrap if h/w < 0.67, side by side otherwise
-  const sideBySide = overrideSide || (!overrideWrap && paintingAspect !== null && paintingAspect >= 0.67);
-  const shouldWrap  = overrideWrap  || (!overrideSide && paintingAspect !== null && paintingAspect < 0.67);
+  const sideBySide = !overrideMonetTopSplit && (overrideSide || (!overrideWrap && paintingAspect !== null && paintingAspect >= 0.67));
+  const shouldWrap  = !overrideMonetTopSplit && (overrideWrap  || (!overrideSide && paintingAspect !== null && paintingAspect < 0.67));
 
   useEffect(() => {
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
@@ -808,7 +813,72 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
           className="flex-1 min-h-0 overflow-y-auto px-16 py-12"
           style={{ paddingBottom: "5rem" }}
         >
-        {sideBySide ? (
+        {overrideMonetTopSplit ? (
+          /* ── Monet banner full-width at top; influenced image left, description right below ── */
+          <>
+            {/* Monet full-width strip */}
+            <div className="mb-6">
+              {monetImageUrl ? (
+                <img
+                  src={monetImageUrl}
+                  alt={monetEntry?.title || "Monet, Water Lilies"}
+                  style={{ width: "100%", maxHeight: "26vh", objectFit: "cover", objectPosition: "center", display: "block" }}
+                  draggable={false}
+                />
+              ) : (
+                <div className="w-full bg-warmgray flex items-center justify-center" style={{ height: "26vh" }}>
+                  <span className="font-serif italic text-black/40 text-xs text-center px-3">Monet, Water Lilies</span>
+                </div>
+              )}
+              <p className="font-sans text-charcoal font-medium mt-2" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>Claude Monet</p>
+              <p className="font-serif italic text-charcoal" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>{monetEntry?.title || "Water Lilies"}</p>
+              <p className="font-sans text-charcoal/55" style={{ fontSize: "clamp(11px, 0.85vw, 13px)" }}>{[monetEntry?.year, monetEntry?.collection].filter(Boolean).join(", ")}</p>
+            </div>
+
+            {/* Two-column row: influenced painting left, description right */}
+            <div className="flex flex-row gap-10 items-start w-full mt-8">
+              <div className="flex-1 min-w-0 flex flex-col items-start">
+                {imageUrl ? (
+                  <img
+                    src={imageUrl}
+                    alt={painting.title}
+                    style={{ width: "100%", maxHeight: "46vh", objectFit: "contain", objectPosition: "left top", display: "block" }}
+                    draggable={false}
+                    onLoad={(e) => setPaintingAspect(e.currentTarget.naturalHeight / (e.currentTarget.naturalWidth || 1))}
+                  />
+                ) : (
+                  <div className="w-full bg-warmgray flex items-center justify-center" style={{ height: "36vh" }}>
+                    <span className="font-serif italic text-black/40 text-xs text-center px-3">Image rights restricted</span>
+                  </div>
+                )}
+                <p className="font-sans text-charcoal font-medium mt-2" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>{painting.artist}</p>
+                <p className="font-serif italic text-charcoal" style={{ fontSize: "clamp(13px, 1vw, 16px)" }}>{painting.title}</p>
+                <p className="font-sans text-charcoal/55" style={{ fontSize: "clamp(11px, 0.85vw, 13px)" }}>{[painting.year, painting.collection].filter(Boolean).join(", ")}</p>
+              </div>
+
+              <div className="flex-1 min-w-0 flex flex-col gap-4">
+                {painting.connection_claim && (
+                  <p className="font-serif italic text-charcoal/80 leading-relaxed text-left" style={{ fontSize: "clamp(14px, 1.1vw, 18px)", textWrap: "pretty" }}>
+                    {painting.connection_claim}
+                  </p>
+                )}
+                {painting.citation_url && (
+                  <a
+                    href={painting.citation_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 font-sans text-black/60 hover:text-black transition-colors w-fit"
+                    style={{ fontSize: "0.82rem", borderBottom: "1px solid rgba(0,0,0,0.25)", paddingBottom: 1 }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Learn more
+                    <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 6h8M6 2l4 4-4 4" /></svg>
+                  </a>
+                )}
+              </div>
+            </div>
+          </>
+        ) : sideBySide ? (
           /* ── Both paintings side by side, description below ── */
           <>
             <div className="flex flex-row gap-8 items-start w-full">
