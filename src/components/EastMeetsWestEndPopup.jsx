@@ -94,12 +94,17 @@ export default function EastMeetsWestEndPopup({ onDismiss }) {
           future?
         </p>
 
-        <img
-          src={abstractPreview}
-          alt="Helen Frankenthaler, Mountains and Sea"
-          className="mt-8 w-full object-cover"
-          style={{ borderRadius: 20, maxHeight: 200 }}
-        />
+        <div
+          className="mt-8 w-full overflow-hidden"
+          style={{ borderRadius: 20, maxHeight: 220 }}
+        >
+          <img
+            src={abstractPreview}
+            alt="Helen Frankenthaler, Mountains and Sea"
+            className="w-full"
+            style={{ display: "block", height: "auto" }}
+          />
+        </div>
 
         <div className="mt-6 flex justify-center">
           <a

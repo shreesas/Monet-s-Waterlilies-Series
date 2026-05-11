@@ -97,12 +97,17 @@ export default function TimelineEndPopup({ onDismiss }) {
           What shaped the eye that changed everything?
         </p>
 
-        <img
-          src={ukiyoePreview}
-          alt="Hiroshige, Red Maple Trees at the Tsuten Bridge"
-          className="mt-8 w-full object-cover"
-          style={{ borderRadius: 20, maxHeight: 200 }}
-        />
+        <div
+          className="mt-8 w-full overflow-hidden"
+          style={{ borderRadius: 20, maxHeight: 220 }}
+        >
+          <img
+            src={ukiyoePreview}
+            alt="Hiroshige, Red Maple Trees at the Tsuten Bridge"
+            className="w-full"
+            style={{ display: "block", height: "auto" }}
+          />
+        </div>
 
         <div className="mt-6 flex justify-center">
           <a
