@@ -816,7 +816,7 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
               <div className="flex-1 min-w-0 flex flex-col items-start">
                 {monetImageUrl ? (
                   <img src={monetImageUrl} alt={monetEntry?.title || "Monet, Water Lilies"}
-                    style={{ maxHeight: "48vh", width: "100%", display: "block", objectFit: "contain" }} draggable={false} />
+                    style={{ height: "48vh", width: "100%", display: "block", objectFit: "contain", objectPosition: "left top" }} draggable={false} />
                 ) : (
                   <div className="w-full bg-warmgray flex items-center justify-center" style={{ height: "48vh" }}>
                     <span className="font-serif italic text-black/40 text-xs text-center px-3">Monet, Water Lilies</span>
@@ -849,7 +849,7 @@ function InfluenceDetailOverlay({ painting, imageUrl, monetEntry, monetImageUrl,
               <div className="flex-1 min-w-0 flex flex-col items-start">
                 {imageUrl ? (
                   <img src={imageUrl} alt={painting.title}
-                    style={{ maxHeight: "48vh", width: "100%", display: "block", objectFit: "contain" }} draggable={false}
+                    style={{ height: "48vh", width: "100%", display: "block", objectFit: "contain", objectPosition: "left top" }} draggable={false}
                     onLoad={(e) => setPaintingAspect(e.currentTarget.naturalHeight / (e.currentTarget.naturalWidth || 1))} />
                 ) : (
                   <div className="w-full bg-warmgray flex items-center justify-center" style={{ height: "48vh" }}>
