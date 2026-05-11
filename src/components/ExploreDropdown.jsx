@@ -59,7 +59,7 @@ export default function ExploreDropdown({ currentPage }) {
                 className={`block px-5 py-3 font-sans text-sm border-b border-black/8 last:border-0 transition-colors ${
                   isCurrent
                     ? "text-black/35 cursor-default pointer-events-none"
-                    : "text-black hover:bg-black/6"
+                    : "text-black cursor-pointer hover:bg-black hover:text-white"
                 }`}
               >
                 {isCurrent && (
