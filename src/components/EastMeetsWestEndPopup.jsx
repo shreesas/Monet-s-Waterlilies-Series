@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 // eslint-disable-next-line no-unused-vars -- `motion` is used in JSX; project eslint lacks jsx-uses-vars
 import { motion } from "framer-motion";
+import abstractPreview from "../assets/Frankenthaler_Mountains_and_Sea_copy3.jpg";
 
 // End-of-experience modal for East Meets West.
 // Appears 10 seconds after the visitor has collected all 6 water lilies.
@@ -93,7 +94,14 @@ export default function EastMeetsWestEndPopup({ onDismiss }) {
           future?
         </p>
 
-        <div className="mt-12 flex justify-center">
+        <img
+          src={abstractPreview}
+          alt="Helen Frankenthaler, Mountains and Sea"
+          className="mt-8 w-full object-cover"
+          style={{ borderRadius: 20, maxHeight: 200 }}
+        />
+
+        <div className="mt-6 flex justify-center">
           <a
             href="#/abstract-legacy"
             onClick={(e) => e.stopPropagation()}

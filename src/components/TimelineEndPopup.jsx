@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 // eslint-disable-next-line no-unused-vars -- `motion` is used in JSX; project eslint lacks jsx-uses-vars
 import { motion } from "framer-motion";
+import ukiyoePreview from "../assets/J4.jpg";
 
 // Modal that appears after the user has stepped through every anchor in the
 // LilyMorph timeline. Hands them off to the next experience (Ukiyo-e
@@ -96,7 +97,14 @@ export default function TimelineEndPopup({ onDismiss }) {
           What shaped the eye that changed everything?
         </p>
 
-        <div className="mt-12 flex justify-center">
+        <img
+          src={ukiyoePreview}
+          alt="Hiroshige, Red Maple Trees at the Tsuten Bridge"
+          className="mt-8 w-full object-cover"
+          style={{ borderRadius: 20, maxHeight: 200 }}
+        />
+
+        <div className="mt-6 flex justify-center">
           <a
             href="#/ukiyo-e-influence"
             onClick={(e) => {
